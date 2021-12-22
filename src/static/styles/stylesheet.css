@@ -1,0 +1,70 @@
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    padding: 0;
+}
+.background {
+    background-image: linear-gradient(darkblue, darkgrey);
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.header {
+    background: white;
+    border-radius: 10px;
+    -webkit-box-shadow: 0 6px 6px 0px black;
+       -moz-box-shadow: 0 6px 6px 0px black;
+            box-shadow: 0 6px 6px 0px black;
+    width: auto;
+    margin-left: 5px;
+    margin-right: 5px;
+    flex: 0 0 auto;
+}
+.content {
+    flex: 1 1 auto;
+}
+.footer {
+    background: white;
+    text-align: right;
+    border-bottom: 5px solid black;
+    border-radius: 10px;
+    width: auto;
+    margin: 0px 5px 0 5px;
+    flex: 0 0 auto;
+}
+img.logo {
+    margin: 20px auto 10px 20px;
+    width: 10%;
+}
+img.logo_foot {
+    margin: 20px 20px 10px auto;
+    width: 5%;
+}
+.flash_box {
+    border: 2px solid black;
+    border-radius: 5px;
+    margin: 10px auto;
+    padding: 5px;
+    font-size: 1.5rem;
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+.error {
+    background: #FF5050;
+}
+.info {
+    background: #50FF50;
+}
+button#close_flash {
+    background: none;
+    border: none;
+}

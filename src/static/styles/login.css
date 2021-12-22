@@ -1,0 +1,33 @@
+* {
+    font-size: 1.2rem;
+}
+input {
+	font-size: 15px;
+}
+#container {
+    background: lightgrey;
+    height: fit-content;
+    width: fit-content;
+    height: -moz-fit-content;
+    width: -moz-fit-content;
+    margin: 50px auto;
+    padding: 5px;
+    border: groove;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+}
+.header_label {
+    border-bottom: ridge;
+}
+.column {
+    padding: 10px;
+    border: ridge;
+    position: relative;
+    float: none;
+}
+.column input[type="submit"] {
+    position: absolute;
+    bottom: 5px;
+}

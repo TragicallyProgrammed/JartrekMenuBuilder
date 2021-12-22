@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <title>{% block title %}Template{% endblock %}</title>
+	<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/stylesheet.css') }}">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='scripts/index_eventSheet.js') }}"></script>
+    {% block head %}
+	{% endblock %}
+</head>
+<body>
+	<div class="background">
+		<div class="header">
+			<img class="logo" src="{{ url_for('static', filename='images/JartrekLogo.png') }}" alt="Jartrek Header"/>
+			{% block header %}
+			{% endblock %}
+		</div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{category}} flash_box">
+                    <label>{{ message }}</label>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+		<div class="content">
+			{% block content %}
+			{% endblock %}
+		</div>
+		<div class="footer">
+			<img class="logo_foot" src="{{ url_for('static', filename='images/JartrekLogo.png') }}" alt="Jartrek Footer"/>
+			{% block footer %}
+			{% endblock %}
+		</div>
+	</div>
+</body>
+</html>

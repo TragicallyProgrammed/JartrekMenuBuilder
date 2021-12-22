@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/admin-panel.css')}}">
+<script src="{{ url_for('static', filename='scripts/user_manager.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div id="left_content_container">
+    <form method="POST"><input type="submit" name="submit" value="Logout" id="logout"></form>
+    <div id="user_manager_container">
+        <div style="border-bottom: 2px solid black; width: 100%; text-align: center;"><label>Users</label></div>
+            <table id="user_table_container" class="user_table">
+                <tr>
+                    <th>Username</th>
+                    <th>Change<br>Password</th>
+                    <th>Export Table</th>
+                    <th>View Table</th>
+                </tr>
+            </table>
+    </div>
+    <div id="add_user-panel">
+        <form id="add_user_container" method="POST">
+            <div style="border-bottom: 2px solid black; width: 100%; text-align: center;"><label>New User</label></div>
+        <label>Username:</label>
+        <input type="text" name="username" placeholder="username">
+        <br>
+        <label>Password:</label>
+        <input type="text" name="password" placeholder="password">
+        <br>
+        <input type="submit" id="submit-button" value="submit">
+        </form>
+    </div>
+</div>
+<div id="right_content_container">
+    <label id="current_user_label">Currently viewing:<label id="current_user"></label></label>
+    {% include "datatable.html" %}
+</div>
+{% endblock %}

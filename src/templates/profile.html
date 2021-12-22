@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="content_container">
+    <div id="logout_panel">
+    <label>Welcome, {{ username }}</label>
+        <br>
+    <form method="POST"><input type="submit" name="submit" value="Logout"></form>
+</div>
+    {% include "datatable.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+.content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    margin: 5px;
+}
+#logout {
+    font-size: 1.2rem;
+}
+#left_content_container {
+    display: flex;
+    flex-direction: column;
+}
+#right_content_container {
+    height: 100%;
+    width: 100%;
+    background: lightgrey;
+    border-radius: 3px;
+    border: groove;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+#add_user_container {
+    background: lightgrey;
+    padding: 5px;
+    margin: 5px;
+    width: min-content;
+    border-radius: 3px;
+    border: groove;
+    font-size: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+}
+#user_manager_container {
+    background: lightgrey;
+    padding: 5px;
+    margin: 5px;
+    width: min-content;
+    border-radius: 3px;
+    border: groove;
+    font-size: 1.5rem;
+    overflow-y: hidden;
+}
+.password_field {
+    resize: none;
+    height: 1.5rem;
+}
+#current_user_label {
+    width: fit-content;
+    margin: 2px;
+    padding: 2px;
+    border: ridge;
+    background: white;
+}
+#current_user_label * {
+    font-size: 1.2rem;
+}
+
+/*User Table Formatting*/
+table.user_table, th.user_table, td.user_table {
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 1rem;
+    justify-content: center;
+}
+table.user_table {
+    margin: 5px;
+    table-layout: auto;
+}
+table.user_table td.user_table {
+    border: 1px solid black;
+}
+table.user_table th.user_table {
+    border-bottom: 2px solid black;
+}
+.user_table button {
+    font-size: 1.3rem;
+}
