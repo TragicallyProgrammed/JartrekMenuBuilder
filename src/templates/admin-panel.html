@@ -3,6 +3,7 @@
 
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/admin-panel.css')}}">
+<script src="{{ url_for('static', filename='scripts/admin_table_eventSheet.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/user_manager.js') }}"></script>
 {% endblock %}
 
@@ -34,7 +35,7 @@
     </div>
 </div>
 <div id="right_content_container">
-    <label id="current_user_label">Currently viewing:<label id="current_user"></label></label>
+    <label id="current_user_label">Currently viewing: <label id="current_user">test</label></label>
     {% include "datatable.html" %}
 </div>
 {% endblock %}

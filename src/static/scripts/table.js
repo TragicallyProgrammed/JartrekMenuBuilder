@@ -89,7 +89,7 @@ class Table {
     }
 
     //Removes a row
-    removeItem() {
+    removeItem(username=null) {
         if (this.items.length > 1) {
             // Path syntax is such to be compatible with firefox
             var path = event.path || (event.composedPath && event.composedPath());
@@ -98,6 +98,7 @@ class Table {
                 $.ajax({
                     contentType: 'json',
                     data: JSON.stringify({
+                        'username': username,
                         'tableName': this.tableName,
                         'itemName': this.getItems()[path[2].rowIndex - 1].label
                     }),
@@ -122,10 +123,11 @@ class Table {
     }
 
     //Uploads table to database
-    uploadTable() {
+    uploadTable(username=null) {
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
+                'username': username,
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
                 'priceLabels': this.labels,
@@ -136,28 +138,14 @@ class Table {
             url: 'updatedb'
         });
     }
-    admin_uploadTable(current_user) {
-        $.ajax({
-            contentType: 'json',
-            data: JSON.stringify({
-                'user': current_user,
-                'tableName': this.tableName,
-                'priceLabelsLength': this.colLen,
-                'priceLabels': this.labels,
-                'itemsLength': this.items.length,
-                'items': this.getItems()
-            }),
-            type: 'POST',
-            url: 'admin_updatedb'
-        });
-    }
 
     //Downloads table from database
-    downloadTable() {
+    downloadTable(username = null) {
         var table_instance = this;
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
+                'username': username,
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
                 'priceLabels': this.getPriceLabels(),
@@ -185,48 +173,15 @@ class Table {
             }
         });
     }
-    admin_downloadTable(username) {
-        var table_instance = this;
-        $.ajax({
-            contentType: 'json',
-            data: JSON.stringify({
-                'username': username,
-                'tableName': this.tableName,
-                'priceLabelsLength': this.colLen,
-                'priceLabels': this.getPriceLabels(),
-            }),
-            type: 'POST',
-            url: 'admin_getdb',
-            success: function(data) {
-                var json_data = JSON.parse(JSON.stringify(data));
-                table_instance.colLen = json_data["price_labels"].length;
-                for(var i = 1; i < json_data["price_labels"].length; i++) {
-                    table_instance.renamePriceLabel(i, json_data["price_labels"][i]);
-                    console.log(json_data["price_labels"][i]);
-                }
-                if(json_data["items"].length === 0) {
-                    table_instance.addItem(new Item("", table_instance.colLen, []))
-                } else {
-                    for (var i = 0; i < json_data["items"].length; i++) {
-                        table_instance.addItem(new Item(json_data["items"][i][0], json_data["price_labels"].length, json_data["items"][i].slice(1)));
-                    }
-                }
-            },
-            error: function(data) {
-                alert("ERROR OCCURRED WHILE LOADING TABLE!!!!");
-                console.log(data.responseJSON);
-            }
-        });
-    }
 
     //Clears the table, places it under the specified HTML element, and loads data from server-side database
-    loadTable(tabID) {
+    loadTable(tabID, username = null) {
         //Place on document
         if (this.parentElementID != null) {
             this.clearTable();
         }
-        document.getElementById(tabID).appendChild(this.tableContainer);
         this.parentElementID = tabID;
+        document.getElementById(this.parentElementID).appendChild(this.tableContainer);
 
         var parentTabId = document.getElementById(this.parentElementID).getAttribute("for");
         var tab_labels = document.getElementsByClassName("tab-label");
@@ -237,28 +192,8 @@ class Table {
             }
         }
         //get table data from database
-        this.downloadTable()
-        this.updateTableGraphics()
-    }
-    admin_loadTable(tabID, username) {
-        //Place on document
-        if (this.parentElementID != null) {
-            this.clearTable();
-        }
-        document.getElementById(tabID).appendChild(this.tableContainer);
-        this.parentElementID = tabID;
-
-        var parentTabId = document.getElementById(this.parentElementID).getAttribute("for");
-        var tab_labels = document.getElementsByClassName("tab-label");
-        for (var i = 0; i < tab_labels.length; i++) {
-            if (tab_labels[i].htmlFor === parentTabId) {
-                this.tableName = tab_labels[i].children[0].innerHTML;
-                break;
-            }
-        }
-        //get table data from database
-        this.admin_downloadTable(username)
-        this.updateTableGraphics()
+        this.downloadTable(username);
+        this.updateTableGraphics();
     }
 
     //Clears the current data in the table, and removes all columns and rows from the HTML table
@@ -320,6 +255,11 @@ class Table {
             datas.rows = 2;
             datas.cols = 14;
             datas.maxLength = 6;
+            datas.addEventListener('keydown', function(event){
+                if(!isFinite(event.key) && event.key !== "Backspace" && event.key !== ".") {
+                    event.preventDefault()
+                }
+            });
 
             if(i-2 < item.getPricesLength()) {
                 datas.value = item.getPrices()[i-2];

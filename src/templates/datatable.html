@@ -1,6 +1,5 @@
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/tables.css') }}">
-<script src="{{ url_for('static', filename='scripts/table_eventSheet.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/table.js') }}"></script>
 {% endblock %}
 
@@ -9,11 +8,11 @@
         <div class="btn_group">
             <input type="radio" id="drink" name="menu_button" checked>
             <label for="drink">
-            <div>Drinks</div>
+                Drinks
             </label>
             <input type="radio" id="food" name="menu_button">
             <label for="food">
-            <div>Food/Snacks</div>
+                Food/Snacks
             </label>
         </div>
     </div>

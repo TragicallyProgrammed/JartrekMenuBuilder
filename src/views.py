@@ -44,48 +44,6 @@ def updatedb():
     return Response(status=200)
 
 
-@views.route('admin_updatedb', methods=['POST'])
-def admin_updatedb():
-    data = json.loads(request.data)
-    user = data.get('current_user').strip()
-    table_name = data.get('tableName').strip()
-    price_labels_length = int(data.get('priceLabelsLength'))
-    price_labels = data.get('priceLabels')
-    item_length = int(data.get('itemsLength'))
-    items = data.get('items')
-
-    db_user = User.query.filter_by(username=user).first()
-    if not db_user:
-        return Response(status=500)
-    db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()
-    if db_table:
-        db_table.items_length = item_length
-        for item in items:  # For every item sent from client
-            db_item = Item.query.filter_by(table_id=db_table.id, item_name=item.get('label')).first()
-            if db_item:  # If the item exists
-                db_item.change_prices(item.get('prices'))
-            else:  # If the item does not exist
-                db_item = Item(table_id=db_table.id, item_name=item.get('label'))
-                db_item.change_prices(item.get('prices'))
-                db.session.add(db_item)
-    else:
-        db_table = Table(user_id=current_user.get_id(), table_name=table_name)
-        db.session.add(db_table)
-    db.session.commit()
-
-    db_columns = Columns.query.filter_by(user_id=current_user.get_id()).first()
-    if db_columns:
-        db_columns.labels_length = price_labels_length
-        db_columns.changePriceLabels(price_labels)
-    else:
-        db_columns = Columns(user_id=current_user.get_id())
-        db_columns.labels_length = price_labels_length
-        db_columns.changePriceLabels(price_labels)
-        db.session.add(db_columns)
-        db.session.commit()
-    return Response(status=200)
-
-
 @views.route('getdb', methods=['POST'])
 def getdb():
     data = json.loads(request.data)
@@ -104,34 +62,6 @@ def getdb():
         db.session.commit()
 
     db_columns = Columns.query.filter_by(user_id=current_user.get_id()).first()
-    if db_columns:
-        price_labels = db_columns.getPriceLabels()
-    else:
-        price_labels = ["Regular"]
-    ret_data = jsonify(price_labels=price_labels, items=items)
-    return ret_data, 200
-
-
-@views.route('admin_getdb', methods=['POST'])
-def admin_getdb():
-    data = json.loads(request.data)
-    user = data.get('username').strip()
-    table_name = data.get('tableName').strip()
-
-    items = []
-
-    db_user = User.query.filter_by(username=user).first()
-    db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()
-    if db_table:
-        db_items = Item.query.filter_by(table_id=db_table.id).all()
-        for item in db_items:
-            items.append(item.getItemData())
-    else:
-        db_table = Table(user_id=db_user.get_id(), table_name=table_name, items_length=0)
-        db.session.add(db_table)
-        db.session.commit()
-
-    db_columns = Columns.query.filter_by(user_id=db_user.get_id()).first()
     if db_columns:
         price_labels = db_columns.getPriceLabels()
     else:
