@@ -1,6 +1,6 @@
 /*EVENT MANAGER*/
 $(function() {
-    $.ajax({
+    $.ajax({ // Send request to get users and populate table
         contentType: 'json',
         data: JSON.stringify({}),
         type: 'POST',
@@ -64,4 +64,8 @@ $(function() {
             }
         }
     });
+
+    // TODO: Update user password button event
+
+    // TODO: Table export button event
 });

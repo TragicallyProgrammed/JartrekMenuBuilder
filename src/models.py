@@ -39,7 +39,8 @@ class Columns(db.Model):
     label7 = db.Column(db.String(128))
     label8 = db.Column(db.String(128))
 
-    def changePriceLabels(self, arr):
+    def changePriceLabels(self, arr_len, arr):
+        self.labels_length = arr_len
         if len(arr) == 8:
             self.label1 = arr[0].strip()
             if arr[1] is None:

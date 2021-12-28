@@ -13,6 +13,7 @@
     overflow: hidden;
 }
 #logout_panel {
+    position: absolute;
     border-radius: 5px;
     border: groove;
     width: fit-content;

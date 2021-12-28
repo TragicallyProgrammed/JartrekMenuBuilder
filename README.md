@@ -28,11 +28,12 @@ How to run:
 
 Charlie:
 -
-Ran into some issues with how I initially processed requests for the database.
-Currently patching in new event manager, but it's not done yet.
-The graphics for the table will work, but for right now, the admin panel's
-customer viewer has been disabled, the csv export has been disabled,
-and tab changes on the table itself is disabled. Give me a day and it will be fixed.
--Garrett 12/22
+Finished with the profile's new event manager. Building admin panel's event manager now.
+It shouldn't take long, the database can be tested using the test
+user's login (user: test2; pass: test). Once the admin panel's event
+manager is done the user manager can be tested by logging in with the admin's
+credentials (user: test; pass: test).
+
+-Garrett 
 
 copyright Keystone Bingo co. 2021

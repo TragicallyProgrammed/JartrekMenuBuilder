@@ -59,7 +59,7 @@ class Table {
                 this.labels[index] = label;
                 this.priceLabelColumns[index].setAttribute("enabled", "true");
                 this.priceLabels[index].value = label;
-            } else if(index === this.colLen) {
+            } else if(index >= this.colLen) {
                 this.colLen += 1;
                 this.labels[index] = label;
                 this.priceLabelColumns[index].setAttribute("enabled", "true");
@@ -71,7 +71,7 @@ class Table {
 
     //Changes the price of a given cell
     changeItemPrice(priceIndex, itemIndex, value) {
-        return this.items[itemIndex].setPrice(priceIndex, value);
+        this.items[itemIndex].setPrice(priceIndex, value);
     }
 
     //Changes the label of a given item
@@ -112,9 +112,8 @@ class Table {
                             //Remove HTML Table Row
                             path[2].parentNode.removeChild(path[2]);
                         },
-                        201: function() {
-
-                            console.log("status 201");
+                        500: function() {
+                            console.log("status 500");
                         }
                     }
                 });
@@ -124,6 +123,10 @@ class Table {
 
     //Uploads table to database
     uploadTable(username=null) {
+        var items = this.getItems();
+        for(var i = 0; i < items.length; i++) {
+            console.log(items[i]["prices"]);
+        }
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
@@ -141,7 +144,7 @@ class Table {
 
     //Downloads table from database
     downloadTable(username = null) {
-        var table_instance = this;
+        var table_instance = this;  // Get current instance of the class
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
@@ -153,23 +156,30 @@ class Table {
             type: 'POST',
             url: 'getdb',
             success: function(data) {
-                var json_data = JSON.parse(JSON.stringify(data));
-                table_instance.colLen = json_data["price_labels"].length;
-                for(var i = 1; i < json_data["price_labels"].length; i++) {
-                    table_instance.renamePriceLabel(i, json_data["price_labels"][i]);
-                    console.log(json_data["price_labels"][i]);
+                var price_labels = data["price_labels"];
+                var items = data["items"];
+
+                if(price_labels.length === 0) {
+                    table_instance.colLen = 1;
+                    table_instance.renamePriceLabel(0, "Regular");
+                } else {
+                    table_instance.colLen = price_labels.length;
+                    for(var i = 0; i < price_labels.length; i++) {
+                        table_instance.renamePriceLabel(i, price_labels[i]);
+                    }
                 }
-                if(json_data["items"].length === 0) {
+
+                if(items.length === 0) {
                     table_instance.addItem(new Item("", table_instance.colLen, []))
                 } else {
-                    for (var i = 0; i < json_data["items"].length; i++) {
-                        table_instance.addItem(new Item(json_data["items"][i][0], json_data["price_labels"].length, json_data["items"][i].slice(1)));
+                    for(var i = 0; i < items.length; i++) {
+                        table_instance.addItem(new Item(items[i]["label"], table_instance.colLen, items[i]["prices"]));
                     }
                 }
             },
             error: function(data) {
                 alert("ERROR OCCURRED WHILE LOADING TABLE!!!!");
-                console.log(data.responseJSON);
+                console.log(data);
             }
         });
     }
@@ -415,11 +425,7 @@ class Item {
     }
 
     setPrice(index, price) {
-        if (index >= 0 && index < this.prices.length) {
-            this.prices[index] = price;
-            return true;
-        }
-        return false;
+        this.prices[index] = price;
     }
 
     printItem() {

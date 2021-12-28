@@ -1,5 +1,6 @@
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/tables.css') }}">
+<script src="{{ url_for('static', filename='scripts/table_eventSheet.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/table.js') }}"></script>
 {% endblock %}
 
@@ -68,5 +69,8 @@
             <div class="tab-content" id="tab2-content-2" for="tab2-2"></div>
         </div>
     </div>
-    <button type="button" id="add_row">Add Row</button>
+    <div id="bot_container">
+        <button type="button" id="add_row">Add Row</button>
+        <button type="button" id="done">Done</button>
+    </div>
 {% endblock %}
