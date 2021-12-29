@@ -44,7 +44,7 @@ function tableEventManager(tableInstance) {
             tableInstance.addItem(new Item("", this.colLen, [])); // Calls addItem from table to append new row
         });
 
-        // Update values on table
+        // Update values on table TODO: Find price change bug
         $('.datatable').on('change', '.chart_field', function () {
             var colIndex = $(this).parent().index() - 1;
             var rowIndex = $(this).parent().parent().index();

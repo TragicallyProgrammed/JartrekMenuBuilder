@@ -3,16 +3,32 @@ $(function() {
     var tableInstance = new Table("", 1, new Array(8), []);
     tableEventManager(tableInstance);
 
+    user_manager(tableInstance);
+
     // Start with admin's beer table
     tableInstance.loadTable("tab-content-1", "test"); // Load table under beer tab
     $('input[name="tab-group"]:not(:checked)').each(function(index, item) { // Select every tab not currently selected
         document.getElementById(item.getAttribute("for")).style.display = 'none'; // Disable it
     });
 
-    // TODO: Tab switching for currently selected user
+    //On tab change
+    $('input[name="tab-group"]').change(function () { // Selecting all tabs and looking for them to change
+        var current_user = document.getElementById("current_user").innerHTML;
+        tableInstance.uploadTable(current_user); // Uploads table to currently logged-in user's database
+        tableInstance.loadTable($(this).attr("for"), current_user); // Download currently logged-in user's selected table
+    });
 
     // TODO: Update values on table for currently selected user
-    // TODO: And update for 'done' button
+    // Update values on table
+    $('.datatable').on('change', '.chart_field', function () {
+        var current_user = document.getElementById("current_user").innerHTML;  // Get currently selected user
+        tableInstance.uploadTable(current_user); // Uploads the table after changing a value
+    });
 
-    // TODO: Customer select button event: Set current user to selected user, save changes on table of previous user, download and display table of current user
+    // Update values on table when clicking 'Done' TODO: Visualize upload
+    $('#done').click(function (e) {
+        e.preventDefault();  // Prevent default behavior for buttons
+        var current_user = document.getElementById("current_user").innerHTML;  // Get currently selected user
+        tableInstance.uploadTable(current_user); // Uploads the table after changing a value
+    });
 });

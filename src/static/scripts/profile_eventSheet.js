@@ -13,7 +13,6 @@ $(function() {
     $('input[name="tab-group"]').change(function () { // Selecting all tabs and looking for them to change
         tableInstance.uploadTable(); // Uploads table to currently logged-in user's database
         tableInstance.loadTable($(this).attr("for")); // Download currently logged-in user's selected table
-        tableInstance.updateTableGraphics(); // Update table graphics to new data
     });
 
     // Update values on table

@@ -124,9 +124,6 @@ class Table {
     //Uploads table to database
     uploadTable(username=null) {
         var items = this.getItems();
-        for(var i = 0; i < items.length; i++) {
-            console.log(items[i]["prices"]);
-        }
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
@@ -144,6 +141,7 @@ class Table {
 
     //Downloads table from database
     downloadTable(username = null) {
+        console.log("Downloading table with user: " + username)
         var table_instance = this;  // Get current instance of the class
         $.ajax({
             contentType: 'json',
@@ -186,6 +184,7 @@ class Table {
 
     //Clears the table, places it under the specified HTML element, and loads data from server-side database
     loadTable(tabID, username = null) {
+        console.log("loading table with user: " + username)
         //Place on document
         if (this.parentElementID != null) {
             this.clearTable();

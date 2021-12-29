@@ -48,8 +48,7 @@
     overflow-y: hidden;
 }
 .password_field {
-    resize: none;
-    height: 1.5rem;
+
 }
 #current_user_label {
     width: fit-content;
@@ -80,5 +79,9 @@ table.user_table th.user_table {
     border-bottom: 2px solid black;
 }
 .user_table button {
-    font-size: 1.3rem;
+    font-size: 1rem;
+}
+.change_password {
+    display: flex;
+    padding: 3px;
 }

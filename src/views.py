@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, json, Response, jsonify, flash
+from flask import Blueprint, render_template, request, redirect, url_for, json, Response, jsonify, send_from_directory
 from flask_login import login_required, current_user
 from .models import User, Table, Item, Columns
 from . import db
@@ -15,8 +15,6 @@ def updatedb():  # View to update the database
     price_labels = data.get("priceLabels")  # Read labels array
     items_length = data.get("itemsLength")  # Read length of items array
     items = data.get("items")  # Read items array
-    for item in items:
-        print(item.get("prices"))
 
     user = data.get("username")  # Read username
     if user is not None:  # If username is not None
@@ -57,8 +55,6 @@ def getdb():
     data = json.loads(request.data)  # Get JSON data from server request
 
     table_name = data.get("tableName").strip()  # Read the table name from JSON data
-    items = []
-    price_labels = []
 
     user = data.get("username")  # Read the given username from JSON data
     if user is not None:  # If the username is not none...
@@ -66,7 +62,7 @@ def getdb():
 
         db_user = User.query.filter_by(username=user).first()  # Searches for the given user in the database
         if db_user:  # If the given user is found in the database...
-            Get_Items(db_user, table_name)  # Get a list of the given user's items
+            items = Get_Items(db_user, table_name)  # Get a list of the given user's items
             price_labels = Get_Columns(db_user)  # Get the user's price labels
         else:  # If the given user is not found in the database...
             return Response(status=500)  # Return error code
@@ -75,7 +71,6 @@ def getdb():
         price_labels = Get_Columns(current_user)  # Get the user's price labels
 
     db.session.commit()  # Commit changes to database
-    print(price_labels, items)
     return jsonify(price_labels=price_labels, items=items), 200  # Returns the list of price labels and items with a success code
 
 
@@ -98,6 +93,11 @@ def removeItem():
         return Remove_Item(table_name, item_name, current_user)  # Remove the currently logged-in user's item and returns error or success code
 
 
+@views.route('export-data', methods=['POST'])
+def exportData():
+    return send_from_directory("static/exports", "test_file.csv", filename="test_file.csv", as_attachment=True)
+
+
 @views.route('get-users', methods=['POST'])
 def getUsers():
     users = User.query.all()
@@ -110,7 +110,6 @@ def getUsers():
 @views.route('profile', methods=['POST', 'GET'])
 @login_required
 def profile():
-    print("loading profile...")
     if request.method == "POST" and request.form.get("submit") == "Logout":
         return redirect(url_for('auth.logout'))
     return render_template("profile.html", username=current_user.username)
@@ -122,7 +121,7 @@ def profile():
 def Add_Items(db_table, items):
     """Adds an array of items into a given database table"""
     for item in items:  # For each item in items from client
-        if item.get("label") is not "":  # If the item is not blank
+        if item.get("label") != "":  # If the item is not blank
             db_item = Item.query.filter_by(table_id=db_table.id, item_name=item.get("label")).first()  # Look for an item of the same name as the current item in the database
             if db_item:  # If the item is found in the database...
                 db_item.change_prices(item.get('prices'))  # Update the prices
@@ -184,6 +183,5 @@ def Get_Columns(user):
     """Gets a given user's price labels"""
     db_columns = Columns.query.filter_by(user_id=user.get_id()).first()  # Finds the user's columns labels in the database
     if db_columns:  # If the user's columns are found in the database...
-        print("Price Labels: ".join(db_columns.getPriceLabels()))
         return db_columns.getPriceLabels()  # Return a list of the column labels
     return []  # If the user's columns are not found ... Return a blank array

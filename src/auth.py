@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from os import path
-from .models import User, Columns
-from . import db, app, login_manager
+from .models import User
+from . import db, app
 from .settings import DB_NAME
 
 auth = Blueprint('auth', __name__)
@@ -40,7 +40,7 @@ def adminPanel():
 
     user = User.query.filter_by(id=current_user.get_id()).first()
     if user and user.is_admin():
-        if request.method == 'POST':
+        if request.method == 'POST' and request.form.get("submit") == "submit":
             username = request.form.get('username')
             password = request.form.get('password')
 
@@ -49,7 +49,18 @@ def adminPanel():
                 new_user = User(username=username, password=generate_password_hash(password, method='sha256'), admin=False)
                 db.session.add(new_user)
                 db.session.commit()
-                return redirect(url_for("auth.login"))
+        if request.method == 'POST' and request.form.get("submit") == "change_pass":
+            username = request.form.get("username")
+            password = request.form.get("password")
+            user = User.query.filter_by(username=username).first()
+            if user:
+                if password is not None:
+                    user.password = generate_password_hash(password)
+                    db.session.add(user)
+                    db.session.commit()
+                    flash("Changed password for " + username, "info")
+                else:
+                    flash("Password field is blank", "error")
         return render_template("admin-panel.html")
     else:
         return redirect(url_for('views.profile'))
