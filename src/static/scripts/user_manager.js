@@ -53,21 +53,16 @@ function user_manager(tableInstance) {
                     //create export button
                     var export_cell = document.createElement('td');
                     export_cell.className = "user_table";
+                    var export_button_container = document.createElement('a');
+                    export_button_container.href = "download-data/"+username;
                     var export_button = document.createElement('button');
-                    export_button.className = "export_button"
+                    export_button.className = "export_button";
                     export_button.setAttribute("for", username);
-                    // TODO: Table export button event
-                    export_button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        $.ajax({
-                            type: 'POST',
-                            url: 'export-data'
-                        });
-                    });
                     var export_label = document.createElement('label');
                     export_label.innerHTML = "\u2913";
                     export_button.appendChild(export_label);
-                    export_cell.appendChild(export_button);
+                    export_button_container.appendChild(export_button)
+                    export_cell.appendChild(export_button_container);
 
                     //create view table button
                     var view_table_cell = document.createElement("td");

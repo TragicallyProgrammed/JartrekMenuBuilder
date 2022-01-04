@@ -47,9 +47,6 @@
     font-size: 1.5rem;
     overflow-y: hidden;
 }
-.password_field {
-
-}
 #current_user_label {
     width: fit-content;
     margin: 2px;
@@ -59,6 +56,20 @@
 }
 #current_user_label * {
     font-size: 1.2rem;
+}
+#add_user_submit_button {
+    margin-left: 0;
+    font-size: 1rem;
+}
+#is_admin_container {
+    font-size: 1rem;
+    margin-right: 0;
+    margin-left: auto;
+}
+#add_user_bottom {
+    display: flex;
+    flex-flow: row;
+    width: 100%;
 }
 
 /*User Table Formatting*/

@@ -1,6 +1,6 @@
 /* EVENT MANAGER */
 $(function() {
-    var tableInstance = new Table("", 1, new Array(8), []);
+    var tableInstance = new Table();
     tableEventManager(tableInstance);
 
     // Start with beer

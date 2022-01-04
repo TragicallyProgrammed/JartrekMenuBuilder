@@ -123,7 +123,6 @@ class Table {
 
     //Uploads table to database
     uploadTable(username=null) {
-        var items = this.getItems();
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
@@ -131,7 +130,6 @@ class Table {
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
                 'priceLabels': this.labels,
-                'itemsLength': this.items.length,
                 'items': this.getItems()
             }),
             type: 'POST',

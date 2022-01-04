@@ -7,9 +7,12 @@
 <script src="{{ url_for('static', filename='scripts/user_manager.js') }}"></script>
 {% endblock %}
 
+{% block header %}
+<form method="POST"><input type="submit" name="submit" value="Logout" id="logout"></form>
+{% endblock %}
+
 {% block content %}
 <div id="left_content_container">
-    <form method="POST"><input type="submit" name="submit" value="Logout" id="logout"></form>
     <div id="user_manager_container">
         <div style="border-bottom: 2px solid black; width: 100%; text-align: center;"><label>Users</label></div>
             <table id="user_table_container" class="user_table">
@@ -29,12 +32,18 @@
             <label>Password:</label>
             <input type="text" name="password" placeholder="password">
             <br>
-            <input type="submit" id="submit-button" value="submit">
+            <div id="add_user_bottom">
+                <input type="submit" name="submit" id="add_user_submit_button" value="submit">
+                <div id="is_admin_container">
+                    <label>Is admin:</label>
+                    <input type="checkbox" id="is_admin" name="is_admin">
+                </div>
+            </div>
         </form>
     </div>
 </div>
 <div id="right_content_container">
-    <label id="current_user_label">Currently viewing: <label id="current_user">test</label></label>
+    <label id="current_user_label">Currently viewing: <label id="current_user">admin</label></label>
     {% include "datatable.html" %}
 </div>
 {% endblock %}

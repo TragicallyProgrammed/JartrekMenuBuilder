@@ -25,6 +25,8 @@ body {
     margin-left: 5px;
     margin-right: 5px;
     flex: 0 0 auto;
+    display: flex;
+    flex-flow: row;
 }
 .content {
     flex: 1 1 auto;

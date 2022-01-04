@@ -1,12 +1,12 @@
 /* EVENT MANAGER */
 $(function() {
-    var tableInstance = new Table("", 1, new Array(8), []);
+    var tableInstance = new Table();
     tableEventManager(tableInstance);
 
     user_manager(tableInstance);
 
     // Start with admin's beer table
-    tableInstance.loadTable("tab-content-1", "test"); // Load table under beer tab
+    tableInstance.loadTable("tab-content-1", document.getElementById("current_user").innerHTML); // Load table under beer tab
     $('input[name="tab-group"]:not(:checked)').each(function(index, item) { // Select every tab not currently selected
         document.getElementById(item.getAttribute("for")).style.display = 'none'; // Disable it
     });
@@ -18,7 +18,6 @@ $(function() {
         tableInstance.loadTable($(this).attr("for"), current_user); // Download currently logged-in user's selected table
     });
 
-    // TODO: Update values on table for currently selected user
     // Update values on table
     $('.datatable').on('change', '.chart_field', function () {
         var current_user = document.getElementById("current_user").innerHTML;  // Get currently selected user

@@ -32,9 +32,6 @@ def login():
 
 @auth.route('/admin-panel', methods=['POST', 'GET'])
 def adminPanel():
-    if not path.exists('src/' + DB_NAME):
-        db.create_all(app=app)
-
     if request.method == "POST" and request.form.get("submit") == "Logout":
         return redirect(url_for('auth.logout'))
 
@@ -43,12 +40,18 @@ def adminPanel():
         if request.method == 'POST' and request.form.get("submit") == "submit":
             username = request.form.get('username')
             password = request.form.get('password')
-
+            is_admin = request.form.get("is_admin")
             user = User.query.filter_by(username=username).first()
-            if not user:
-                new_user = User(username=username, password=generate_password_hash(password, method='sha256'), admin=False)
+            if not user and username != "" and password != "":
+                new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
+                if is_admin is not None:
+                    new_user.admin = True
+                else:
+                    new_user.admin = False
                 db.session.add(new_user)
                 db.session.commit()
+            else:
+                flash("Could not add user", "error")
         if request.method == 'POST' and request.form.get("submit") == "change_pass":
             username = request.form.get("username")
             password = request.form.get("password")

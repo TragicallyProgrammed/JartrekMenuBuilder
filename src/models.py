@@ -22,7 +22,6 @@ class Table(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     table_name = db.Column(db.String(128), index=True)
     verified = db.Column(db.Boolean())
-    items_length = db.Column(db.Integer)
     items = db.relationship('Item', backref='table', lazy='dynamic')
 
 
@@ -41,45 +40,23 @@ class Columns(db.Model):
 
     def changePriceLabels(self, arr_len, arr):
         self.labels_length = arr_len
-        if len(arr) == 8:
-            self.label1 = arr[0].strip()
-            if arr[1] is None:
-                self.label2 = ""
-            else:
-                self.label2 = arr[1].strip()
-            if arr[2] is None:
-                self.label3 = ""
-            else:
-                self.label3 = arr[2].strip()
-            if arr[3] is None:
-                self.label4 = ""
-            else:
-                self.label4 = arr[3].strip()
-            if arr[4] is None:
-                self.label5 = ""
-            else:
-                self.label5 = arr[4].strip()
-            if arr[5] is None:
-                self.label6 = ""
-            else:
-                self.label6 = arr[5].strip()
-            if arr[6] is None:
-                self.label7 = ""
-            else:
-                self.label7 = arr[6].strip()
-            if arr[7] is None:
-                self.label8 = ""
-            else:
-                self.label8 = arr[7].strip()
-        else:
-            self.label1 = ""
-            self.label2 = ""
-            self.label3 = ""
-            self.label4 = ""
-            self.label5 = ""
-            self.label6 = ""
-            self.label7 = ""
-            self.label8 = ""
+        for (index, label) in enumerate(arr):
+            if index == 0:
+                self.label1 = label
+            elif index == 1:
+                self.label2 = label
+            elif index == 2:
+                self.label3 = label
+            elif index == 3:
+                self.label4 = label
+            elif index == 4:
+                self.label5 = label
+            elif index == 5:
+                self.label6 = label
+            elif index == 6:
+                self.label7 = label
+            elif index == 7:
+                self.label8 = label
 
     def getPriceLabels(self):
         retVal = [self.label1, self.label2, self.label3, self.label4, self.label5, self.label6, self.label7,
@@ -102,48 +79,23 @@ class Item(db.Model):
     price8 = db.Column(db.Float)
 
     def change_prices(self, arr):
-        if len(arr) == 8:
-            if arr[0] is None:
-                self.price1 = 0.0
-            else:
-                self.price1 = arr[0]
-            if arr[1] is None:
-                self.price2 = 0.0
-            else:
-                self.price2 = arr[1]
-            if arr[2] is None:
-                self.price3 = 0.0
-            else:
-                self.price3 = arr[2]
-            if arr[3] is None:
-                self.price4 = 0.0
-            else:
-                self.price4 = arr[3]
-            if arr[4] is None:
-                self.price5 = 0.0
-            else:
-                self.price5 = arr[4]
-            if arr[5] is None:
-                self.price6 = 0.0
-            else:
-                self.price6 = arr[5]
-            if arr[6] is None:
-                self.price7 = 0.0
-            else:
-                self.price7 = arr[6]
-            if arr[7] is None:
-                self.price8 = 0.0
-            else:
-                self.price8 = arr[7]
-        else:
-            self.price1 = 0.00
-            self.price2 = 0.00
-            self.price3 = 0.00
-            self.price4 = 0.00
-            self.price5 = 0.00
-            self.price6 = 0.00
-            self.price7 = 0.00
-            self.price8 = 0.00
+        for (index, price) in enumerate(arr):
+            if index == 0:
+                self.price1 = price
+            elif index == 1:
+                self.price2 = price
+            elif index == 2:
+                self.price3 = price
+            elif index == 3:
+                self.price4 = price
+            elif index == 4:
+                self.price5 = price
+            elif index == 5:
+                self.price6 = price
+            elif index == 6:
+                self.price7 = price
+            elif index == 7:
+                self.price8 = price
 
     def getItemData(self):
         return [self.item_name, self.price1, self.price2, self.price3, self.price4, self.price5, self.price6,

@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, json, Response, jsonify, send_from_directory
+from flask import Blueprint, render_template, request, redirect, url_for, json, Response, jsonify, send_file
 from flask_login import login_required, current_user
 from .models import User, Table, Item, Columns
 from . import db
+import xlsxwriter
 
 views = Blueprint('views', __name__)
 
@@ -13,7 +14,6 @@ def updatedb():  # View to update the database
     table_name = data.get("tableName").strip()  # Read table name
     price_labels_length = data.get("priceLabelsLength")  # Read length of labels array
     price_labels = data.get("priceLabels")  # Read labels array
-    items_length = data.get("itemsLength")  # Read length of items array
     items = data.get("items")  # Read items array
 
     user = data.get("username")  # Read username
@@ -25,11 +25,9 @@ def updatedb():  # View to update the database
             return Response(status=500)  # Return error code 500
         db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Look for user's table by table name
         if db_table:  # If the user's table is found...
-            db_table.items_length = items_length  # Update that table's item length
             Add_Items(db_table, items)  # Add and update items
         else:  # If the user's table is not found...
             db_table = Table(user_id=db_user.get_id(), table_name=table_name)  # Create a new table with the given user's id
-            db_table.items_length = items_length  # Update items length of that table
             Add_Items(db_table, items)  # Add and update items
             db.session.add(db_table)  # Add changes to session to be committed
         db.session.commit()  # Commit all changes to the database
@@ -37,11 +35,9 @@ def updatedb():  # View to update the database
     else:  # If username is None
         db_table = Table.query.filter_by(user_id=current_user.get_id(), table_name=table_name).first()  # Search the db for table owned by currently logged-in user
         if db_table:  # If the currently logged-in user's table exists...
-            db_table.items_length = items_length  # Update that table's item length
             Add_Items(db_table, items)  # Add and update items
         else:  # If the currently logged-in user's table doesn't exist...
             db_table = Table(user_id=current_user.get_id(), table_name=table_name)  # Create new table with currently logged-in user's id and the table's name
-            db_table.items_length = items_length  # Update items length of that table
             Add_Items(db_table, items)  # Add and update Items
         db.session.commit()  # Commit all changes to the database
         Update_Columns(current_user, price_labels_length, price_labels)  # Update the given user's price labels
@@ -93,9 +89,37 @@ def removeItem():
         return Remove_Item(table_name, item_name, current_user)  # Remove the currently logged-in user's item and returns error or success code
 
 
-@views.route('export-data', methods=['POST'])
-def exportData():
-    return send_from_directory("static/exports", "test_file.csv", filename="test_file.csv", as_attachment=True)
+@views.route('download-data/<filename>', methods=['GET'])
+def downloadData(filename):  # Filename in this case is the user's username
+    xlsxFile = xlsxwriter.Workbook(f"src\\static\\exports\\{filename}.xlsx")  # Creates/Opens the xlsx file belonging to the given user
+
+    try:
+        db_user = User.query.filter_by(username=filename).first()  # Gets given user
+
+        db_columns = Columns.query.filter_by(user_id=db_user.get_id()).first()  # Gets the columns belonging to the given user
+        columns_list = db_columns.getPriceLabels()  # Get a list of the user's labels
+
+        db_table_list = Table.query.filter_by(user_id=db_user.get_id()).all()  # Gets all tables belonging to the given user
+        for table in db_table_list:  # For every table...
+            worksheet = xlsxFile.get_worksheet_by_name(table.table_name)  # Gets existing worksheet
+            if worksheet is None:  # If there is no existing worksheet...
+                worksheet = xlsxFile.add_worksheet(table.table_name)  # Create new worksheet with the name of the table
+            # Writing the column labels
+            for (index, label) in enumerate(columns_list):  # For each label in columns_list...
+                worksheet.write(0, index+1, label)  # Write at y=0, x=index (1 to length of columns list + 1), with the value of the label
+
+            db_items = Item.query.filter_by(table_id=table.id).all()  # Gets every item under the current table
+            for (y_index, item) in enumerate(db_items):  # For every index and item...
+                for (x_index, item_data) in enumerate(item.getItemData()):  # For all the data in each item...
+                    worksheet.write(1+y_index, x_index, item_data)  # Write the data to the current cell
+
+    except Exception as e:  # If any statement in the try statement fails
+        xlsxFile.close()  # Closes and saves changes to file
+        print(e)  # Print what the exception was
+        return Response("Error: " + str(e), status=500)  # Return error code with the error response
+
+    xlsxFile.close()  # Closes and saves changes to file
+    return send_file(f"static\\exports\\{filename}.xlsx", as_attachment=True)  # Returns the file to the client
 
 
 @views.route('get-users', methods=['POST'])
@@ -161,7 +185,7 @@ def Get_Items(user, table_name):
             items.append(data)  # Append to items to be returned
         return items  # Return the item list with the item's data
     else:  # If the given user's table is not found in the database ...
-        db_table = Table(user_id=current_user.get_id(), table_name=table_name, items_length=0)  # Create a new table with length 0
+        db_table = Table(user_id=current_user.get_id(), table_name=table_name)  # Create a new table with length 0
         db.session.add(db_table)  # Add changes to session to be committed
     price_labels = Get_Columns(current_user)  # Get the user's price labels
     return []  # Return empty array
