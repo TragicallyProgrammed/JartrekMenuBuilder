@@ -26,11 +26,10 @@ to the GitHub, they will be marked as complete.
 
 Charlie:
 -
-Finished with the profile's new event manager. Building admin panel's event manager now.
-It shouldn't take long, the database can be tested using the test
-user's login (user: customer; pass: test). Once the admin panel's event
-manager is done the user manager can be tested by logging in with the admin's
-credentials (user: admin; pass: test).
+All features are currently working. Currently, the admin's table is set up to be copied
+to all new users tables. We will use that profile to determine what the default database
+is going to be. The database exporter will export a xlsx file with each page being a different
+table, and therefore a different key in Jartrek.
 
 -Garrett 
 
