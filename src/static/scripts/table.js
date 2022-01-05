@@ -243,12 +243,23 @@ class Table {
         del_button.addEventListener("click", (event) => this.removeItem());
         cell0.appendChild(del_button);
 
+        var tableInstance = this;
+
         var cell1 = row.insertCell(-1);
         var item_cell = document.createElement("textarea");
         item_cell.className = "chart_field item_label";
         item_cell.placeholder = "Item";
         item_cell.maxLength = 32;
         item_cell.wrap = "hard";
+        item_cell.setAttribute("row_index", String(this.tableElement.rows.length-2));
+        item_cell.addEventListener('change', function(event){
+            event.preventDefault();
+
+            tableInstance.renameItemPrice(this.getAttribute("row_index"), this.value);
+
+            tableInstance.updateTableGraphics();
+            tableInstance.printTable();
+        });
         if(item.getLabel() !== "") {
             item_cell.value = item.getLabel();
         }
@@ -262,16 +273,22 @@ class Table {
             datas.rows = 2;
             datas.cols = 14;
             datas.maxLength = 6;
-            datas.addEventListener('keydown', function(event){
-                if(!isFinite(event.key) && event.key !== "Backspace" && event.key !== ".") {
-                    event.preventDefault()
+            datas.setAttribute("column_index", String((i-1)));
+            datas.setAttribute("row_index", String(this.tableElement.rows.length-2));
+            datas.addEventListener('change', function(event){
+                event.preventDefault();
+                if(!isFinite(event.key) && event.key !== "Backspace" && event.key !== ".") {  //TODO: Filter all characters except for integers and '.'
+                    // if it isn't what we want
                 }
+                tableInstance.changeItemPrice(this.getAttribute("column_index")-1, this.getAttribute("row_index"), this.value);
+
+                tableInstance.updateTableGraphics();
+                tableInstance.printTable();
             });
 
             if(i-2 < item.getPricesLength()) {
                 datas.value = item.getPrices()[i-2];
             }
-
             celli.appendChild(datas);
         }
     }
@@ -280,11 +297,13 @@ class Table {
     removeColumn(index) {
         for(var i = index; i < this.colLen; i++) {
             if(i < this.colLen-1){
-                this.priceLabels[i].value = this.priceLabels[i+1].value;
+                console.log("i: ", i);
+                console.log(this.priceLabels[Number(i)+Number(1)].value);
+                this.priceLabels[i].value = this.priceLabels[Number(i)+Number(1)].value;
                 this.labels[i] = this.priceLabels[i].value;
                 for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[i+2];
-                    var next_column_cell = this.tableElement.rows[j].cells[i+3];
+                    var cell = this.tableElement.rows[j].cells[Number(i)+Number(2)];
+                    var next_column_cell = this.tableElement.rows[j].cells[Number(i)+Number(3)];
                     cell.firstChild.value = next_column_cell.firstChild.value;
                 }
             } else {
@@ -292,7 +311,7 @@ class Table {
                 this.labels[i] = this.priceLabels[i].value;
                 this.priceLabelColumns[i].setAttribute("enabled", false);
                 for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[i+2];
+                    var cell = this.tableElement.rows[j].cells[Number(i) + Number(2)];
                     cell.firstChild.value = "";
                 }
             }
@@ -358,6 +377,7 @@ class Table {
         this.priceLabels[0] = document.createElement("label");
         this.priceLabels[0].innerHTML = "Regular";
 
+        var tableInstance = this;
         for(var i = 1; i < 8; i++) {
             this.priceLabelColumns[i] = document.createElement("th");
             this.priceLabelColumns[i].setAttribute("enabled", "false");
@@ -368,6 +388,15 @@ class Table {
             this.priceLabels[i].maxLength = "14";
             this.priceLabels[i].rows = 1;
             this.priceLabels[i].cols = 14;
+            this.priceLabels[i].setAttribute("column_index", String(i));
+            this.priceLabels[i].addEventListener('change', function(event){
+                event.preventDefault();
+
+                tableInstance.renamePriceLabel(this.getAttribute("column_index"), this.value);
+
+                tableInstance.updateTableGraphics();
+                tableInstance.printTable();
+            });
         }
     }
 

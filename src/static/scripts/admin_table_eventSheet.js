@@ -19,13 +19,13 @@ $(function() {
     });
 
     // Update values on table
-    $('.datatable').on('change', '.chart_field', function () {
+    $('#right_content_container').on('change', '.chart_field', function () {
         var current_user = document.getElementById("current_user").innerHTML;  // Get currently selected user
         tableInstance.uploadTable(current_user); // Uploads the table after changing a value
     });
 
-    // Update values on table when clicking 'Done' TODO: Visualize upload
-    $('#done').click(function (e) {
+    // Update values on table when clicking 'Done'
+    $('#done').on('click', function (e) {
         e.preventDefault();  // Prevent default behavior for buttons
         var current_user = document.getElementById("current_user").innerHTML;  // Get currently selected user
         tableInstance.uploadTable(current_user); // Uploads the table after changing a value

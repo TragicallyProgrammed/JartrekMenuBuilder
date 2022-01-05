@@ -16,12 +16,12 @@ $(function() {
     });
 
     // Update values on table
-    $('.datatable').on('change', '.chart_field', function () {
+    $('.tab-container').on('change', '.chart_field', function () {
         tableInstance.uploadTable(); // Uploads the table after changing a value
     });
 
-    // Update values on table when clicking 'Done' TODO: Visualize upload
-    $('#done').click(function (e) {
+    // Update values on table when clicking 'Done'
+    $('#done').on('click', function (e) {
         e.preventDefault();  // Prevent default behavior for buttons
         tableInstance.uploadTable(); // Uploads the table after changing a value
     });

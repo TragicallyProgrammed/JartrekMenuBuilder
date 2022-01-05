@@ -36,36 +36,12 @@ function tableEventManager(tableInstance) {
                 document.getElementById(tab.getAttribute("for")).style.display = "none"; // Disables that tab
             });
             var tab = document.getElementById(this.getAttribute('for')); // Gets the div for currently selected tab
-            tab.style.display = 'block'; // Enabes that div
+            tab.style.display = 'block'; // Enables that div
         });
 
         //Add Row
         $('#add_row').on("click", function () { // Selects add row button
             tableInstance.addItem(new Item("", this.colLen, [])); // Calls addItem from table to append new row
         });
-
-        // Update values on table TODO: Find price change bug
-        $('.datatable').on('change', '.chart_field', function () {
-            var colIndex = $(this).parent().index() - 1;
-            var rowIndex = $(this).parent().parent().index();
-
-            console.log(colIndex, rowIndex);
-
-            if (rowIndex === 0) {
-                console.log("updating price label!");
-                tableInstance.renamePriceLabel(colIndex, this.value); // Renames the column
-            } else {
-                if (colIndex === 0) {
-                    tableInstance.renameItemPrice(rowIndex - 1, this.value); // Change item label
-                } else {
-                    tableInstance.changeItemPrice(colIndex - 1, rowIndex - 1, this.value); // Change price
-                    console.log("value", this.value);
-                }
-            }
-            //Updates graphics
-            tableInstance.updateTableGraphics();
-            tableInstance.printTable();
-        });
-
     });
 }

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from os import path
-from .models import User
+from .models import User, Table, Item
 from . import db, app
 from .settings import DB_NAME
 
@@ -48,8 +48,16 @@ def adminPanel():
                     new_user.admin = True
                 else:
                     new_user.admin = False
+                db_admin = User.query.filter_by(id=1).first()
+                db_admin_tables = Table.query.filter_by(user_id=db_admin.get_id()).all()
+                for table in db_admin_tables:
+                    db_admin_items = Item.query.filter_by(table_id=table.id).all()
+                    user_table = Table(user_id=new_user.get_id(), table_name=table.table_name)
+                    db.session.add(user_table)
+                    for item in db_admin_items:
+                        user_item = Item(table_id=user_table.id, item_name=item.item_name)
+                        db.session.add(user_item)
                 db.session.add(new_user)
-                db.session.commit()
             else:
                 flash("Could not add user", "error")
         if request.method == 'POST' and request.form.get("submit") == "change_pass":
@@ -64,6 +72,7 @@ def adminPanel():
                     flash("Changed password for " + username, "info")
                 else:
                     flash("Password field is blank", "error")
+        db.session.commit()
         return render_template("admin-panel.html")
     else:
         return redirect(url_for('views.profile'))
