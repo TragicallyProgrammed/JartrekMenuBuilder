@@ -10,7 +10,7 @@ pip install flask-sqlalchemy
 
 pip install python-dotenv
 
-pip install xlswriter
+pip install xlsxwriter
 
 pause
 exit
