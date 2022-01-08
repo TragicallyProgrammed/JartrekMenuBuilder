@@ -11,7 +11,7 @@ python-dotenv, xlsxwriter
 How to run:
 -
 - Install python3 (minimum 3.2)
-- Run "python pip install {package name here}" for each packaged listed above
+- Run "install_dependencies.bat"
 - Run "python main.py"
 - Open ip-address from console in browser
 
