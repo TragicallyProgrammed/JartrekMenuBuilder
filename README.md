@@ -12,7 +12,7 @@ How to run:
 -
 - Install python3 (minimum 3.2)
 - Run "install_dependencies.bat"
-- Run "python main.py"
+- Run "main.py"
 - Open ip-address from console in browser
 
 Submitting Issues:
