@@ -3,6 +3,7 @@ from . import db
 
 
 class User(db.Model, UserMixin):
+    """Class to define a model for the user table"""
     id = db.Column(db.Integer, unique=True, primary_key=True)
     username = db.Column(db.String(128), unique=True, index=True)
     password = db.Column(db.String(128))
@@ -18,6 +19,7 @@ class User(db.Model, UserMixin):
 
 
 class Table(db.Model):
+    """Class to define a menu table"""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     table_name = db.Column(db.String(128), index=True)
@@ -26,6 +28,7 @@ class Table(db.Model):
 
 
 class Columns(db.Model):
+    """Class to define the price levels for a user"""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     labels_length = db.Column(db.Integer)
@@ -66,6 +69,7 @@ class Columns(db.Model):
 
 
 class Item(db.Model):
+    """Class to define an item within the database"""
     id = db.Column(db.Integer, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), index=True)
     item_name = db.Column(db.String(64), index=True)

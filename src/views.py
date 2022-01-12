@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, json, Response, jsonify, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, json, Response, jsonify, send_file, flash
 from flask_login import login_required, current_user
 from .models import User, Table, Item, Columns
 from . import db
@@ -9,88 +9,105 @@ views = Blueprint('views', __name__)
 
 @views.route('updatedb', methods=['POST'])
 def updatedb():  # View to update the database
-    data = json.loads(request.data)  # Get JSON data from server request
+    """Endpoint to update the database with submitted data"""
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
 
-    table_name = data.get("tableName").strip()  # Read table name
-    price_labels_length = data.get("priceLabelsLength")  # Read length of labels array
-    price_labels = data.get("priceLabels")  # Read labels array
-    items = data.get("items")  # Read items array
+        table_name = data.get("tableName").strip()  # Read table name
+        price_labels_length = data.get("priceLabelsLength")  # Read length of labels array
+        price_labels = data.get("priceLabels")  # Read labels array
+        items = data.get("items")  # Read items array
 
-    user = data.get("username")  # Read username
-    if user is not None:  # If username is not None
-        user.strip()  # Strip username of excess white space
+        user = data.get("username")  # Read username
+        if user is not None:  # If username is not None
+            user.strip()  # Strip username of excess white space
 
-        db_user = User.query.filter_by(username=user).first()  # Search the db for that user
-        if not db_user:  # If username could not be found in database, then...
-            return Response(status=500)  # Return error code 500
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Look for user's table by table name
-        if db_table:  # If the user's table is found...
-            Add_Items(db_table, items)  # Add and update items
-        else:  # If the user's table is not found...
-            db_table = Table(user_id=db_user.get_id(), table_name=table_name)  # Create a new table with the given user's id
-            Add_Items(db_table, items)  # Add and update items
-            db.session.add(db_table)  # Add changes to session to be committed
-        db.session.commit()  # Commit all changes to the database
-        Update_Columns(db_user, price_labels_length, price_labels)  # Update the given user's price labels
-    else:  # If username is None
-        db_table = Table.query.filter_by(user_id=current_user.get_id(), table_name=table_name).first()  # Search the db for table owned by currently logged-in user
-        if db_table:  # If the currently logged-in user's table exists...
-            Add_Items(db_table, items)  # Add and update items
-        else:  # If the currently logged-in user's table doesn't exist...
-            db_table = Table(user_id=current_user.get_id(), table_name=table_name)  # Create new table with currently logged-in user's id and the table's name
-            Add_Items(db_table, items)  # Add and update Items
-        db.session.commit()  # Commit all changes to the database
-        Update_Columns(current_user, price_labels_length, price_labels)  # Update the given user's price labels
+            db_user = User.query.filter_by(username=user).first()  # Search the db for that user
+            if not db_user:  # If username could not be found in database, then...
+                return Response(status=500)  # Return error code 500
+            db_table = Table.query.filter_by(user_id=db_user.get_id(),
+                                             table_name=table_name).first()  # Look for user's table by table name
+            if db_table:  # If the user's table is found...
+                Add_Items(db_table, items)  # Add and update items
+            else:  # If the user's table is not found...
+                db_table = Table(user_id=db_user.get_id(), table_name=table_name)  # Create a new table with the given user's id
+                Add_Items(db_table, items)  # Add and update items
+                db.session.add(db_table)  # Add changes to session to be committed
+            db.session.commit()  # Commit all changes to the database
+            Update_Columns(db_user, price_labels_length, price_labels)  # Update the given user's price labels
+        else:  # If username is None
+            db_table = Table.query.filter_by(user_id=current_user.get_id(), table_name=table_name).first()  # Search the db for table owned by currently logged-in user
+            if db_table:  # If the currently logged-in user's table exists...
+                Add_Items(db_table, items)  # Add and update items
+            else:  # If the currently logged-in user's table doesn't exist...
+                db_table = Table(user_id=current_user.get_id(), table_name=table_name)  # Create new table with currently logged-in user's id and the table's name
+                Add_Items(db_table, items)  # Add and update Items
+            db.session.commit()  # Commit all changes to the database
+            Update_Columns(current_user, price_labels_length, price_labels)  # Update the given user's price labels
 
-    db.session.commit()  # commit changes to database
-    return Response(status=200)  # Return success code
+        db.session.commit()  # commit changes to database
+        return Response(status=200)  # Return success code
+    except Exception as e:  # Catch all exception
+        print("Exception in updatedb: ", e)
+        return Response(status=500)
 
 
 @views.route('getdb', methods=['POST'])
 def getdb():
-    data = json.loads(request.data)  # Get JSON data from server request
+    """Endpoint to send data from database to client"""
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
 
-    table_name = data.get("tableName").strip()  # Read the table name from JSON data
+        table_name = data.get("tableName").strip()  # Read the table name from JSON data
 
-    user = data.get("username")  # Read the given username from JSON data
-    if user is not None:  # If the username is not none...
-        user.strip()  # strips the username of any excess whitespace
+        user = data.get("username")  # Read the given username from JSON data
+        if user is not None:  # If the username is not none...
+            user.strip()  # strips the username of any excess whitespace
 
-        db_user = User.query.filter_by(username=user).first()  # Searches for the given user in the database
-        if db_user:  # If the given user is found in the database...
-            items = Get_Items(db_user, table_name)  # Get a list of the given user's items
-            price_labels = Get_Columns(db_user)  # Get the user's price labels
-        else:  # If the given user is not found in the database...
-            return Response(status=500)  # Return error code
-    else:  # If the username is none...
-        items = Get_Items(current_user, table_name)  # Get a list of the currently logged-in user's items
-        price_labels = Get_Columns(current_user)  # Get the user's price labels
+            db_user = User.query.filter_by(username=user).first()  # Searches for the given user in the database
+            if db_user:  # If the given user is found in the database...
+                items = Get_Items(db_user, table_name)  # Get a list of the given user's items
+                price_labels = Get_Columns(db_user)  # Get the user's price labels
+            else:  # If the given user is not found in the database...
+                return Response(status=500)  # Return error code
+        else:  # If the username is none...
+            items = Get_Items(current_user, table_name)  # Get a list of the currently logged-in user's items
+            price_labels = Get_Columns(current_user)  # Get the user's price labels
 
-    db.session.commit()  # Commit changes to database
-    return jsonify(price_labels=price_labels, items=items), 200  # Returns the list of price labels and items with a success code
+        db.session.commit()  # Commit changes to database
+        return jsonify(price_labels=price_labels, items=items), 200  # Returns the list of price labels and items with a success code
+    except Exception as e:
+        print("Exception in getdb: ", e)
+        return Response(status=200)
 
 
 @views.route('remove_item', methods=['POST'])
 def removeItem():
-    data = json.loads(request.data)  # Get JSON data from server request
+    """Endpoint to remove given item"""
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
 
-    table_name = data.get("tableName").strip()  # Read table name from JSON data
-    item_name = data.get("itemName").strip()  # Read to be deleted item's name from JSON data
+        table_name = data.get("tableName").strip()  # Read table name from JSON data
+        item_name = data.get("itemName").strip()  # Read to be deleted item's name from JSON data
 
-    user = data.get("username")  # Read the username from JSON data
-    if user is not None:  # If the username is not none...
-        user.strip()  # Strips the username of any excess whitespace
-        db_user = User.query.filter_by(username=user).first()  # Searches the database for the given user
-        if db_user:  # If the user is found in the database...
-            return Remove_Item(table_name, item_name, db_user)  # Remove the given user's item and returns error or success code
-        else:  # If the user is not found in the database...
-            return Response(status=500)  # Return error code
-    else:  # If the username is None...
-        return Remove_Item(table_name, item_name, current_user)  # Remove the currently logged-in user's item and returns error or success code
+        user = data.get("username")  # Read the username from JSON data
+        if user is not None:  # If the username is not none...
+            user.strip()  # Strips the username of any excess whitespace
+            db_user = User.query.filter_by(username=user).first()  # Searches the database for the given user
+            if db_user:  # If the user is found in the database...
+                return Remove_Item(table_name, item_name, db_user)  # Remove the given user's item and returns error or success code
+            else:  # If the user is not found in the database...
+                return Response(status=500)  # Return error code
+        else:  # If the username is None...
+            return Remove_Item(table_name, item_name, current_user)  # Remove the currently logged-in user's item and returns error or success code
+    except Exception as e:
+        print("Exception in remove_item: ", e)
+        return Response(status=500)
 
 
 @views.route('download-data/<filename>', methods=['GET'])
 def downloadData(filename):  # Filename in this case is the user's username
+    """Endpoint to download specified user's table in xlsx sheet"""
     xlsxFile = xlsxwriter.Workbook(f"src\\static\\exports\\{filename}.xlsx")  # Creates/Opens the xlsx file belonging to the given user
 
     try:
@@ -113,10 +130,17 @@ def downloadData(filename):  # Filename in this case is the user's username
                 for (x_index, item_data) in enumerate(item.getItemData()):  # For all the data in each item...
                     worksheet.write(1+y_index, x_index, item_data)  # Write the data to the current cell
 
+    except AttributeError as e:
+        xlsxFile.close()  # Closes and saves changes to file
+        flash("Could not find one or more tables!", "error")  # Alerts client that the tables could not be found
+        print("Could Not Find One Or More Tables While Downloading xlsx File")  # Prints to console that there was an error
+        print("Error: ", e)  # Prints the error
+        return Response(status=500)  # Return error code with the error response
+
     except Exception as e:  # If any statement in the try statement fails
         xlsxFile.close()  # Closes and saves changes to file
         print(e)  # Print what the exception was
-        return Response("Error: " + str(e), status=500)  # Return error code with the error response
+        return Response(str(e), status=500)  # Return error code with the error response
 
     xlsxFile.close()  # Closes and saves changes to file
     return send_file(f"static\\exports\\{filename}.xlsx", as_attachment=True)  # Returns the file to the client
@@ -124,6 +148,7 @@ def downloadData(filename):  # Filename in this case is the user's username
 
 @views.route('get-users', methods=['POST'])
 def getUsers():
+    """Endpoint to get all users from database and send to client"""
     users = User.query.all()
     user_list = []
     for user in users:
@@ -134,6 +159,7 @@ def getUsers():
 @views.route('profile', methods=['POST', 'GET'])
 @login_required
 def profile():
+    """Endpoint to load profile page"""
     if request.method == "POST" and request.form.get("submit") == "Logout":
         return redirect(url_for('auth.logout'))
     return render_template("profile.html", username=current_user.username)
