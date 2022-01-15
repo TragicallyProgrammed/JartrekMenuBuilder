@@ -11,6 +11,13 @@ function tableEventManager(tableInstance) {
         food_div.checked = false;
         drink_div.checked = true;
 
+
+        // Start with beer
+        tableInstance.loadTable("tab-content-1"); // Load table under beer tab
+        $('input[name="tab-group"]:not(:checked)').each(function(index, item) { // Select every tab not currently selected
+            document.getElementById(item.getAttribute("for")).style.display = 'none'; // Disable it
+        });
+
         /* EVENTS */
         // Select 'Drinks'
         $('#drink').change(function () {
@@ -27,21 +34,6 @@ function tableEventManager(tableInstance) {
 
             lastDrinkTab = $('input[name="tab-group"]:checked'); // Saves previously selected tab under drink div
             lastFoodTab.prop("checked", true).change(); // enables previously selected tab under food div
-        });
-
-        //On tab change
-        $('input[name="tab-group"]').change(function () { // Selecting all tabs and looking for them to change
-            //Display current tab
-            $('input[name="tab-group"]:not(:checked)').each(function (index, tab) { // Selects all tabs not selected
-                document.getElementById(tab.getAttribute("for")).style.display = "none"; // Disables that tab
-            });
-            var tab = document.getElementById(this.getAttribute('for')); // Gets the div for currently selected tab
-            tab.style.display = 'block'; // Enables that div
-        });
-
-        //Add Row
-        $('#add_row').on("click", function () { // Selects add row button
-            tableInstance.addItem(new Item("", this.colLen, [])); // Calls addItem from table to append new row
         });
     });
 }

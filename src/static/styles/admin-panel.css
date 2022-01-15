@@ -3,6 +3,7 @@
     flex-direction: row;
     flex-wrap: nowrap;
     margin: 5px;
+    overflow: hidden;
 }
 #logout {
     font-size: 1.2rem;
@@ -10,6 +11,7 @@
 #left_content_container {
     display: flex;
     flex-direction: column;
+    flex: 0 1 auto;
 }
 #right_content_container {
     height: 100%;
@@ -45,7 +47,7 @@
     border-radius: 3px;
     border: groove;
     font-size: 1.5rem;
-    overflow-y: hidden;
+    overflow: auto;
 }
 #current_user_label {
     width: fit-content;
@@ -73,6 +75,10 @@
 }
 
 /*User Table Formatting*/
+#user_table_container {
+    overflow: auto;
+    flex: 1 1 auto;
+}
 table.user_table, th.user_table, td.user_table {
     border-collapse: collapse;
     text-align: center;

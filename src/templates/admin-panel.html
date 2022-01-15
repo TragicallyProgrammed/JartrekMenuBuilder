@@ -4,7 +4,6 @@
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles/admin-panel.css')}}">
 <script src="{{ url_for('static', filename='scripts/admin_table_eventSheet.js') }}"></script>
-<script src="{{ url_for('static', filename='scripts/user_manager.js') }}"></script>
 {% endblock %}
 
 {% block header %}
@@ -15,14 +14,15 @@
 <div id="left_content_container">
     <div id="user_manager_container">
         <div style="border-bottom: 2px solid black; width: 100%; text-align: center;"><label>Users</label></div>
-            <table id="user_table_container" class="user_table">
-                <tr>
-                    <th>Username</th>
-                    <th>Change<br>Password</th>
-                    <th>Export Table</th>
-                    <th>View Table</th>
-                </tr>
-            </table>
+        <table id="user_table_container" class="user_table">
+            <tr>
+                <th>Delete<br>User</th>
+                <th>Username</th>
+                <th>Change<br>Password</th>
+                <th>Export Table</th>
+                <th>View Table</th>
+            </tr>
+        </table>
     </div>
     <div id="add_user-panel">
         <form id="add_user_container" method="POST">
@@ -43,7 +43,7 @@
     </div>
 </div>
 <div id="right_content_container">
-    <label id="current_user_label">Currently viewing: <label id="current_user">admin</label></label>
+    <label id="current_user_label">Currently viewing: <label id="current_user">{{username}}</label></label>
     {% include "datatable.html" %}
 </div>
 {% endblock %}

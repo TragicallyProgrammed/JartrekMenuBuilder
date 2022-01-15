@@ -1,7 +1,8 @@
 /*TABLE CLASSES*/
 class Table {
     /*CONSTRUCTOR*/
-    constructor(tableName = "", colLen = 1, labels = new Array(8), items = []) {
+    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = []) {
+        this.current_user = current_user;
         this.tableName = tableName;
         this.colLen = colLen;
         this.labels = labels;
@@ -9,6 +10,7 @@ class Table {
         this.parentElementID = null;
 
         //Table Template Elements
+        this.html_tabs = document.getElementsByClassName("tab_group");
         this.tableContainer = null;
         this.tableElement = null;
         this.headerRow = null;
@@ -19,14 +21,38 @@ class Table {
 
         this.generateNewHTMLTable();
 
-        //Table Structure
+        // Generate Table Structure
         this.structureHTMLTable();
 
-        //Load label array
+        //Load default label array
         this.labels[0] = "Regular";
 
-        //Update graphics
-        this.updateTableGraphics();
+        //Static Table Events
+        //Change tabs
+        var tableInstance = this;
+        $('input[name="tab-group"]').change(function () { // Selecting all tabs and looking for them to change
+            console.log("Tab Changed!")
+            //Display current tab
+            $('input[name="tab-group"]:not(:checked)').each(function (index, tab) { // Selects all tabs not selected
+                document.getElementById(tab.getAttribute("for")).style.display = "none"; // Disables that tab
+            });
+            var tab = document.getElementById(this.getAttribute('for')); // Gets the div for currently selected tab
+            tab.style.display = 'block'; // Enables that div
+
+            tableInstance.uploadTable();
+            tableInstance.loadTable($(this).attr("for"));
+        });
+
+        //Add row
+        $('#add_row').on("click", function () { // Selects add row button
+            tableInstance.addItem(new Item("", this.colLen, [])); // Calls addItem from table to append new row
+        });
+
+        // Update values on table when clicking 'Done'
+        $('#done').on('click', function (e) {
+            e.preventDefault();  // Prevent default behavior for buttons
+            tableInstance.uploadTable(); // Uploads the table after changing a value
+        });
     }
     /*CONSTRUCTOR*/
 
@@ -45,6 +71,12 @@ class Table {
             ret.push(dict);
         }
         return ret;
+    }
+    getCurrentUser() {
+        return this.current_user;
+    }
+    changeCurrentUser(username) {
+        this.current_user = username;
     }
 
     //Changes the label of an existing price column
@@ -89,7 +121,7 @@ class Table {
     }
 
     //Removes a row
-    removeItem(username=null) {
+    removeItem() {
         if (this.items.length > 1) {
             // Path syntax is such to be compatible with firefox
             var path = event.path || (event.composedPath && event.composedPath());
@@ -98,7 +130,7 @@ class Table {
                 $.ajax({
                     contentType: 'json',
                     data: JSON.stringify({
-                        'username': username,
+                        'username': this.current_user,
                         'tableName': this.tableName,
                         'itemName': this.getItems()[path[2].rowIndex - 1].label
                     }),
@@ -122,11 +154,11 @@ class Table {
     }
 
     //Uploads table to database
-    uploadTable(username=null) {
+    uploadTable() {
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
-                'username': username,
+                'username': this.current_user,
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
                 'priceLabels': this.labels,
@@ -138,13 +170,13 @@ class Table {
     }
 
     //Downloads table from database
-    downloadTable(username = null) {
-        console.log("Downloading table with user: " + username)
+    downloadTable() {
+        console.log("Downloading table with user: " + this.current_user)
         var table_instance = this;  // Get current instance of the class
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
-                'username': username,
+                'username': this.current_user,
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
                 'priceLabels': this.getPriceLabels(),
@@ -181,8 +213,8 @@ class Table {
     }
 
     //Clears the table, places it under the specified HTML element, and loads data from server-side database
-    loadTable(tabID, username = null) {
-        console.log("loading table with user: " + username)
+    loadTable(tabID) {
+        console.log("loading table with user: " + this.current_user)
         //Place on document
         if (this.parentElementID != null) {
             this.clearTable();
@@ -199,7 +231,7 @@ class Table {
             }
         }
         //get table data from database
-        this.downloadTable(username);
+        this.downloadTable(this.current_user);
         this.updateTableGraphics();
     }
 
@@ -221,6 +253,7 @@ class Table {
 
     //Prints the table to the console
     printTable() {
+        console.log("Username: " + this.current_user);
         console.log(this.tableName);
         console.log("Num Columns: " + this.colLen);
         console.log("Num Rows: " + this.items.length);
@@ -258,6 +291,9 @@ class Table {
             tableInstance.renameItemPrice(this.getAttribute("row_index"), this.value);
 
             tableInstance.updateTableGraphics();
+
+            tableInstance.uploadTable(tableInstance.getCurrentUser());
+
             tableInstance.printTable();
         });
         if(item.getLabel() !== "") {
@@ -283,6 +319,9 @@ class Table {
                 tableInstance.changeItemPrice(this.getAttribute("column_index")-1, this.getAttribute("row_index"), this.value);
 
                 tableInstance.updateTableGraphics();
+
+                tableInstance.uploadTable(tableInstance.getCurrentUser());
+
                 tableInstance.printTable();
             });
 
@@ -395,6 +434,9 @@ class Table {
                 tableInstance.renamePriceLabel(this.getAttribute("column_index"), this.value);
 
                 tableInstance.updateTableGraphics();
+
+                tableInstance.uploadTable(tableInstance.getCurrentUser());
+
                 tableInstance.printTable();
             });
         }
@@ -415,6 +457,10 @@ class Table {
         }
     }
     /*HTML TABLE HELPERS*/
+
+    /*CONTROL PANEL BUTTON EVENTS*/
+
+    /*CONTROL PANEL BUTTON EVENTS*/
 }
 
 /*ITEM CLASS*/

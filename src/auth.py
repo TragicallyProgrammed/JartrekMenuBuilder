@@ -91,7 +91,7 @@ def adminPanel():
     except Exception as e:  # Catch all exception
         print("Exception: ", e)  #
 
-    return render_template("admin-panel.html")  # If the request is not post, return the page
+    return render_template("admin-panel.html", username=current_user.username)  # If the request is not post, return the page
 
 
 @auth.route('logout')

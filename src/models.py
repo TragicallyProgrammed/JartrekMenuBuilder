@@ -43,6 +43,14 @@ class Columns(db.Model):
 
     def changePriceLabels(self, arr_len, arr):
         self.labels_length = arr_len
+        self.label1 = None
+        self.label2 = None
+        self.label3 = None
+        self.label4 = None
+        self.label5 = None
+        self.label6 = None
+        self.label7 = None
+        self.label8 = None
         for (index, label) in enumerate(arr):
             if index == 0:
                 self.label1 = label
@@ -83,6 +91,14 @@ class Item(db.Model):
     price8 = db.Column(db.Float)
 
     def change_prices(self, arr):
+        self.price1 = None
+        self.price2 = None
+        self.price3 = None
+        self.price4 = None
+        self.price5 = None
+        self.price6 = None
+        self.price7 = None
+        self.price8 = None
         for (index, price) in enumerate(arr):
             if index == 0:
                 self.price1 = price
