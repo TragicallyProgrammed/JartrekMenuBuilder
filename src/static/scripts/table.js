@@ -1,7 +1,8 @@
 /*TABLE CLASSES*/
 class Table {
     /*CONSTRUCTOR*/
-    constructor(tableName = "", colLen = 1, labels = new Array(8), items = []) {
+    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = []) {
+        this.current_user = current_user;
         this.tableName = tableName;
         this.colLen = colLen;
         this.labels = labels;
@@ -9,6 +10,7 @@ class Table {
         this.parentElementID = null;
 
         //Table Template Elements
+        this.html_tabs = document.getElementsByClassName("tab_group");
         this.tableContainer = null;
         this.tableElement = null;
         this.headerRow = null;
@@ -19,14 +21,38 @@ class Table {
 
         this.generateNewHTMLTable();
 
-        //Table Structure
+        // Generate Table Structure
         this.structureHTMLTable();
 
-        //Load label array
+        //Load default label array
         this.labels[0] = "Regular";
 
-        //Update graphics
-        this.updateTableGraphics();
+        //Static Table Events
+        //Change tabs
+        var tableInstance = this;
+        $('input[name="tab-group"]').change(function () { // Selecting all tabs and looking for them to change
+            console.log("Tab Changed!")
+            //Display current tab
+            $('input[name="tab-group"]:not(:checked)').each(function (index, tab) { // Selects all tabs not selected
+                document.getElementById(tab.getAttribute("for")).style.display = "none"; // Disables that tab
+            });
+            var tab = document.getElementById(this.getAttribute('for')); // Gets the div for currently selected tab
+            tab.style.display = 'block'; // Enables that div
+
+            tableInstance.uploadTable();
+            tableInstance.loadTable($(this).attr("for"));
+        });
+
+        //Add row
+        $('#add_row').on("click", function () { // Selects add row button
+            tableInstance.addItem(new Item("", this.colLen, [])); // Calls addItem from table to append new row
+        });
+
+        // Update values on table when clicking 'Done'
+        $('#done').on('click', function (e) {
+            e.preventDefault();  // Prevent default behavior for buttons
+            tableInstance.uploadTable(); // Uploads the table after changing a value
+        });
     }
     /*CONSTRUCTOR*/
 
@@ -45,6 +71,12 @@ class Table {
             ret.push(dict);
         }
         return ret;
+    }
+    getCurrentUser() {
+        return this.current_user;
+    }
+    changeCurrentUser(username) {
+        this.current_user = username;
     }
 
     //Changes the label of an existing price column
@@ -89,7 +121,7 @@ class Table {
     }
 
     //Removes a row
-    removeItem(username=null) {
+    removeItem() {
         if (this.items.length > 1) {
             // Path syntax is such to be compatible with firefox
             var path = event.path || (event.composedPath && event.composedPath());
@@ -98,7 +130,7 @@ class Table {
                 $.ajax({
                     contentType: 'json',
                     data: JSON.stringify({
-                        'username': username,
+                        'username': this.current_user,
                         'tableName': this.tableName,
                         'itemName': this.getItems()[path[2].rowIndex - 1].label
                     }),
@@ -122,11 +154,11 @@ class Table {
     }
 
     //Uploads table to database
-    uploadTable(username=null) {
+    uploadTable() {
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
-                'username': username,
+                'username': this.current_user,
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
                 'priceLabels': this.labels,
@@ -138,13 +170,13 @@ class Table {
     }
 
     //Downloads table from database
-    downloadTable(username = null) {
-        console.log("Downloading table with user: " + username)
+    downloadTable() {
+        console.log("Downloading table with user: " + this.current_user)
         var table_instance = this;  // Get current instance of the class
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
-                'username': username,
+                'username': this.current_user,
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
                 'priceLabels': this.getPriceLabels(),
@@ -181,8 +213,8 @@ class Table {
     }
 
     //Clears the table, places it under the specified HTML element, and loads data from server-side database
-    loadTable(tabID, username = null) {
-        console.log("loading table with user: " + username)
+    loadTable(tabID) {
+        console.log("loading table with user: " + this.current_user)
         //Place on document
         if (this.parentElementID != null) {
             this.clearTable();
@@ -199,7 +231,7 @@ class Table {
             }
         }
         //get table data from database
-        this.downloadTable(username);
+        this.downloadTable(this.current_user);
         this.updateTableGraphics();
     }
 
@@ -221,6 +253,7 @@ class Table {
 
     //Prints the table to the console
     printTable() {
+        console.log("Username: " + this.current_user);
         console.log(this.tableName);
         console.log("Num Columns: " + this.colLen);
         console.log("Num Rows: " + this.items.length);
@@ -243,12 +276,26 @@ class Table {
         del_button.addEventListener("click", (event) => this.removeItem());
         cell0.appendChild(del_button);
 
+        var tableInstance = this;
+
         var cell1 = row.insertCell(-1);
         var item_cell = document.createElement("textarea");
         item_cell.className = "chart_field item_label";
         item_cell.placeholder = "Item";
         item_cell.maxLength = 32;
         item_cell.wrap = "hard";
+        item_cell.setAttribute("row_index", String(this.tableElement.rows.length-2));
+        item_cell.addEventListener('change', function(event){
+            event.preventDefault();
+
+            tableInstance.renameItemPrice(this.getAttribute("row_index"), this.value);
+
+            tableInstance.updateTableGraphics();
+
+            tableInstance.uploadTable(tableInstance.getCurrentUser());
+
+            tableInstance.printTable();
+        });
         if(item.getLabel() !== "") {
             item_cell.value = item.getLabel();
         }
@@ -262,16 +309,25 @@ class Table {
             datas.rows = 2;
             datas.cols = 14;
             datas.maxLength = 6;
-            datas.addEventListener('keydown', function(event){
-                if(!isFinite(event.key) && event.key !== "Backspace" && event.key !== ".") {
-                    event.preventDefault()
+            datas.setAttribute("column_index", String((i-1)));
+            datas.setAttribute("row_index", String(this.tableElement.rows.length-2));
+            datas.addEventListener('change', function(event){
+                event.preventDefault();
+                if(!isFinite(event.key) && event.key !== "Backspace" && event.key !== ".") {  //TODO: Filter all characters except for integers and '.'
+                    // if it isn't what we want
                 }
+                tableInstance.changeItemPrice(this.getAttribute("column_index")-1, this.getAttribute("row_index"), this.value);
+
+                tableInstance.updateTableGraphics();
+
+                tableInstance.uploadTable(tableInstance.getCurrentUser());
+
+                tableInstance.printTable();
             });
 
             if(i-2 < item.getPricesLength()) {
                 datas.value = item.getPrices()[i-2];
             }
-
             celli.appendChild(datas);
         }
     }
@@ -280,11 +336,13 @@ class Table {
     removeColumn(index) {
         for(var i = index; i < this.colLen; i++) {
             if(i < this.colLen-1){
-                this.priceLabels[i].value = this.priceLabels[i+1].value;
+                console.log("i: ", i);
+                console.log(this.priceLabels[Number(i)+Number(1)].value);
+                this.priceLabels[i].value = this.priceLabels[Number(i)+Number(1)].value;
                 this.labels[i] = this.priceLabels[i].value;
                 for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[i+2];
-                    var next_column_cell = this.tableElement.rows[j].cells[i+3];
+                    var cell = this.tableElement.rows[j].cells[Number(i)+Number(2)];
+                    var next_column_cell = this.tableElement.rows[j].cells[Number(i)+Number(3)];
                     cell.firstChild.value = next_column_cell.firstChild.value;
                 }
             } else {
@@ -292,7 +350,7 @@ class Table {
                 this.labels[i] = this.priceLabels[i].value;
                 this.priceLabelColumns[i].setAttribute("enabled", false);
                 for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[i+2];
+                    var cell = this.tableElement.rows[j].cells[Number(i) + Number(2)];
                     cell.firstChild.value = "";
                 }
             }
@@ -358,6 +416,7 @@ class Table {
         this.priceLabels[0] = document.createElement("label");
         this.priceLabels[0].innerHTML = "Regular";
 
+        var tableInstance = this;
         for(var i = 1; i < 8; i++) {
             this.priceLabelColumns[i] = document.createElement("th");
             this.priceLabelColumns[i].setAttribute("enabled", "false");
@@ -368,6 +427,18 @@ class Table {
             this.priceLabels[i].maxLength = "14";
             this.priceLabels[i].rows = 1;
             this.priceLabels[i].cols = 14;
+            this.priceLabels[i].setAttribute("column_index", String(i));
+            this.priceLabels[i].addEventListener('change', function(event){
+                event.preventDefault();
+
+                tableInstance.renamePriceLabel(this.getAttribute("column_index"), this.value);
+
+                tableInstance.updateTableGraphics();
+
+                tableInstance.uploadTable(tableInstance.getCurrentUser());
+
+                tableInstance.printTable();
+            });
         }
     }
 
@@ -386,6 +457,10 @@ class Table {
         }
     }
     /*HTML TABLE HELPERS*/
+
+    /*CONTROL PANEL BUTTON EVENTS*/
+
+    /*CONTROL PANEL BUTTON EVENTS*/
 }
 
 /*ITEM CLASS*/

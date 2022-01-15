@@ -3,6 +3,7 @@ from . import db
 
 
 class User(db.Model, UserMixin):
+    """Class to define a model for the user table"""
     id = db.Column(db.Integer, unique=True, primary_key=True)
     username = db.Column(db.String(128), unique=True, index=True)
     password = db.Column(db.String(128))
@@ -18,6 +19,7 @@ class User(db.Model, UserMixin):
 
 
 class Table(db.Model):
+    """Class to define a menu table"""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     table_name = db.Column(db.String(128), index=True)
@@ -26,6 +28,7 @@ class Table(db.Model):
 
 
 class Columns(db.Model):
+    """Class to define the price levels for a user"""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     labels_length = db.Column(db.Integer)
@@ -40,6 +43,14 @@ class Columns(db.Model):
 
     def changePriceLabels(self, arr_len, arr):
         self.labels_length = arr_len
+        self.label1 = None
+        self.label2 = None
+        self.label3 = None
+        self.label4 = None
+        self.label5 = None
+        self.label6 = None
+        self.label7 = None
+        self.label8 = None
         for (index, label) in enumerate(arr):
             if index == 0:
                 self.label1 = label
@@ -66,6 +77,7 @@ class Columns(db.Model):
 
 
 class Item(db.Model):
+    """Class to define an item within the database"""
     id = db.Column(db.Integer, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), index=True)
     item_name = db.Column(db.String(64), index=True)
@@ -79,6 +91,14 @@ class Item(db.Model):
     price8 = db.Column(db.Float)
 
     def change_prices(self, arr):
+        self.price1 = None
+        self.price2 = None
+        self.price3 = None
+        self.price4 = None
+        self.price5 = None
+        self.price6 = None
+        self.price7 = None
+        self.price8 = None
         for (index, price) in enumerate(arr):
             if index == 0:
                 self.price1 = price

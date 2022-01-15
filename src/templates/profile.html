@@ -9,7 +9,7 @@
 {% block content %}
 <div class="content_container">
     <div id="logout_panel">
-    <label>Welcome, {{ username }}</label>
+        <label>Welcome, <label id="current_user">{{username}}</label></label>
         <br>
     <form method="POST"><input type="submit" name="submit" value="Logout"></form>
 </div>
