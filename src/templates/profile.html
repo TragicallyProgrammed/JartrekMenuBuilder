@@ -6,13 +6,15 @@
 <script src="{{ url_for('static', filename='scripts/profile_eventSheet.js') }}"></script>
 {% endblock %}
 
-{% block content %}
-<div class="content_container">
-    <div id="logout_panel">
-        <label>Welcome, <label id="current_user">{{username}}</label></label>
-        <br>
+{% block header %}
+<div id="logout_panel">
+    <label>Welcome, <label id="username">{{username}}</label></label>
     <form method="POST"><input type="submit" name="submit" value="Logout"></form>
 </div>
+{% endblock %}
+
+{% block content %}
+<div class="content_container">
     {% include "datatable.html" %}
 </div>
 {% endblock %}

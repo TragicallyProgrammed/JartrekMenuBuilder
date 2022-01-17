@@ -6,71 +6,72 @@
 
 {% block content %}
 <div class="btn_container">
-        <div class="btn_group">
-            <input type="radio" id="drink" name="menu_button" checked>
-            <label for="drink">
-                Drinks
-            </label>
-            <input type="radio" id="food" name="menu_button">
-            <label for="food">
-                Food/Snacks
-            </label>
-        </div>
+    <input type="text" id="data_table_search_bar" placeholder="Search for items...">
+    <div class="btn_group">
+        <input type="radio" id="drink" name="menu_button" checked>
+        <label for="drink">
+            Drinks
+        </label>
+        <input type="radio" id="food" name="menu_button">
+        <label for="food">
+            Food/Snacks
+        </label>
     </div>
-    <div id="drink_div">
-        <div class="tab-container">
-            <div>
-                <input type="radio" id="tab-1" name="tab-group" for="tab-content-1" checked>
-                <label class="tab-label" for="tab-1">
+</div>
+<div id="drink_div">
+    <div class="tab-container">
+        <div>
+            <input type="radio" id="tab-1" name="tab-group" for="tab-content-1" checked>
+            <label class="tab-label" for="tab-1">
                 <div class="label-div"> Beer </div>
-                </label>
-                <input type="radio" id="tab-2" name="tab-group" for="tab-content-2">
-                <label class="tab-label" for="tab-2">
+            </label>
+            <input type="radio" id="tab-2" name="tab-group" for="tab-content-2">
+            <label class="tab-label" for="tab-2">
                 <div class="label-div"> Liquor </div>
-                </label>
-                <input type="radio" id="tab-3" name="tab-group" for="tab-content-3">
-                <label class="tab-label" for="tab-3">
+            </label>
+            <input type="radio" id="tab-3" name="tab-group" for="tab-content-3">
+            <label class="tab-label" for="tab-3">
                 <div class="label-div"> Wine </div>
-                </label>
-                <input type="radio" id="tab-4" name="tab-group" for="tab-content-4">
-                <label class="tab-label" for="tab-4">
+            </label>
+            <input type="radio" id="tab-4" name="tab-group" for="tab-content-4">
+            <label class="tab-label" for="tab-4">
                 <div class="label-div"> Mixed Drinks </div>
-                </label>
-                <input type="radio" id="tab-5" name="tab-group" for="tab-content-5">
-                <label class="tab-label" for="tab-5">
+            </label>
+            <input type="radio" id="tab-5" name="tab-group" for="tab-content-5">
+            <label class="tab-label" for="tab-5">
                 <div class="label-div"> Soft Drinks </div>
-                </label>
-            </div>
-            <div class="tab-content" id="tab-content-1" for="tab-1">
-            </div>
-            <div method="POST" class="tab-content" id="tab-content-2" for="tab-2">
-            </div>
-            <div method="POST" class="tab-content" id="tab-content-3" for="tab-3">
-            </div>
-            <div method="POST" class="tab-content" id="tab-content-4" for="tab-4">
-            </div>
-            <div method="POST" class="tab-content" id="tab-content-5" for="tab-5">
-            </div>
+            </label>
+        </div>
+        <div class="tab-content" id="tab-content-1" for="tab-1">
+        </div>
+        <div method="POST" class="tab-content" id="tab-content-2" for="tab-2">
+        </div>
+        <div method="POST" class="tab-content" id="tab-content-3" for="tab-3">
+        </div>
+        <div method="POST" class="tab-content" id="tab-content-4" for="tab-4">
+        </div>
+        <div method="POST" class="tab-content" id="tab-content-5" for="tab-5">
         </div>
     </div>
-    <div id="food_div" style="display: none;">
-        <div class="tab-container">
-            <div>
-                <input type="radio" id="tab2-1" name="tab-group" for="tab2-content-1">
-                <label class="tab-label" for="tab2-1">
+</div>
+<div id="food_div" style="display: none;">
+    <div class="tab-container">
+        <div>
+            <input type="radio" id="tab2-1" name="tab-group" for="tab2-content-1">
+            <label class="tab-label" for="tab2-1">
                 <div class="label-div"> Kitchen Food </div>
-                </label>
-                <input type="radio" id="tab2-2" name="tab-group" for="tab2-content-2">
-                <label class="tab-label" for="tab2-2">
+            </label>
+            <input type="radio" id="tab2-2" name="tab-group" for="tab2-content-2">
+            <label class="tab-label" for="tab2-2">
                 <div class="label-div"> Food/Snacks </div>
-                </label>
-            </div>
-            <div class="tab-content" id="tab2-content-1" for="tab2-1"></div>
-            <div class="tab-content" id="tab2-content-2" for="tab2-2"></div>
+            </label>
         </div>
+        <div class="tab-content" id="tab2-content-1" for="tab2-1"></div>
+        <div class="tab-content" id="tab2-content-2" for="tab2-2"></div>
     </div>
-    <div id="bot_container">
-        <button type="button" id="add_row">Add Row</button>
-        <button type="button" id="done">Done</button>
-    </div>
+</div>
+<div id="bot_container">
+    <button type="button" id="add_row">Add Row</button>
+    <div id="confirmation_container"><label for="confirmation_box">Table is complete:</label><input type="checkbox" id="confirmation_box"></div>
+</div>
 {% endblock %}

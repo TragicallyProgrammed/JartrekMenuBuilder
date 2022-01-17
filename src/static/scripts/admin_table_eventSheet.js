@@ -1,6 +1,22 @@
 $(function () {
-    var tableInstance = new Table(current_user=document.getElementById("current_user").innerHTML.valueOf());
+    var tableInstance = new Table(current_user=document.getElementById("username").innerHTML.valueOf());
     tableEventManager(tableInstance);
+
+    $('#user_search_bar').on("keyup", function(event) {
+        console.log("Key pressed!")
+        var rows = $($('#user_table_container')).children("tr");
+        for(var i = 0; i < rows.length; i++) {
+            cells = $(rows[i]).children("td");
+            console.log($(cells[1]).text());
+            console.log(this.value);
+            if (!$(cells[1]).text().includes(this.value)) {
+                rows[i].style.display = "none";
+            }
+            else {
+                rows[i].style.display = "";
+            }
+        }
+    });
 
     $.ajax({ // Send request to get users and populate table
         contentType: 'json',
