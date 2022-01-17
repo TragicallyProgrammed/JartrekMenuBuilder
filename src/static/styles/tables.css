@@ -6,6 +6,7 @@
     border-radius: 5px 5px 0 0;
     border: 1px solid black;
     border-bottom: 1px solid white;
+    margin-right: auto;
 }
 .btn_group input {
     display: none;
@@ -29,6 +30,12 @@
     display: flex;
     justify-content: center;
 }
+#data_table_search_bar {
+    font-size: 1.2rem;
+    padding: 3px;
+    height: fit-content;
+    margin: auto 20% 5px 5px;
+}
 #drink_div, #food_div {
     flex: 0 1 100%;
     overflow: hidden;
@@ -38,19 +45,23 @@
     font-size: 18px;
     flex: 1 1 auto;
 }
-
 #add_row {
-    font-size: 1.2rem;
-    margin: 5px auto 0px auto;
+    margin: 5px 35% auto auto;
 }
-#done {
-    font-size: 1.2rem;
-    margin-top: 5px;
+#confirmation_container {
+    margin: 5px 5px;
+    padding: 2px;
+    border-radius: 3px;
+    border: 1px solid black;
+    width: fit-content;
 }
 #bot_container {
     display: flex;
     flex-direction: row;
     align-items: center;
+}
+#bot_container * {
+    font-size: 1.2rem;
 }
 /* Tab Container Properties */
 .tab-container {

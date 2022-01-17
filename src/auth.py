@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from os import path
 from .models import User, Table, Item
 from . import db, app
 
@@ -50,7 +49,6 @@ def adminPanel():
 
         if db_user.is_admin():  # If the user is an admin...
             if request.method == 'POST':  # If the request is a post...
-                print(request.form.get("submit") == "change_pass")
                 if request.form.get('submit') == 'Logout':  # If the request form is logout...
                     return redirect(url_for('auth.logout'))  # returns redirect for logging out
 
@@ -71,6 +69,7 @@ def adminPanel():
                     else:  # If the user is found, or if username or password is blank...
                         flash("Could not add user!", "error")  # Send error to client
 
+                # This block of code allows for passwords to be changed
                 if request.form.get("submit") == "change_pass":  # If the request form is to change passwords...
                     username = request.form.get('username')  # Get the username from the form
                     password = request.form.get('password')  # Get the password from the form

@@ -27,6 +27,7 @@ def updatedb():  # View to update the database
         db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Search for the given table in the database
         if db_table is None:  # If the table is not found...
             db_table = Table(user_id=db_user.get_id(), table_name=table_name)  # Create a new table with the given user's id
+        db_table.verified = data.get("completed")  # Set verified to value from json data
         db.session.add(db_table)  # Add changes to session to be committed
         Add_Items(db_table, items)  # Add and update items
 
@@ -60,8 +61,13 @@ def getdb():
 
         items = Get_Items(db_table)  # Get the items in the table
         price_labels = Get_Columns(db_user)  # Get the user's price labels
+        completed = False  # Set completed to false by default
+        if db_table:  # If the table was found...
+            completed = db_table.verified  # Set load value from table
+            if completed is None:  # If completed is none...
+                completed = False  # Set completed to false by default...
 
-        return jsonify(price_labels=price_labels, items=items), 200  # Return the list of price labels and items with success code
+        return jsonify(price_labels=price_labels, items=items, completed=completed), 200  # Return the list of price labels and items with success code
 
     except NoResultFound as e:
         print("Exception in getdb: ", e)

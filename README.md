@@ -24,7 +24,7 @@ of the site you are on. Upon an issue being resolved and pushed
 to the GitHub, they will be marked as complete.
 
 Current accounts in database:
-- username: Admin password: test
+- username: Admin password: admin
 - username: Customer password: test
 
 Charlie:

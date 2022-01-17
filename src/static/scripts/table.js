@@ -1,7 +1,7 @@
 /*TABLE CLASSES*/
 class Table {
     /*CONSTRUCTOR*/
-    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = []) {
+    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = [], completed=false) {
         this.current_user = current_user;
         this.tableName = tableName;
         this.colLen = colLen;
@@ -18,6 +18,7 @@ class Table {
         this.itemLabel = null;
         this.priceLabelColumns = new Array(8);
         this.priceLabels = new Array(8);
+        this.completed = completed;
 
         this.generateNewHTMLTable();
 
@@ -42,16 +43,39 @@ class Table {
             tableInstance.uploadTable();
             tableInstance.loadTable($(this).attr("for"));
         });
+        // Search Bar
+        $('#data_table_search_bar').on("keyup", function(event) {
+
+            var rows = $('#tableID').children("tr");
+            for(var i = 1; i < rows.length; i++) {
+                var cells = $(rows[i]).children("td");
+                var cell_text = $(cells[1]).children()[0].value
+                if(!cell_text.includes(this.value)) {
+                    rows[i].style.display = "none";
+                }
+                else {
+                    rows[i].style.display = "";
+                }
+            }
+        });
 
         //Add row
         $('#add_row').on("click", function () { // Selects add row button
             tableInstance.addItem(new Item("", this.colLen, [])); // Calls addItem from table to append new row
         });
 
-        // Update values on table when clicking 'Done'
-        $('#done').on('click', function (e) {
-            e.preventDefault();  // Prevent default behavior for buttons
-            tableInstance.uploadTable(); // Uploads the table after changing a value
+        //Confirmation box event
+        $('#confirmation_box').change(function(e) {
+            e.preventDefault();
+            if($(this).is(":checked")){
+                $(this).parent().css("background-color", "lime");
+                tableInstance.setCompleted(true);
+            }
+            else {
+                $(this).parent().css("background-color", "red");
+                tableInstance.setCompleted(false);
+            }
+            tableInstance.uploadTable();
         });
     }
     /*CONSTRUCTOR*/
@@ -77,6 +101,9 @@ class Table {
     }
     changeCurrentUser(username) {
         this.current_user = username;
+    }
+    setCompleted(value) {
+        this.completed = value;
     }
 
     //Changes the label of an existing price column
@@ -162,7 +189,8 @@ class Table {
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
                 'priceLabels': this.labels,
-                'items': this.getItems()
+                'items': this.getItems(),
+                'completed': this.completed
             }),
             type: 'POST',
             url: 'updatedb'
@@ -179,13 +207,15 @@ class Table {
                 'username': this.current_user,
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
-                'priceLabels': this.getPriceLabels(),
+                'priceLabels': this.getPriceLabels()
             }),
             type: 'POST',
             url: 'getdb',
             success: function(data) {
                 var price_labels = data["price_labels"];
                 var items = data["items"];
+
+                table_instance.setCompleted(data["completed"]);
 
                 if(price_labels.length === 0) {
                     table_instance.colLen = 1;
@@ -360,6 +390,13 @@ class Table {
 
     //Updates the shading on the table
     updateTableGraphics() {
+        //Update completion box
+        if(this.completed === true) {
+            $('#confirmation_box').prop("checked", true).change();
+        }
+        else {
+            $('#confirmation_box').prop("checked", false).change();
+        }
         //Setting enabled attribute
         for(var i = 0; i < this.priceLabelColumns.length; i++) {
             if(this.priceLabelColumns[i].getAttribute("enabled") === "true"){
