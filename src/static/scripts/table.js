@@ -1,12 +1,13 @@
 /*TABLE CLASSES*/
 class Table {
     /*CONSTRUCTOR*/
-    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = [], completed=false) {
+    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = [], completed=false, modifier_categories=[]) {
         this.current_user = current_user;
         this.tableName = tableName;
         this.colLen = colLen;
         this.labels = labels;
         this.items = items;
+        this.modifier_categories = modifier_categories;
         this.parentElementID = null;
 
         //Table Template Elements
@@ -76,6 +77,32 @@ class Table {
                 tableInstance.setCompleted(false);
             }
             tableInstance.uploadTable();
+        });
+
+        //Modifier Button
+        $('#minmax_button').on('click', function(event) {
+            if($(this).attr("state") === "max") {
+                $('#modifier_panel').css("display", "none");
+                $(this).attr("state", "min");
+            }
+            else if($(this).attr("state") === "min") {
+                $('#modifier_panel').css("display", "flex");
+                $(this).attr("state", "max");
+            }
+        });
+
+        // Modifier Panel
+        $('#modifier_panel').draggable();
+        $('#modifier_header').on('mouseenter', function(event) {
+            $('#modifier_panel').draggable("option", "disabled", false);
+        });
+        $('#modifier_header').on('mouseleave', function(event) {
+            $('#modifier_panel').draggable("option", "disabled", true);
+        });
+
+        //Add Modifier Category
+        $('#add_modifier_type').on('click', function(event) {
+            //table_instance.addModifierCategory(); TODO: Add Modifier Category
         });
     }
     /*CONSTRUCTOR*/
@@ -342,10 +369,6 @@ class Table {
             datas.setAttribute("column_index", String((i-1)));
             datas.setAttribute("row_index", String(this.tableElement.rows.length-2));
             datas.addEventListener('change', function(event){
-                event.preventDefault();
-                if(!isFinite(event.key) && event.key !== "Backspace" && event.key !== ".") {  //TODO: Filter all characters except for integers and '.'
-                    // if it isn't what we want
-                }
                 tableInstance.changeItemPrice(this.getAttribute("column_index")-1, this.getAttribute("row_index"), this.value);
 
                 tableInstance.updateTableGraphics();
@@ -353,6 +376,13 @@ class Table {
                 tableInstance.uploadTable(tableInstance.getCurrentUser());
 
                 tableInstance.printTable();
+            });
+            datas.addEventListener('keydown', function(event) {
+                console.log(event.keyCode);
+                if((!(47 < event.keyCode && event.keyCode < 58)) && (!(95 < event.keyCode && event.keyCode < 106)) && (!(event.keyCode === 110 || event.keyCode === 190 || event.keyCode === 8))) {
+                    console.log("not allowed value");
+                    event.preventDefault();
+                }
             });
 
             if(i-2 < item.getPricesLength()) {

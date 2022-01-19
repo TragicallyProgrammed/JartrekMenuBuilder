@@ -17,6 +17,12 @@
             Food/Snacks
         </label>
     </div>
+    <div id="modifier_button" style="display: none;">
+        <button id="minmax_button" state="max">
+            <label id="minmax">&#x2750;</label>
+            <label>Food Modifiers</label>
+        </button>
+    </div>
 </div>
 <div id="drink_div">
     <div class="tab-container">
@@ -68,6 +74,32 @@
         </div>
         <div class="tab-content" id="tab2-content-1" for="tab2-1"></div>
         <div class="tab-content" id="tab2-content-2" for="tab2-2"></div>
+    </div>
+    <div id="modifier_panel">
+        <div id="modifier_header"></div>
+        <label style="font-size: 2rem; border-bottom: 2px solid black">Item:<label id="item_name" style="font-size: 2rem;">test</label></label>
+        <div class="modifier_dropdown" id="dropdown_1">
+            <div class="dropdown_header">
+                <button class="dropdown_button">drop</button><label>Add-ons</label>
+            </div><div class="dropdown-content" for="dropdown_1">
+
+            </div>
+        </div>
+        <div class="modifier_dropdown" id="dropdown_2">
+            <div class="dropdown_header">
+                <button class="dropdown_button">drop</button><label>Dressings</label>
+            </div><div class="dropdown-content" for="dropdown_2">
+
+            </div>
+        </div>
+        <div class="modifier_dropdown" id="dropdown_3">
+            <div class="dropdown_header">
+                <button class="dropdown_button">drop</button><label>Condiments</label>
+            </div><div class="dropdown-content" for="dropdown_3">
+
+            </div>
+        </div>
+        <button id="add_modifier_type">&#x2b;</button>
     </div>
 </div>
 <div id="bot_container">

@@ -63,6 +63,46 @@
 #bot_container * {
     font-size: 1.2rem;
 }
+#modifier_button {
+    margin: auto 5px 5px auto;
+}
+#modifier_button * {
+    font-size: 1.3rem;
+}
+#modifier_panel {
+    position: absolute;
+    right: 5%;
+    top: 25%;
+    background: white;
+    border-radius: 3px;
+    border: 1px solid black;
+    width: min-content;
+    display: flex;
+    flex-direction: column;
+}
+#modifier_panel * {
+    margin: 5px;
+    font-size: 1.5rem;
+}
+#modifier_header {
+    height: 15px;
+    border-bottom: 1px solid black;
+    margin: 0;
+}
+.dropdown_header {
+    border-radius: 5px;
+    background-color: #DDDDDD;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: row;
+}
+.dropdown_content {
+    margin-top: 0;
+}
+#add_modifier_type {
+    margin-right: auto;
+    margin-left: auto;
+}
 /* Tab Container Properties */
 .tab-container {
     line-height: 24px;
@@ -75,7 +115,7 @@
 }
 .tab-label {
     display: inline-block;
-    backrgound-color: white;
+    background-color: white;
     border: 1px solid black;
     border-radius: 5px 5px 0 0;
     padding: 3px;
