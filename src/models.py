@@ -1,6 +1,11 @@
 from flask_login import UserMixin
 from . import db
 
+modifier_item = db.Table('modifier_item',
+    db.Column('item_id', db.Integer, db.ForeignKey('item.id')),
+    db.Column('modifier_id', db.Integer, db.ForeignKey('modifier.id'))
+)
+
 
 class User(db.Model, UserMixin):
     """Class to define a model for the user table"""
@@ -10,6 +15,7 @@ class User(db.Model, UserMixin):
     admin = db.Column(db.Boolean())
     tables = db.relationship('Table', primaryjoin="User.id==Table.user_id", backref=db.backref('User.id'))
     col_labels = db.relationship('Columns', primaryjoin="User.id==Columns.user_id", backref=db.backref('User.id'))
+    modifier_categories = db.relationship('Modifiercategory', primaryjoin="User.id==Modifiercategory.user_id", backref=db.backref('User.id'))
 
     def get_id(self):
         return self.id
@@ -81,6 +87,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), index=True)
     item_name = db.Column(db.String(64), index=True)
+    modifiers = db.relationship('Modifier', secondary=modifier_item, backref='items')
     price1 = db.Column(db.Float)
     price2 = db.Column(db.Float)
     price3 = db.Column(db.Float)
@@ -101,22 +108,46 @@ class Item(db.Model):
         self.price8 = None
         for (index, price) in enumerate(arr):
             if index == 0:
-                self.price1 = price
+                if price != "":
+                    self.price1 = price
             elif index == 1:
-                self.price2 = price
+                if price != "":
+                    self.price2 = price
             elif index == 2:
-                self.price3 = price
+                if price != "":
+                    self.price3 = price
             elif index == 3:
-                self.price4 = price
+                if price != "":
+                    self.price4 = price
             elif index == 4:
-                self.price5 = price
+                if price != "":
+                    self.price5 = price
             elif index == 5:
-                self.price6 = price
+                if price != "":
+                    self.price6 = price
             elif index == 6:
-                self.price7 = price
+                if price != "":
+                    self.price7 = price
             elif index == 7:
-                self.price8 = price
+                if price != "":
+                    self.price8 = price
 
     def getItemData(self):
         return [self.item_name, self.price1, self.price2, self.price3, self.price4, self.price5, self.price6,
                 self.price7, self.price8]
+
+
+class Modifiercategory(db.Model):
+    """Class to define modifier categories within the database"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    category_name = db.Column(db.String(64), index=True)
+    modifiers = db.relationship('Modifier', primaryjoin="Modifiercategory.id==Modifier.category_id", backref=db.backref('Modifiercategory.id'))
+
+
+class Modifier(db.Model):
+    """Class to define modifiers within the database"""
+    id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('modifiercategory.id'), index=True)
+    modifier_label = db.Column(db.String(64), index=True)
+    modifier_price = db.Column(db.Integer, index=True)

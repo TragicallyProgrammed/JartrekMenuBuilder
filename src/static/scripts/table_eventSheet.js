@@ -2,10 +2,11 @@
 function tableEventManager(tableInstance) {
     $(function () {
         //Attributes
-        var drink_div = document.getElementById("drink_div");
-        var food_div = document.getElementById("food_div");
-        var lastDrinkTab = $('input[id="tab-1"]');
-        var lastFoodTab = $('input[id="tab2-1"]');
+        let drink_div = document.getElementById("drink_div");
+        let food_div = document.getElementById("food_div");
+        let modifier_button = document.getElementById("modifier_button");
+        let lastDrinkTab = $('input[id="tab-1"]');
+        let lastFoodTab = $('input[id="tab2-1"]');
 
         /* On Fist Load */
         food_div.checked = false;
@@ -23,6 +24,7 @@ function tableEventManager(tableInstance) {
         $('#drink').change(function () {
             drink_div.style.display = "block"; // Enables drink div
             food_div.style.display = "none"; // Disables food div
+            modifier_button.style.display = "none";
 
             lastFoodTab = $('input[name="tab-group"]:checked'); // Saves selected tab under food div
             lastDrinkTab.prop("checked", true).change(); // enables previously selected tab under drink div
@@ -31,6 +33,7 @@ function tableEventManager(tableInstance) {
         $('#food').change(function () {
             drink_div.style.display = "none"; // Disables drink div
             food_div.style.display = "block"; // Enables food div
+            modifier_button.style.display = "block";
 
             lastDrinkTab = $('input[name="tab-group"]:checked'); // Saves previously selected tab under drink div
             lastFoodTab.prop("checked", true).change(); // enables previously selected tab under food div

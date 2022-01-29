@@ -17,10 +17,16 @@
             Food/Snacks
         </label>
     </div>
+    <div id="modifier_button" style="display: none;">
+        <button id="minmax_button" state="max">
+            <label id="minmax">&#x2750;</label>
+            <label>Food Modifiers</label>
+        </button>
+    </div>
 </div>
 <div id="drink_div">
     <div class="tab-container">
-        <div>
+        <div class="tab_button_container">
             <input type="radio" id="tab-1" name="tab-group" for="tab-content-1" checked>
             <label class="tab-label" for="tab-1">
                 <div class="label-div"> Beer </div>
@@ -56,7 +62,7 @@
 </div>
 <div id="food_div" style="display: none;">
     <div class="tab-container">
-        <div>
+        <div class="tab_button_container">
             <input type="radio" id="tab2-1" name="tab-group" for="tab2-content-1">
             <label class="tab-label" for="tab2-1">
                 <div class="label-div"> Kitchen Food </div>
@@ -68,6 +74,14 @@
         </div>
         <div class="tab-content" id="tab2-content-1" for="tab2-1"></div>
         <div class="tab-content" id="tab2-content-2" for="tab2-2"></div>
+    </div>
+    <div id="modifier_panel">
+        <div id="modifier_header"><label style="font-size:1rem;">Modifier Panel</label></div>
+        <label style="font-size: 2rem; border-bottom: 2px solid black">Item:<label id="item_name" style="font-size: 2rem;"></label></label>
+        <div id="modifier_panel_container">
+
+        </div>
+        <button id="add_modifier_type">&#x2b;</button>
     </div>
 </div>
 <div id="bot_container">
