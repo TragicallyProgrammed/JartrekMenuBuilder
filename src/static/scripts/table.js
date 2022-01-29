@@ -773,6 +773,13 @@ class Table {
 
             tableInstance.updateItemModifier(tableInstance.modifiers[index].category, modifier_label.value, this.value);
         });
+        modifier_price.addEventListener('keydown', function(event) {
+            console.log(event.keyCode);
+            if((!(47 < event.keyCode && event.keyCode < 58)) && (!(95 < event.keyCode && event.keyCode < 106)) && (!(event.keyCode === 110 || event.keyCode === 190 || event.keyCode === 8))) {
+                console.log("not allowed value");
+                event.preventDefault();
+            }
+        });
         modifier_price.value = mod_price;
 
         let colon = document.createElement("label");
