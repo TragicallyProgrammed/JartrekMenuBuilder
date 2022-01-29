@@ -2,11 +2,11 @@
 function tableEventManager(tableInstance) {
     $(function () {
         //Attributes
-        var drink_div = document.getElementById("drink_div");
-        var food_div = document.getElementById("food_div");
-        var modifier_button = document.getElementById("modifier_button");
-        var lastDrinkTab = $('input[id="tab-1"]');
-        var lastFoodTab = $('input[id="tab2-1"]');
+        let drink_div = document.getElementById("drink_div");
+        let food_div = document.getElementById("food_div");
+        let modifier_button = document.getElementById("modifier_button");
+        let lastDrinkTab = $('input[id="tab-1"]');
+        let lastFoodTab = $('input[id="tab2-1"]');
 
         /* On Fist Load */
         food_div.checked = false;

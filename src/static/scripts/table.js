@@ -1,13 +1,13 @@
 /*TABLE CLASSES*/
 class Table {
     /*CONSTRUCTOR*/
-    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = [], completed=false, modifier_categories=[]) {
+    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = [], completed=false, modifiers=[]) {
         this.current_user = current_user;
         this.tableName = tableName;
         this.colLen = colLen;
         this.labels = labels;
         this.items = items;
-        this.modifier_categories = modifier_categories;
+        this.modifiers = modifiers;
         this.parentElementID = null;
 
         //Table Template Elements
@@ -20,6 +20,7 @@ class Table {
         this.priceLabelColumns = new Array(8);
         this.priceLabels = new Array(8);
         this.completed = completed;
+        this.selected_item = null;
 
         this.generateNewHTMLTable();
 
@@ -29,28 +30,33 @@ class Table {
         //Load default label array
         this.labels[0] = "Regular";
 
-        //Static Table Events
+        //Load events
+        this.staticTableEvents();
+    }
+    /*CONSTRUCTOR*/
+
+    /*METHODS*/
+    staticTableEvents() {
+        let tableInstance = this;
         //Change tabs
-        var tableInstance = this;
         $('input[name="tab-group"]').change(function () { // Selecting all tabs and looking for them to change
-            console.log("Tab Changed!")
             //Display current tab
             $('input[name="tab-group"]:not(:checked)').each(function (index, tab) { // Selects all tabs not selected
                 document.getElementById(tab.getAttribute("for")).style.display = "none"; // Disables that tab
             });
-            var tab = document.getElementById(this.getAttribute('for')); // Gets the div for currently selected tab
+            let tab = document.getElementById(this.getAttribute('for')); // Gets the div for currently selected tab
             tab.style.display = 'block'; // Enables that div
 
-            tableInstance.uploadTable();
+            tableInstance.updateTable();
             tableInstance.loadTable($(this).attr("for"));
         });
+
         // Search Bar
         $('#data_table_search_bar').on("keyup", function(event) {
-
-            var rows = $('#tableID').children("tr");
-            for(var i = 1; i < rows.length; i++) {
-                var cells = $(rows[i]).children("td");
-                var cell_text = $(cells[1]).children()[0].value
+            let rows = $('#tableID').children("tr");
+            for(let i = 1; i < rows.length; i++) {
+                let cells = $(rows[i]).children("td");
+                let cell_text = $(cells[1]).children()[0].value
                 if(!cell_text.includes(this.value)) {
                     rows[i].style.display = "none";
                 }
@@ -62,7 +68,7 @@ class Table {
 
         //Add row
         $('#add_row').on("click", function () { // Selects add row button
-            tableInstance.addItem(new Item("", this.colLen, [])); // Calls addItem from table to append new row
+            tableInstance.addItem({label: "", prices: []}); // Calls addItem from table to append new row
         });
 
         //Confirmation box event
@@ -76,7 +82,7 @@ class Table {
                 $(this).parent().css("background-color", "red");
                 tableInstance.setCompleted(false);
             }
-            tableInstance.uploadTable();
+            tableInstance.updateTable();
         });
 
         //Modifier Button
@@ -102,33 +108,21 @@ class Table {
 
         //Add Modifier Category
         $('#add_modifier_type').on('click', function(event) {
-            //table_instance.addModifierCategory(); TODO: Add Modifier Category
+            tableInstance.addModifierCategory();
         });
     }
-    /*CONSTRUCTOR*/
-
-    /*METHODS*/
     //Returns current name of table
     getPriceLabels() {
         return this.labels;
     }
     getItems() {
-        var ret = [];
-        for(var i = 0; i < this.items.length; i++) {
-            var dict = {
-                label: this.items[i].getLabel(),
-                prices: this.items[i].getPrices()
-            };
-            ret.push(dict);
-        }
-        return ret;
+        return this.items;
     }
-    getCurrentUser() {
-        return this.current_user;
-    }
+
     changeCurrentUser(username) {
         this.current_user = username;
     }
+
     setCompleted(value) {
         this.completed = value;
     }
@@ -157,12 +151,12 @@ class Table {
 
     //Changes the price of a given cell
     changeItemPrice(priceIndex, itemIndex, value) {
-        this.items[itemIndex].setPrice(priceIndex, value);
+        this.items[itemIndex]["prices"][priceIndex] = value;
     }
 
     //Changes the label of a given item
     renameItemPrice(itemIndex, value) {
-        this.items[itemIndex].setLabel(value);
+        this.items[itemIndex]["label"] = value;
     }
 
     //Adds a new row into the table
@@ -178,15 +172,15 @@ class Table {
     removeItem() {
         if (this.items.length > 1) {
             // Path syntax is such to be compatible with firefox
-            var path = event.path || (event.composedPath && event.composedPath());
-            var tableInstance = this;
+            let path = event.path || (event.composedPath && event.composedPath());
+            let tableInstance = this;
             if(path){
                 $.ajax({
                     contentType: 'json',
                     data: JSON.stringify({
                         'username': this.current_user,
                         'tableName': this.tableName,
-                        'itemName': this.getItems()[path[2].rowIndex - 1].label
+                        'itemName': this.getItems()[path[2].rowIndex - 1]["label"]
                     }),
                     type: 'POST',
                     url: 'remove_item',
@@ -207,27 +201,80 @@ class Table {
         }
     }
 
-    //Uploads table to database
-    uploadTable() {
+    //Selects a row
+    selectRow(new_row) {
+        if (this.selected_item != null) {
+            this.selected_item.style.backgroundColor = "white";
+        }
+        this.selected_item = new_row;
+        this.selected_item.style.backgroundColor = "#00E3FF";
+
+        document.getElementById("item_name").innerHTML = this.items[Number(this.selected_item.getAttribute("row_index"))].label;
+        this.getItemModifiers();
+    }
+
+    //Updates database with current table
+    updateTable() {
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'tableName': this.tableName
+            }),
+            type: 'POST',
+            url: 'update-table'
+        });
+    }
+
+    //Updates database with current column labels
+    updateColumns() {
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
                 'username': this.current_user,
                 'tableName': this.tableName,
                 'priceLabelsLength': this.colLen,
-                'priceLabels': this.labels,
-                'items': this.getItems(),
-                'completed': this.completed
+                'priceLabels': this.getPriceLabels()
             }),
             type: 'POST',
-            url: 'updatedb'
+            url: 'update-columns'
+        });
+    }
+
+    //Updates item label in database
+    updateItemLabel(prev_label, current_label) {
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'tableName': this.tableName,
+                'prevItemName': prev_label,
+                'currentItemName': current_label
+            }),
+            type: 'POST',
+            url: 'update-item-label'
+        });
+    }
+
+    //Update item prices in database
+    updateItemPrices(item_name, item_prices) {
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'tableName': this.tableName,
+                'itemName': item_name,
+                'itemPrices': item_prices
+            }),
+            type: 'POST',
+            url: 'update-item-prices'
         });
     }
 
     //Downloads table from database
     downloadTable() {
         console.log("Downloading table with user: " + this.current_user)
-        var table_instance = this;  // Get current instance of the class
+        let table_instance = this;  // Get current instance of the class
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
@@ -239,8 +286,8 @@ class Table {
             type: 'POST',
             url: 'getdb',
             success: function(data) {
-                var price_labels = data["price_labels"];
-                var items = data["items"];
+                let price_labels = data["price_labels"];
+                let items = data["items"];
 
                 table_instance.setCompleted(data["completed"]);
 
@@ -249,16 +296,16 @@ class Table {
                     table_instance.renamePriceLabel(0, "Regular");
                 } else {
                     table_instance.colLen = price_labels.length;
-                    for(var i = 0; i < price_labels.length; i++) {
+                    for(let i = 0; i < price_labels.length; i++) {
                         table_instance.renamePriceLabel(i, price_labels[i]);
                     }
                 }
 
                 if(items.length === 0) {
-                    table_instance.addItem(new Item("", table_instance.colLen, []))
+                    table_instance.addItem({label: "", prices: []});
                 } else {
-                    for(var i = 0; i < items.length; i++) {
-                        table_instance.addItem(new Item(items[i]["label"], table_instance.colLen, items[i]["prices"]));
+                    for(let i = 0; i < items.length; i++) {
+                        table_instance.addItem({label: items[i]["label"], prices: items[i]["prices"]});
                     }
                 }
             },
@@ -279,14 +326,15 @@ class Table {
         this.parentElementID = tabID;
         document.getElementById(this.parentElementID).appendChild(this.tableContainer);
 
-        var parentTabId = document.getElementById(this.parentElementID).getAttribute("for");
-        var tab_labels = document.getElementsByClassName("tab-label");
-        for (var i = 0; i < tab_labels.length; i++) {
+        let parentTabId = document.getElementById(this.parentElementID).getAttribute("for");
+        let tab_labels = document.getElementsByClassName("tab-label");
+        for (let i = 0; i < tab_labels.length; i++) {
             if (tab_labels[i].htmlFor === parentTabId) {
                 this.tableName = tab_labels[i].children[0].innerHTML;
                 break;
             }
         }
+
         //get table data from database
         this.downloadTable(this.current_user);
         this.updateTableGraphics();
@@ -304,39 +352,68 @@ class Table {
         while (document.getElementById(this.parentElementID).firstChild) {
             document.getElementById(this.parentElementID).removeChild(document.getElementById(this.parentElementID).firstChild);
         }
+        this.clearModifierPanel();
         this.generateNewHTMLTable();
         this.structureHTMLTable();
     }
 
+    //Clear the modifier panel
+    clearModifierPanel() {
+        $('#item_name').value = "";
+        this.modifiers = [];
+
+        let container = document.getElementById("modifier_panel_container");
+        while(container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+    }
+
     //Prints the table to the console
     printTable() {
+        console.log("---------TABLE---------");
         console.log("Username: " + this.current_user);
         console.log(this.tableName);
         console.log("Num Columns: " + this.colLen);
         console.log("Num Rows: " + this.items.length);
         console.log("Columns: " + this.labels);
-        for (var i = 0; i < this.items.length; i++) {
-            this.items[i].printItem();
+        for (let i = 0; i < this.items.length; i++) {
+            console.log(this.items[i]["label"] + ": " + this.items[i]["prices"]);
         }
+        for (let i = 0; i < this.modifiers.length; i++) {
+            let category = this.modifiers[i]["category"];
+            let modifiers = this.modifiers[i]["modifier_list"];
+
+            console.log("Modifier Category: " + category)
+            for (let j = 0; j < modifiers.length; j++) {
+                console.log(modifiers[j]["label"] + ": " + modifiers[j]["price"]);
+            }
+        }
+        console.log("---------TABLE---------");
     }
     /*METHODS*/
 
     /*HTML TABLE HELPERS*/
     //Adds a new row to the HTML Table
     addHTMLTableRow(item) {
-        var row = this.tableElement.insertRow(-1);
-        var cell0 = row.insertCell(-1);
-        var del_button = document.createElement("img");
+        let tableInstance = this;
+
+        let row = this.tableElement.insertRow(-1);
+        row.setAttribute("row_index", String(this.tableElement.rows.length-2));
+        this.selectRow(row);
+
+        let cell0 = row.insertCell(-1);
+        let del_button = document.createElement("img");
         del_button.src = "static/images/delete.png";
         del_button.className = "delete_row";
         del_button.alt = "Delete Row Icon";
         del_button.addEventListener("click", (event) => this.removeItem());
         cell0.appendChild(del_button);
 
-        var tableInstance = this;
-
-        var cell1 = row.insertCell(-1);
-        var item_cell = document.createElement("textarea");
+        let cell1 = row.insertCell(-1);
+        cell1.addEventListener("click", function (event) {
+            tableInstance.selectRow(row);
+        });
+        let item_cell = document.createElement("textarea");
         item_cell.className = "chart_field item_label";
         item_cell.placeholder = "Item";
         item_cell.maxLength = 32;
@@ -345,24 +422,26 @@ class Table {
         item_cell.addEventListener('change', function(event){
             event.preventDefault();
 
+            let prev_label = tableInstance.getItems()[this.getAttribute("row_index")]['label']
+
             tableInstance.renameItemPrice(this.getAttribute("row_index"), this.value);
 
             tableInstance.updateTableGraphics();
 
-            tableInstance.uploadTable(tableInstance.getCurrentUser());
+            tableInstance.updateItemLabel(prev_label, this.value);
 
             tableInstance.printTable();
         });
-        if(item.getLabel() !== "") {
-            item_cell.value = item.getLabel();
+        if(item["label"] !== "") {
+            item_cell.value = item["label"];
         }
         cell1.appendChild(item_cell);
 
-        for (var i = 2; i < (this.tableElement.rows[0].cells.length + 1); i++) {
-            var celli = row.insertCell(-1);
-            var datas = document.createElement("textarea");
+        for (let i = 2; i < (this.tableElement.rows[0].cells.length + 1); i++) {
+            let celli = row.insertCell(-1);
+            let datas = document.createElement("textarea");
             datas.className = "chart_field item_price";
-            datas.placeholder = "-";
+            datas.placeholder = "$-";
             datas.rows = 2;
             datas.cols = 14;
             datas.maxLength = 6;
@@ -373,7 +452,7 @@ class Table {
 
                 tableInstance.updateTableGraphics();
 
-                tableInstance.uploadTable(tableInstance.getCurrentUser());
+                tableInstance.updateItemPrices(tableInstance.getItems()[this.getAttribute("row_index")]["label"], tableInstance.getItems()[this.getAttribute("row_index")]["prices"]);
 
                 tableInstance.printTable();
             });
@@ -385,32 +464,37 @@ class Table {
                 }
             });
 
-            if(i-2 < item.getPricesLength()) {
-                datas.value = item.getPrices()[i-2];
+            if(i-2 < item["prices"].length) {
+                datas.value = item["prices"][i-2];
             }
+
+            celli.addEventListener("click", function (event) {
+                tableInstance.selectRow(row);
+            });
+
             celli.appendChild(datas);
         }
     }
     
     //Removes a column from the HTML table
     removeColumn(index) {
-        for(var i = index; i < this.colLen; i++) {
+        for(let i = index; i < this.colLen; i++) {
             if(i < this.colLen-1){
                 console.log("i: ", i);
                 console.log(this.priceLabels[Number(i)+Number(1)].value);
                 this.priceLabels[i].value = this.priceLabels[Number(i)+Number(1)].value;
                 this.labels[i] = this.priceLabels[i].value;
-                for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[Number(i)+Number(2)];
-                    var next_column_cell = this.tableElement.rows[j].cells[Number(i)+Number(3)];
+                for(let j = 1; j < this.items.length+1; j++) {
+                    let cell = this.tableElement.rows[j].cells[Number(i)+Number(2)];
+                    let next_column_cell = this.tableElement.rows[j].cells[Number(i)+Number(3)];
                     cell.firstChild.value = next_column_cell.firstChild.value;
                 }
             } else {
                 this.priceLabels[i].value = "";
                 this.labels[i] = this.priceLabels[i].value;
                 this.priceLabelColumns[i].setAttribute("enabled", false);
-                for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[Number(i) + Number(2)];
+                for(let j = 1; j < this.items.length+1; j++) {
+                    let cell = this.tableElement.rows[j].cells[Number(i) + Number(2)];
                     cell.firstChild.value = "";
                 }
             }
@@ -428,12 +512,12 @@ class Table {
             $('#confirmation_box').prop("checked", false).change();
         }
         //Setting enabled attribute
-        for(var i = 0; i < this.priceLabelColumns.length; i++) {
+        for(let i = 0; i < this.priceLabelColumns.length; i++) {
             if(this.priceLabelColumns[i].getAttribute("enabled") === "true"){
                 this.priceLabelColumns[i].style.background = "none";
                 this.priceLabels[i].style.background = "none";
-                for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[i+2];
+                for(let j = 1; j < this.items.length+1; j++) {
+                    let cell = this.tableElement.rows[j].cells[i+2];
                     cell.style.background = "none";
                     cell.firstChild.style.background = "none";
                     cell.firstChild.getAttribute("readonly") === "readonly" && cell.firstChild.removeAttribute("readonly");
@@ -448,8 +532,8 @@ class Table {
                     this.priceLabels[i].style.background = "grey";
                     this.priceLabels[i].setAttribute("readonly", "readonly");
                 }
-                for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[i+2];
+                for(let j = 1; j < this.items.length+1; j++) {
+                    let cell = this.tableElement.rows[j].cells[i+2];
                     cell.style.background = "grey";
                     cell.firstChild.style.background = "grey";
                     cell.firstChild.setAttribute("readonly", "readonly");
@@ -483,8 +567,8 @@ class Table {
         this.priceLabels[0] = document.createElement("label");
         this.priceLabels[0].innerHTML = "Regular";
 
-        var tableInstance = this;
-        for(var i = 1; i < 8; i++) {
+        let tableInstance = this;
+        for(let i = 1; i < 8; i++) {
             this.priceLabelColumns[i] = document.createElement("th");
             this.priceLabelColumns[i].setAttribute("enabled", "false");
 
@@ -502,7 +586,7 @@ class Table {
 
                 tableInstance.updateTableGraphics();
 
-                tableInstance.uploadTable(tableInstance.getCurrentUser());
+                tableInstance.updateColumns();
 
                 tableInstance.printTable();
             });
@@ -518,56 +602,278 @@ class Table {
         this.headerRow.appendChild(this.itemLabelColumn);
         this.itemLabelColumn.appendChild(this.itemLabel);
         
-        for(var i = 0; i < 8; i++) {
+        for(let i = 0; i < 8; i++) {
             this.headerRow.appendChild(this.priceLabelColumns[i]);
             this.priceLabelColumns[i].appendChild(this.priceLabels[i]);
         }
     }
     /*HTML TABLE HELPERS*/
 
-    /*CONTROL PANEL BUTTON EVENTS*/
+    /*MODIFIER HELPERS*/
+    //Add a category under modifiers panel
+    addModifierCategory(label="", modifiers_list=[]) {
+        let tableInstance = this;
 
-    /*CONTROL PANEL BUTTON EVENTS*/
-}
+        let modifier_panel_container = document.getElementById("modifier_panel_container");
 
-/*ITEM CLASS*/
-class Item {
-    /*CONSTRUCTOR*/
-    constructor(label = "", priceLen = 1, prices = new Array(8)) {
-        this.label = label;
-        this.priceLen = priceLen;
-        this.prices = prices;
+        let modifier_dropdown = document.createElement("div");
+        modifier_dropdown.className = "dropdown_container";
 
-        if(prices.length !== 8) {
-            for (var i = 0; i < this.priceLen; i++) {
-                this.prices[i] = 0.0;
+        let dropdown_header = document.createElement("div");
+        dropdown_header.className = "dropdown_header";
+        dropdown_header.style.marginBottom = "0px";
+        let dropdown_button = document.createElement("button")
+        dropdown_button.className = "dropdown_button";
+        dropdown_button.innerHTML = "\u21D3";
+        dropdown_button.setAttribute("for", "dropdown_"+String(this.modifiers.length));
+        dropdown_button.addEventListener("click", function(event) {
+            event.preventDefault();
+            if(dropdown_content.style.display === "flex") {
+                this.innerHTML = "\u21D2";
+                dropdown_content.style.display = "none";
+                dropdown_header.style.borderBottomRightRadius = "5px";
+                dropdown_header.style.borderBottomLeftRadius = "5px";
+            }
+            else if(dropdown_content.style.display === "none") {
+                this.innerHTML = "\u21D3";
+                dropdown_content.style.display = "flex";
+                dropdown_header.style.borderBottomRightRadius = "0";
+                dropdown_header.style.borderBottomLeftRadius = "0";
+            }
+        });
+
+        let category_label = document.createElement("textarea");
+        category_label.className = "category_label";
+        category_label.setAttribute("for", "dropdown_"+String(this.modifiers.length));
+        category_label.placeholder = "Category";
+        category_label.addEventListener("change", function(event) {
+            let prev_label = tableInstance.modifiers[this.getAttribute("for").charAt(this.getAttribute("for").length-1)].category;
+            tableInstance.modifiers[this.getAttribute("for").charAt(this.getAttribute("for").length-1)].category = this.value;
+
+            tableInstance.updateModifierCategory(prev_label, this.value);
+        });
+        category_label.value = label;
+
+        let delete_button = document.createElement("img");
+        delete_button.className = "modifier_delete";
+        delete_button.src = "static/images/delete.png";
+        delete_button.style.width = "40px";
+        delete_button.style.background = "none";
+        delete_button.addEventListener("click", function(event) {
+            if(confirm("!!WARNING!!\nDeleting a Modifier Category will PERMANENTLY DELETE ALL MODIFIERS FOUND UNDER IT! Only Continue if you are sure.")) {
+                console.log("Confirmed Yes!")
+                tableInstance.removeCategory(category_label.value);
+
+                while(dropdown_content.firstChild) {
+                    dropdown_content.firstChild.remove();
+                }
+                dropdown_content.remove();
+                while(modifier_dropdown.firstChild) {
+                    modifier_dropdown.firstChild.remove();
+                }
+                modifier_dropdown.remove();
+            }
+            else {
+                console.log("Confirmed No!")
+            }
+        });
+
+        dropdown_header.appendChild(dropdown_button);
+        dropdown_header.append(category_label);
+        dropdown_header.appendChild(delete_button);
+
+        let dropdown_content = document.createElement("div");
+        dropdown_content.className = "dropdown_content";
+        dropdown_content.id = "dropdown_"+String(this.modifiers.length);
+        dropdown_content.style.display = "flex";
+        dropdown_content.style.marginTop = "0px";
+
+        let add_modifier_button = document.createElement("button");
+        add_modifier_button.className = "add_modifier";
+        add_modifier_button.innerHTML = "&#x2b;";
+        add_modifier_button.setAttribute("for", "dropdown_"+String(this.modifiers.length));
+        add_modifier_button.addEventListener("click", function(event) {
+            tableInstance.addModifier(this.getAttribute("for"));
+        });
+
+        modifier_panel_container.appendChild(modifier_dropdown);
+        modifier_dropdown.appendChild(dropdown_header);
+        modifier_dropdown.appendChild(dropdown_content);
+        dropdown_content.appendChild(add_modifier_button);
+
+        this.modifiers.push({category: "", modifier_list: []});
+        if(modifiers_list.length > 0) {
+            for(let i = 0; i < modifiers_list.length; i++) {
+                this.addModifier(dropdown_content.id, modifiers_list[i]["label"], modifiers_list[i]["price"])
             }
         }
     }
-    /*CONSTRUCTOR*/
 
-    /*METHODS*/
-    getLabel() {
-        return this.label;
+    //Add a modifier to a category
+    addModifier(modifier_category_id, mod_label="", mod_price=0.0) {
+        let tableInstance = this;
+        let dropdown_container = document.getElementById(modifier_category_id);
+
+        let modifier_container = document.createElement("div");
+        modifier_container.className = "modifier_container"
+        modifier_container.setAttribute("for", modifier_category_id);
+        modifier_container.setAttribute("index", String(this.modifiers[modifier_category_id.charAt(modifier_category_id.length-1)].modifier_list.length));
+
+        let delete_button = document.createElement("img");
+        delete_button.className = "modifier_delete";
+        delete_button.src = "static/images/delete.png";
+        delete_button.style.width = "30px";
+        delete_button.style.background = "none";
+        delete_button.addEventListener("click", function(event) {
+            let index = modifier_container.getAttribute("for").charAt(modifier_container.getAttribute("for").length-1);
+            tableInstance.removeModifier(tableInstance.modifiers[index].category, tableInstance.modifiers[index].modifier_list[modifier_container.getAttribute("index")].label);
+
+            while (modifier_container.firstChild) {
+                modifier_container.firstChild.remove();
+            }
+            modifier_container.remove();
+
+            if (dropdown_container.children.length > 1) {
+                for (let i = 0; i < dropdown_container.children.length; i++) {
+                    dropdown_container.children[i].setAttribute("index", String(Number(dropdown_container.children[i].getAttribute("index")) - Number(1)));
+                }
+            }
+        });
+
+        let modifier_label_container = document.createElement("div");
+        modifier_label_container.className = "modifier_label_container";
+        modifier_label_container.style.margin = "0";
+
+        let modifier_label = document.createElement("textarea");
+        modifier_label.className = "modifier_label";
+        modifier_label.placeholder = "modifier";
+        modifier_label.style.margin = "0";
+        modifier_label.addEventListener("change", function(event) {
+            let index = modifier_container.getAttribute("for").charAt(modifier_container.getAttribute("for").length-1);
+            let prev_label = tableInstance.modifiers[index].modifier_list[modifier_container.getAttribute("index")].label;
+            tableInstance.modifiers[index].modifier_list[modifier_container.getAttribute("index")].label = this.value;
+
+            tableInstance.updateItemModifier(tableInstance.modifiers[index].category, modifier_label.value, this.value, prev_label);
+        });
+        modifier_label.value = mod_label;
+        modifier_label_container.appendChild(modifier_label);
+
+        let modifiers_dropdown = document.createElement("button");
+        modifiers_dropdown.className = "modifiers_dropdown";
+        modifiers_dropdown.innerHTML = "\u21D3";
+        modifiers_dropdown.style.margin = "0";
+        modifier_label_container.appendChild(modifiers_dropdown);
+
+        let modifier_price = document.createElement("textarea");
+        modifier_price.className = "modifier_price";
+        modifier_price.placeholder = "$-";
+        modifier_price.addEventListener("change", function(event) {
+            let index = modifier_container.getAttribute("for").charAt(modifier_container.getAttribute("for").length-1);
+            tableInstance.modifiers[index].modifier_list[this.parentElement.getAttribute("index")].price = Number(this.value);
+
+            tableInstance.updateItemModifier(tableInstance.modifiers[index].category, modifier_label.value, this.value);
+        });
+        modifier_price.value = mod_price;
+
+        let colon = document.createElement("label");
+        colon.innerHTML = ":";
+
+        dropdown_container.insertBefore(modifier_container, dropdown_container.lastChild);
+        modifier_container.appendChild(delete_button);
+        modifier_container.appendChild(modifier_label_container);
+        modifier_container.appendChild(colon);
+        modifier_container.appendChild(modifier_price);
+
+        this.modifiers[modifier_category_id.charAt(modifier_category_id.length-1)].modifier_list.push({label: mod_label, price: mod_price});
     }
 
-    getPrices() {
-        return this.prices;
+    //Updates modifier category
+    updateModifierCategory(prev_category, current_category) {
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'prevModifierCategory': prev_category,
+                'currentModifierCategory': current_category
+            }),
+            url: 'update-category',
+            method: 'POST'
+        });
     }
 
-    getPricesLength() {
-        return this.priceLen;
+    //Updates item's modifiers to database
+    updateItemModifier(category, current_label, price, prev_label=null) {
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'tableName': this.tableName,
+                'itemName': this.items[Number(this.selected_item.getAttribute("row_index"))].label,
+                'modifierCategory': category,
+                'prevModifierName': prev_label,
+                'currentModifierName': current_label,
+                'modifierPrice': price
+            }),
+            url: 'update-modifier',
+            method: 'POST'
+        });
     }
 
-    setLabel(label) {
-        this.label = label;
+    //Get item's modifier's from the database
+    getItemModifiers() {
+        let tableInstance = this;
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'tableName': this.tableName,
+                'itemName': this.items[Number(this.selected_item.getAttribute("row_index"))].label
+            }),
+            success: function(data) {
+                tableInstance.clearModifierPanel();
+
+                let categories = data["categories"];
+                let modifiers = data["modifiers"];
+                for (let i = 0; i < categories.length; i++) {
+                    let mods = []
+                    for (let j = 0; j < modifiers.length; j++) {
+                        mods.push(modifiers[j]);
+                    }
+                    tableInstance.addModifierCategory(categories[i], mods);
+                }
+            },
+            url: 'get-modifiers',
+            type: 'POST'
+        });
     }
 
-    setPrice(index, price) {
-        this.prices[index] = price;
+    //Remove modifier category
+    removeCategory(category) {
+        $.ajax({
+            contentType: 'JSON',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'modifierCategory': category
+            }),
+            url: 'remove-category',
+            type: 'POST'
+        });
     }
 
-    printItem() {
-        console.log(this.label + ": [" + this.prices + "]");
+    //Remove a given modifier
+    removeModifier(category, modifier) {
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'tableName': this.tableName,
+                'itemName': this.items[Number(this.selected_item.getAttribute("row_index"))].label,
+                'modifierCategory': category,
+                'modifierLabel': modifier
+            }),
+            url: 'remove-modifier',
+            type: 'POST'
+        });
     }
+    /*MODIFIER HELPERS*/
 }
