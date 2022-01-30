@@ -311,13 +311,16 @@ def getdb():
     """Endpoint to send data from database to client"""
     try:
         data = json.loads(request.data)  # Get JSON data from server request
+        user = data.get("username").strip()  # Get username from json data
         table_name = data.get("tableName").strip()  # Get table name from json data
 
-        db_user = User.query.filter_by(username=data.get("username").strip()).first()  # Find given user in database
-        if db_user is None:  # If the user is not found in the database...
-            raise NoResultFound("Could not find user")  # Raise a no result found error
+        db_user = User.query.filter_by(username=user).first()
+        if db_user is None:
+            raise NoResultFound("Could not find given user: " + user)
 
         db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Find given table in database
+        if not db_table:
+            return jsonify(price_labels=[], items=[], completed=False), 200  # Return the list of price labels and items with success code
 
         items = []
         db_items = Item.query.filter_by(table_id=db_table.id).all()  # Get all items under the table
@@ -329,7 +332,8 @@ def getdb():
             items.append(data)  # Append to items to be returned
 
         price_labels = []
-        db_columns = Columns.query.filter_by(user_id=db_user.get_id()).first()  # Finds the user's columns labels in the database
+        db_columns = Columns.query.filter_by(
+            user_id=db_user.get_id()).first()  # Finds the user's columns labels in the database
         if db_columns:  # If the user's columns are found in the database...
             price_labels = db_columns.getPriceLabels()  # Return a list of the column labels
 
@@ -342,8 +346,8 @@ def getdb():
         return jsonify(price_labels=price_labels, items=items, completed=completed), 200  # Return the list of price labels and items with success code
 
     except NoResultFound as e:
-        print("Exception in getdb: " + str(e))
-        flash("Could not find table in database!")
+        print("No Result Found in get-modifiers")
+        print("Exception:" + str(e))
         return Response(status=501)
 
     except Exception as e:
@@ -449,7 +453,7 @@ def removeItem():
         if not db_table:  # If the given table could not be found
             raise NoResultFound("Could not find table: " + table_name)  # Raise no results found error
 
-        db_item = Item.query.filter_by(table_id=db_table.id, item_name=item_name)  # Find given item in database
+        db_item = Item.query.filter_by(table_id=db_table.id, item_name=item_name).first()  # Find given item in database
         if db_item:  # If the item is found...
             db_item.modifiers.clear()  # Clear the item's relationships
             db_item.delete()  # Delete the item
@@ -489,7 +493,7 @@ def removeUser():
                 Item.query.filter_by(id=item.id).delete()  # Delete the item
             Table.query.filter_by(id=table.id).delete()  # Delete the table
 
-        db_columns = Columns.query.filter_by(user_id=db_user.getid()).all()  # Get all columns belonging to the user
+        db_columns = Columns.query.filter_by(user_id=db_user.get_id()).all()  # Get all columns belonging to the user
         for column in db_columns:  # For each column
             Columns.query.filter_by(id=column.id).delete()  # Delete the column
 
@@ -533,7 +537,7 @@ def downloadData(filename):  # Filename in this case is the user's username
             # Writing the column labels
             for (index, label) in enumerate(columns_list):  # For each label in columns_list...
                 worksheet.write(0, index+1, label)  # Write at y=0, x=index (1 to length of columns list + 1), with the value of the label
-            worksheet.write(0, columns_list.length, "Modifiers")  # Write modifiers column at the end of the column list
+            worksheet.write(0, len(columns_list)+1, "Modifiers")  # Write modifiers column at the end of the column list
 
             db_items = Item.query.filter_by(table_id=table.id).all()  # Gets every item under the current table
             for (y_index, item) in enumerate(db_items):  # For every index and item...
@@ -542,7 +546,10 @@ def downloadData(filename):  # Filename in this case is the user's username
                 modifier_list = ""
                 for modifier in item.modifiers:  # For every modifier belonging to the item...
                     modifier_list += f"[{modifier.modifier_label}]: ${modifier.modifier_price}; "  # Append it to a string to write out with
-                worksheet.write(1+y_index, item.getItemData().length, modifier_list)  # Write that string to the file at end of row
+                worksheet.write(1+y_index, len(columns_list), modifier_list)  # Write that string to the file at end of row
+
+        xlsxFile.close()  # Closes and saves changes to file
+        return send_file(f"static\\exports\\{filename}.xlsx", as_attachment=True)  # Returns the file to the client
 
     except NoResultFound as e:
         xlsxFile.close()  # Closes and saves changes to file
@@ -555,9 +562,6 @@ def downloadData(filename):  # Filename in this case is the user's username
         xlsxFile.close()  # Closes and saves changes to file
         print("Exception in download-data: " + str(e))  # Print what the exception was
         return Response(status=500)  # Return error code with the error response
-
-    xlsxFile.close()  # Closes and saves changes to file
-    return send_file(f"static\\exports\\{filename}.xlsx", as_attachment=True)  # Returns the file to the client
 
 
 @views.route('get-users', methods=['POST'])

@@ -11,7 +11,7 @@ class Table {
         this.parentElementID = null;
 
         //Table Template Elements
-        this.html_tabs = document.getElementsByClassName("tab_group");
+        this.tab_ids_list = null;
         this.tableContainer = null;
         this.tableElement = null;
         this.headerRow = null;
@@ -393,6 +393,42 @@ class Table {
     /*METHODS*/
 
     /*HTML TABLE HELPERS*/
+    //Add new radio button and content
+    addHTMLTab() {
+        let tableInstance = this;
+        let tab_id = "tab-" + String(this.tab_ids_list.length);
+        let tab_content_id = "tab-content" + String(this.tab_ids_list.length);
+        this.tab_ids_list.append(tab_id);
+
+
+        let tab_button_containers = document.getElementsByClassName("tab_button_container");
+
+        let container = document.createElement("div");
+        container.className = "container";
+
+        let radio_button = document.createElement("input")
+        radio_button.type = "radio";
+        radio_button.id = tab_id;
+        radio_button.name = "tab-group";
+        radio_button.setAttribute("for", tab_content_id);
+        container.appendChild(radio_button);
+
+        let tab_label = document.createElement("textarea");
+        tab_label.className = "tab-label";
+        tab_label.setAttribute("for", tab_id);
+        tab_label.placeholder = "Tab Name";
+        container.appendChild(tab_label);
+
+        let drink_button = document.getElementById("drink");
+        let food_button = document.getElementById("food");
+        if (drink_button.checked && !food_button.checked) {
+            tab_button_containers[0].appendChild(container);
+        }
+        else if (!drink_button.checked && food_button.checked) {
+            tab_button_containers[1].appendChild(container);
+        }
+    }
+
     //Adds a new row to the HTML Table
     addHTMLTableRow(item) {
         let tableInstance = this;
