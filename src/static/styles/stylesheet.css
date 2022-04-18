@@ -43,11 +43,11 @@ body {
 img.logo {
     margin: auto auto auto 20px;
     padding: 15px 0;
-    width: 10%;
+    width: 140px;
 }
 img.logo_foot {
     margin: 20px 20px 10px auto;
-    width: 5%;
+    width: 80px;
 }
 .flash_box {
     border: 2px solid black;
@@ -69,7 +69,7 @@ img.logo_foot {
 }
 #logout_panel {
     text-align: center;
-    margin: auto 20px auto auto;
+    margin: 2px 20px 2px auto;
     background: lightgrey;
     border: 1px groove black;
     padding: 5px;

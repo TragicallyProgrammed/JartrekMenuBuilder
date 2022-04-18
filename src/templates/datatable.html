@@ -1,13 +1,12 @@
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/tables.css') }}">
-<script src="{{ url_for('static', filename='scripts/table_eventSheet.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/table.js') }}"></script>
 {% endblock %}
 
 {% block content %}
-<div class="btn_container">
+<div id="btn_container">
     <input type="text" id="data_table_search_bar" placeholder="Search for items...">
-    <div class="btn_group">
+    <div id="drink_food_group">
         <input type="radio" id="drink" name="menu_button" checked>
         <label for="drink">
             Drinks
@@ -23,69 +22,31 @@
             <label>Food Modifiers</label>
         </button>
     </div>
-</div>
-<div id="drink_div">
-    <div class="tab-container">
-        <div class="tab_button_container">
-            <input type="radio" id="tab-1" name="tab-group" for="tab-content-1" checked>
-            <label class="tab-label" for="tab-1">
-                <div class="label-div"> Beer </div>
-            </label>
-            <input type="radio" id="tab-2" name="tab-group" for="tab-content-2">
-            <label class="tab-label" for="tab-2">
-                <div class="label-div"> Liquor </div>
-            </label>
-            <input type="radio" id="tab-3" name="tab-group" for="tab-content-3">
-            <label class="tab-label" for="tab-3">
-                <div class="label-div"> Wine </div>
-            </label>
-            <input type="radio" id="tab-4" name="tab-group" for="tab-content-4">
-            <label class="tab-label" for="tab-4">
-                <div class="label-div"> Mixed Drinks </div>
-            </label>
-            <input type="radio" id="tab-5" name="tab-group" for="tab-content-5">
-            <label class="tab-label" for="tab-5">
-                <div class="label-div"> Soft Drinks </div>
-            </label>
-        </div>
-        <div class="tab-content" id="tab-content-1" for="tab-1">
-        </div>
-        <div class="tab-content" id="tab-content-2" for="tab-2">
-        </div>
-        <div class="tab-content" id="tab-content-3" for="tab-3">
-        </div>
-        <div class="tab-content" id="tab-content-4" for="tab-4">
-        </div>
-        <div class="tab-content" id="tab-content-5" for="tab-5">
+    <div id="modifier_panel" style="display:none;">
+        <div id="modifier_header"><label style="font-size:1rem; margin: 0 0 0 5px;">Modifier Panel</label></div>
+        <div id="modifier_panel_content">
+            <div id="item_mods_panel">
+                <div id="item_mods_header">
+                    <label>Current Item: </label>
+                    <label id="current_item" style="width: 14rem; display: block; text-align: center;"></label>
+                </div>
+                <div id="item_mods_content">
+                </div>
+            </div>
+            <div id="mods_panel">
+                <div id="mods_header">
+                    <label style="display: block; text-align: center;">Modifiers</label>
+                </div>
+                <div id="mods_content">
+                </div>
+                <input id="set_modifier_button" type="button" value="<<Add To Item<<"/>
+            </div>
         </div>
     </div>
 </div>
-<div id="food_div" style="display: none;">
-    <div class="tab-container">
-        <div class="tab_button_container">
-            <input type="radio" id="tab2-1" name="tab-group" for="tab2-content-1">
-            <label class="tab-label" for="tab2-1">
-                <div class="label-div"> Kitchen Food </div>
-            </label>
-            <input type="radio" id="tab2-2" name="tab-group" for="tab2-content-2">
-            <label class="tab-label" for="tab2-2">
-                <div class="label-div"> Food/Snacks </div>
-            </label>
-        </div>
-        <div class="tab-content" id="tab2-content-1" for="tab2-1"></div>
-        <div class="tab-content" id="tab2-content-2" for="tab2-2"></div>
-    </div>
-    <div id="modifier_panel">
-        <div id="modifier_header"><label style="font-size:1rem;">Modifier Panel</label></div>
-        <label style="font-size: 2rem; border-bottom: 2px solid black">Item:<label id="item_name" style="font-size: 2rem;"></label></label>
-        <div id="modifier_panel_container">
-
-        </div>
-        <button id="add_modifier_type">&#x2b;</button>
-    </div>
+<div>
+<div id="tab_button_container"></div>
 </div>
-<div id="bot_container">
-    <button type="button" id="add_row">Add Row</button>
-    <div id="confirmation_container"><label for="confirmation_box">Table is complete:</label><input type="checkbox" id="confirmation_box"></div>
-</div>
+<div id="tab_content_div"></div>
+<div id="confirmation_container"><label for="confirmation_box">Table is complete:</label><input type="checkbox" id="confirmation_box"></div>
 {% endblock %}

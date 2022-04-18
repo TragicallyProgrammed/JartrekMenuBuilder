@@ -2,474 +2,30 @@ from flask import Blueprint, render_template, request, redirect, url_for, json, 
 from flask_login import login_required, current_user
 from .models import User, Table, Item, Columns, Modifiercategory, Modifier, modifier_item
 from sqlalchemy.exc import *
-from .Exceptions import *
 from . import db
 import xlsxwriter
 
 views = Blueprint('views', __name__)
 
-
-@views.route('update-table', methods=['POST'])
+# Profile Page Endpoint
+@views.route('profile', methods=['POST', 'GET'])
 @login_required
-def updateTable():
-    """Endpoint to update table to database"""
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-
-        user = data.get("username").strip()  # Get username from json data
-        table_name = data.get("tableName").strip()  # Get table name from json data
-
-        db_user = User.query.filter_by(username=user).first()  # Search database for given user
-        if not db_user:  # If user is not found... (Should never happen)
-            raise NoResultFound("Could not find user:", user)  # Raise no results found error
-
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Get given table
-        if not db_table:  # If the table is not found...
-            db_table = Table(user_id=db_user.get_id(), table_name=table_name)  # Make a new table with given table name
-        db_table.verified = data.get("completed")  # Set verified on table using json data
-
-        db.session.add(db_table)  # Add changes to the table to be committed
-        db.session.commit()  # Commit changes to database
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in update-table:" + str(e))
-        flash("User could not be found...", "error")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in get-modifiers")
-        print("Exception:" + str(e))
-        return Response(status=500)
+def profile():
+    if request.method == "POST" and request.form.get("submit") == "Logout":
+        return redirect(url_for('auth.logout'))
+    return render_template("profile.html", username=current_user.username)
 
 
-@views.route('update-columns', methods=['POST'])
+# User Endpoints
+@views.route('get-users', methods=['POST'])
 @login_required
-def updateColumns():
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-
-        user = data.get("username").strip()  # Get username from json data
-        price_labels_length = data.get("priceLabelsLength")  # Get length of price labels from json data
-        price_labels = data.get("priceLabels")  # Get labels from json data
-
-        db_user = User.query.filter_by(username=user).first()  # Search database for given user
-        if not db_user:  # If user is not found... (Should never happen)
-            raise NoResultFound("Could not find user:", user)  # Raise no results found error
-
-        db_columns = Columns.query.filter_by(user_id=db_user.get_id()).first()  # Search for user's column entry
-        if not db_columns:  # If columns entry could not be found...
-            db_columns = Columns(user_id=db_user.get_id())  # Create new columns entry
-        db_columns.changePriceLabels(price_labels_length, price_labels)  # Update price labels
-
-        db.session.add(db_columns)  # Add changes to be committed
-        db.session.commit()  # Commit changes to database
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in update-columns:" + str(e))
-        flash("User or Table could not be found...", "error")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in update-columns")
-        print("Exception:" + str(e))
-        return Response(status=500)
-
-
-@views.route('update-item-label', methods=['POST'])
-@login_required
-def updateItemLabel():
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-
-        user = data.get("username").strip()  # Get username from json data
-        table_name = data.get("tableName").strip()  # Get table name from json data
-        previous_item_name = data.get("prevItemName")  # Get the previous item's name
-        current_item_name = data.get("currentItemName")  # Get the current item's name
-
-        db_user = User.query.filter_by(username=user).first()  # Search database for given user
-        if not db_user:  # If user is not found... (Should never happen)
-            raise NoResultFound("Could not find user:", user)  # Raise no results found error
-
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Search the table for the given table
-        if not db_table:  # If the given table could not be found...
-            raise NoResultFound("Could not find table:", table_name)  # Raise no results found error
-
-        db_item = Item.query.filter_by(table_id=db_table.id, item_name=previous_item_name).first()  # Search for the previous item's name in the database
-        if not db_item:  # If the item is not found...
-            db_item = Item(table_id=db_table.id)  # Create new item under given table
-        db_item.item_name = current_item_name  # Set the item's label
-
-        db.session.add(db_item)  # Add changes to be committed
-        db.session.commit()  # Commit changes to database
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in update-item-label:" + str(e))
-        flash("User or Table could not be found...", "error")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in update-item-label")
-        print("Exception:" + str(e))
-        return Response(status=500)
-
-
-@views.route('update-item-prices', methods=['POST'])
-@login_required
-def updateItemPrices():
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-
-        user = data.get("username").strip()  # Get username from json data
-        table_name = data.get("tableName").strip()  # Get table name from json data
-        item_name = data.get("itemName").strip()  # Get item name from json data
-        item_prices = data.get("itemPrices")  # Get item price from json data
-
-        db_user = User.query.filter_by(username=user).first()  # Search database for given user
-        if not db_user:  # If user is not found... (Should never happen)
-            raise NoResultFound("Could not find user:", user)  # Raise no results found error
-
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Search the table for the given table
-        if not db_table:  # If the given table could not be found...
-            raise NoResultFound("Could not find table:", table_name)  # Raise no results found error
-
-        db_item = Item.query.filter_by(table_id=db_table.id, item_name=item_name).first()  # Search the database for the give item...
-        if db_item:  # If the item is found...
-            db_item.change_prices(item_prices)  # Update item's price
-            db.session.add(db_item)  # Add changes to be committed
-            db.session.commit()  # Commit changes to database
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in update-item-prices:" + str(e))
-        flash("User or Table could not be found...", "error")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in update-item-prices")
-        print("Exception:" + str(e))
-        return Response(status=500)
-
-
-@views.route('update-category', methods=['POST'])
-@login_required
-def updateCategory():
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-
-        user = data.get("username").strip()  # Get username from json data
-        prev_category = data.get("prevModifierCategory").strip()  # Get previous modifier category from json data
-        current_category = data.get("currentModifierCategory").strip()  # Get current modifier category from json data
-
-        db_user = User.query.filter_by(username=user).first()  # Search database for given user
-        if not db_user:  # If user is not found... (Should never happen)
-            raise NoResultFound("Could not find user: " + user)  # Raise no results found error
-
-        db_category = Modifiercategory.query.filter_by(user_id=db_user.get_id(), category_name=prev_category).first()  # Search the database for the given category
-        if not db_category:  # If the category could not be found...
-            db_category = Modifiercategory(user_id=db_user.get_id())  # Add a new category to the database
-        db_category.category_name = current_category  # Set the category
-
-        db.session.add(db_category)  # Add the new category to the database
-        db.session.commit()  # Commit changes to database
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in update-category:" + str(e))
-        flash("User or Table or Item could not be found...", "error")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in update-category")
-        print("Exception:" + str(e))
-        return Response(status=500)
-
-
-@views.route('update-modifier', methods=['POST'])
-@login_required
-def updateModifier():
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-
-        user = data.get("username").strip()  # Get username from json data
-        table_name = data.get("tableName").strip()  # Get table name from json data
-        item_name = data.get("itemName").strip()  # Get item name from json data
-        category = data.get("modifierCategory").strip()  # Get modifier category from json data
-        previous_modifier_name = data.get("prevModifierName")  # Get the previous item's name
-        current_modifier_name = data.get("currentModifierName")  # Get the current item's name
-        modifier_price = data.get("modifierPrice")  # Get the modifier's price from json data
-
-        db_user = User.query.filter_by(username=user).first()  # Search database for given user
-        if not db_user:  # If user is not found... (Should never happen)
-            raise NoResultFound("Could not find user: " + user)  # Raise no results found error
-
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Search the table for the given table
-        if not db_table:  # If the given table could not be found...
-            raise NoResultFound("Could not find table: " + table_name)  # Raise no results found error
-
-        db_item = Item.query.filter_by(table_id=db_table.id, item_name=item_name).first()  # Search the database for the give item...
-        if not db_item:  # If the given item could not be found...
-            raise NoResultFound("Could not find item: " + item_name)  # Raise no results found error
-
-        db_category = Modifiercategory.query.filter_by(user_id=db_user.get_id(), category_name=category).first()  # Search the database for the given category
-        if not db_category:  # If the category could not be found...
-            raise NoResultFound("Could not find category: " + category)  # Raise no results found error
-
-        if previous_modifier_name is None:  # If there is no previous label... (meaning we are changing the modifier's price)
-            modifiers = db_item.modifiers
-            db_modifier = None
-            for modifier in modifiers:
-                if modifier.category_id == db_category.id and modifier.modifier_label == current_modifier_name:
-                    db_modifier = modifier
-            if not db_modifier:  # If the modifier could not be found...
-                raise NoResultFound("Could not find modifier: " + current_modifier_name)  # Raise no result found error
-            db_modifier.modifier_price = modifier_price  # Set the modifier's price
-        else:  # If there is a previous label...
-            modifiers = db_item.modifiers
-            db_modifier = None
-            for modifier in modifiers:
-                if modifier.category_id == db_category.id and modifier.modifier_label == current_modifier_name:
-                    db_modifier = modifier
-            if not db_modifier:  # If the modifier could not be found...
-                db_modifier = Modifier(category_id=db_category.id)  # Create a new modifier
-                db_item.modifiers.append(db_modifier)  # Append it to the item's modifier list
-                db.session.add(db_item)  # Add the changes to item to database
-            db_modifier.modifier_label = current_modifier_name  # Update modifier's label
-
-        db.session.add(db_modifier)  # Add changes to modifier
-        db.session.commit()  # Commit all changes to database
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in update-modifier-label:" + str(e))
-        flash("User or Table or Item could not be found...", "error")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in update-modifier-label")
-        print("Exception:" + str(e))
-        return Response(status=500)
-
-
-@views.route('get-modifiers', methods=['POST'])
-@login_required
-def getModifiers():
-    """Endpoint to retrieve modifier data and send it to client"""
-    try:
-        data = json.loads(request.data)
-        user = data.get("username").strip()
-        table_name = data.get("tableName").strip()
-        item_name = data.get('itemName').strip()
-
-        db_user = User.query.filter_by(username=user).first()
-        if db_user is None:
-            raise NoResultFound("Could not find given user: " + user)
-
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()
-        if db_table is None:
-            raise NoResultFound("Could not find given table for user:" + user + " " + table_name)
-
-        modifier_categories = []
-        db_modifier_categories = Modifiercategory.query.filter_by(user_id=db_user.get_id()).all()
-
-        for db_category in db_modifier_categories:
-            modifier_categories.append(db_category.category_name)
-
-        db_item = Item.query.filter_by(table_id=db_table.id, item_name=item_name).first()
-        if db_item is None:
-            return jsonify(categories=modifier_categories, modifiers=[])
-
-        modifiers = []
-        for modifier in db_item.modifiers:
-            category = Modifiercategory.query.filter_by(id=modifier.category_id).first()
-            modifiers.append({'category': category.category_name, 'label': modifier.modifier_label, 'price': modifier.modifier_price})
-
-        return jsonify(categories=modifier_categories, modifiers=modifiers)
-
-    except NoResultFound as e:
-        print("No Result Found in get-modifiers")
-        print("Exception:" + str(e))
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in get-modifiers")
-        print("Exception:" + str(e))
-        return Response(status=500)
-
-
-@views.route('getdb', methods=['POST'])
-@login_required
-def getdb():
-    """Endpoint to send data from database to client"""
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-        user = data.get("username").strip()  # Get username from json data
-        table_name = data.get("tableName").strip()  # Get table name from json data
-
-        db_user = User.query.filter_by(username=user).first()
-        if db_user is None:
-            raise NoResultFound("Could not find given user: " + user)
-
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Find given table in database
-        if not db_table:
-            return jsonify(price_labels=[], items=[], completed=False), 200  # Return the list of price labels and items with success code
-
-        items = []
-        db_items = Item.query.filter_by(table_id=db_table.id).all()  # Get all items under the table
-        for item in db_items:  # For each item in the table's items...
-            item_data = item.getItemData()  # Get all item's data for the label
-            prices = item.getItemData()  # Get all item's data for the prices
-            prices.pop(0)  # Trim the item data
-            data = {"label": item_data[0], "prices": prices}  # Store in a dictionary to be returned
-            items.append(data)  # Append to items to be returned
-
-        price_labels = []
-        db_columns = Columns.query.filter_by(
-            user_id=db_user.get_id()).first()  # Finds the user's columns labels in the database
-        if db_columns:  # If the user's columns are found in the database...
-            price_labels = db_columns.getPriceLabels()  # Return a list of the column labels
-
-        completed = False  # Set completed to false by default
-        if db_table:  # If the table was found...
-            completed = db_table.verified  # Set load value from table
-            if completed is None:  # If completed is none...
-                completed = False  # Set completed to false by default...
-
-        return jsonify(price_labels=price_labels, items=items, completed=completed), 200  # Return the list of price labels and items with success code
-
-    except NoResultFound as e:
-        print("No Result Found in get-modifiers")
-        print("Exception:" + str(e))
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in getdb: " + str(e))
-        return Response(status=500)
-
-
-@views.route('remove-category', methods=['POST'])
-@login_required
-def removeCategory():
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-
-        user = data.get("username").strip()  # Get username from json data
-        category = data.get("modifierCategory").strip()  # Get modifier category from json data
-
-        db_user = User.query.filter_by(username=user).first()  # Search database for given user
-        if not db_user:  # If user is not found... (Should never happen)
-            raise NoResultFound("Could not find user: " + user)  # Raise no results found error
-
-        db_category = Modifiercategory.query.filter_by(user_id=db_user.get_id(), category_name=category).first()  # Search the database for the given category
-        if not db_category:  # If the category could not be found...
-            raise NoResultFound("Could not find category: " + category)  # Raise no results found error
-        modifier_list = db_category.modifiers  # Get every modifier under the category
-        for modifier in modifier_list:  # For each modifier in modifier_list
-            Modifier.query.filter_by(id=modifier.id).delete()  # Delete each modifier
-        Modifiercategory.query.filter_by(id=db_category.id).delete()  # Delete the category
-
-        db.session.commit()  # Commit changes to database
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in getdb: " + str(e))
-        flash("Could not find table in database!")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in getdb: " + str(e))
-        return Response(status=500)
-
-
-@views.route('remove-modifier', methods=['POST'])
-@login_required
-def removeModifier():
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-
-        user = data.get("username").strip()  # Get username from json data
-        table_name = data.get("tableName").strip()  # Get table name from json data
-        item_name = data.get("itemName").strip()  # Get item name from json data
-        category = data.get("modifierCategory").strip()  # Get modifier category from json data
-        modifier_label = data.get("modifierLabel").strip()  # Get modifier label from json data
-
-        db_user = User.query.filter_by(username=user).first()  # Search database for given user
-        if not db_user:  # If user is not found... (Should never happen)
-            raise NoResultFound("Could not find user: " + user)  # Raise no results found error
-
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Search the table for the given table
-        if not db_table:  # If the given table could not be found...
-            raise NoResultFound("Could not find table: " + table_name)  # Raise no results found error
-
-        db_item = Item.query.filter_by(table_id=db_table.id, item_name=item_name).first()  # Search the database for the give item...
-        if not db_item:  # If the given item could not be found...
-            raise NoResultFound("Could not find item: " + item_name)  # Raise no results found error
-
-        db_category = Modifiercategory.query.filter_by(user_id=db_user.get_id(), category_name=category).first()  # Search the database for the given category
-        if not db_category:  # If the category could not be found...
-            raise NoResultFound("Could not find category: " + category)  # Raise no results found error
-
-        for modifier in db_item.modifiers:
-            if modifier.category_id == db_category.id and modifier.modifier_label == modifier_label:
-                Modifier.query.filter_by(id=modifier.id).delete()
-                db.session.commit()
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in getdb: " + str(e))
-        flash("Could not find table in database!")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in getdb: " + str(e))
-        return Response(status=500)
-
-
-@views.route('remove_item', methods=['POST'])
-@login_required
-def removeItem():
-    """Endpoint to remove given item"""
-    try:
-        data = json.loads(request.data)  # Get JSON data from server request
-        user = data.get("username").strip()  # Get username from json data
-        table_name = data.get("tableName").strip()  # Get table name from json data
-        item_name = data.get("itemName").strip()  # Get item name from json data
-
-        db_user = User.query.filter_by(username=user).first()  # Find given user in database
-        if not db_user:  # If the given user could not be found... (this should never happen)
-            raise NoResultFound("Could not find user: " + user)  # Raise no results found error
-
-        db_table = Table.query.filter_by(user_id=db_user.get_id(), table_name=table_name).first()  # Find given table in database
-        if not db_table:  # If the given table could not be found
-            raise NoResultFound("Could not find table: " + table_name)  # Raise no results found error
-
-        db_item = Item.query.filter_by(table_id=db_table.id, item_name=item_name).first()  # Find given item in database
-        if db_item:  # If the item is found...
-            db_item.modifiers.clear()  # Clear the item's relationships
-            db_item.delete()  # Delete the item
-            db.session.commit()  # Commit changes to database
-
-        return Response(status=200)
-
-    except NoResultFound as e:
-        print("Exception in remove-item: " + str(e))
-        flash("Could not find table in database!")
-        return Response(status=501)
-
-    except Exception as e:
-        print("Exception in remove-item")
-        print("Exception: " + str(e))
-        return Response(status=500)
+def getUsers():
+    """Endpoint to get all users from database and send to client"""
+    users = User.query.all()
+    user_list = []
+    for user in users:
+        user_list.append(user.username)
+    return jsonify(user_list=user_list)
 
 
 @views.route('remove_user', methods=['POST'])
@@ -553,7 +109,6 @@ def downloadData(filename):  # Filename in this case is the user's username
 
     except NoResultFound as e:
         xlsxFile.close()  # Closes and saves changes to file
-        flash("Could not find one or more tables!", "error")  # Alerts client that the tables could not be found
         print("Could Not Find One Or More Tables While Downloading xlsx File")  # Prints to console that there was an error
         print("Error: " + str(e))  # Prints the error
         return redirect(url_for('auth.adminPanel'))  # Return error code with the error response
@@ -564,21 +119,428 @@ def downloadData(filename):  # Filename in this case is the user's username
         return Response(status=500)  # Return error code with the error response
 
 
-@views.route('get-users', methods=['POST'])
+@views.route('update-columns', methods=['POST'])
 @login_required
-def getUsers():
-    """Endpoint to get all users from database and send to client"""
-    users = User.query.all()
-    user_list = []
-    for user in users:
-        user_list.append(user.username)
-    return jsonify(user_list=user_list)
+def updateColumns():
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
+
+        user = data.get("username").strip()  # Get username from json data
+        price_labels_length = data.get("priceLabelsLength")  # Get length of price labels from json data
+        price_labels = data.get("priceLabels")  # Get labels from json data
+
+        db_user = User.query.filter_by(username=user).first()  # Search database for given user
+        if not db_user:  # If user is not found... (Should never happen)
+            raise NoResultFound("Could not find user:", user)  # Raise no results found error
+
+        db_columns = Columns.query.filter_by(user_id=db_user.get_id()).first()  # Search for user's column entry
+        if not db_columns:  # If columns entry could not be found...
+            db_columns = Columns(user_id=db_user.get_id())  # Create new columns entry
+        db_columns.changePriceLabels(price_labels_length, price_labels)  # Update price labels
+
+        db.session.add(db_columns)  # Add changes to be committed
+        db.session.commit()  # Commit changes to database
+
+        return Response(status=200)
+
+    except NoResultFound as e:
+        print("Exception in update-columns:" + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in update-columns")
+        print("Exception:" + str(e))
+        return Response(status=500)
 
 
-@views.route('profile', methods=['POST', 'GET'])
+# Table Endpoints
+@views.route('get-tables', methods=['POST'])
 @login_required
-def profile():
-    """Endpoint to load profile page"""
-    if request.method == "POST" and request.form.get("submit") == "Logout":
-        return redirect(url_for('auth.logout'))
-    return render_template("profile.html", username=current_user.username)
+def getTables():
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
+
+        username = data.get("username").strip()
+
+        db_user = User.query.filter_by(username=username).first()
+        if db_user is None:
+            raise NoResultFound("Could not find username:" + username)
+
+        price_labels = []
+        db_columns = Columns.query.filter_by(
+            user_id=db_user.get_id()).first()  # Finds the user's columns labels in the database
+        if db_columns:  # If the user's columns are found in the database...
+            price_labels = db_columns.getPriceLabels()  # Return a list of the column labels
+
+        tables = []
+        db_tables = Table.query.filter_by(user_id=db_user.get_id()).all()
+        for table in db_tables:
+            tables.append({"id": table.id, "tableName": table.table_name, "tableType": table.type})
+
+        return jsonify(priceLabels=price_labels, tables=tables), 200
+
+    except NoResultFound as e:
+        print("No Result Found in get-tables")
+        print("Exception:" + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in get-tables: " + str(e))
+        return Response(status=500)
+
+
+@views.route('get-table', methods=['POST'])
+@login_required
+def getTable():
+    """Endpoint to send data from database to client"""
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
+
+        username = data.get("username").strip()
+        table_id = data.get("tableID")
+
+        db_user = User.query.filter_by(username=username).first()
+        if db_user is None:
+            raise NoResultFound("Could not find username:" + username)
+
+        db_categories = Modifiercategory.query.filter_by(user_id=db_user.get_id()).all()
+        items = []
+        completed = False  # Set completed to false by default
+        if table_id != -1:
+            db_items = Item.query.filter_by(table_id=table_id).all()
+            for item in db_items:
+                item_dict = item.getItemData()
+
+                items.append(item_dict)
+
+            db_table = Table.query.filter_by(id=table_id).first()
+            if db_table is None:
+                raise NoResultFound("Could not find table id: " + table_id)
+
+            completed = db_table.verified  # Set load value from table
+
+        price_labels = []
+        db_columns = Columns.query.filter_by(
+            user_id=db_user.get_id()).first()  # Finds the user's columns labels in the database
+        if db_columns:  # If the user's columns are found in the database...
+            price_labels = db_columns.getPriceLabels()  # Return a list of the column labels
+
+        return jsonify(price_labels=price_labels, items=items,
+                       completed=completed), 200  # Return the list of price labels and items with success code
+
+    except NoResultFound as e:
+        print("No Result Found in get-table")
+        print("Exception:" + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in get-table: " + str(e))
+        return Response(status=500)
+
+
+@views.route('update-table', methods=['POST'])
+@login_required
+def updateTable():
+    """Endpoint to update table to database"""
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
+
+        username = data.get("username").strip()
+        table = data.get("table")
+        completed = data.get("completed")
+
+        if table["id"] != -1:
+            db_table = Table.query.filter_by(id=table["id"]).first()
+            if db_table is None:
+                raise NoResultFound("Could not find table id: " + table["id"])
+        else:
+            db_user = User.query.filter_by(username=username).first()
+            if db_user is None:
+                raise NoResultFound("Could not find user: " + username)
+            db_table = Table(user_id=db_user.get_id())
+
+        db_table.table_name = table["tableName"].strip()
+        db_table.type = table["tableType"].strip()
+        db_table.verified = completed
+
+        db.session.add(db_table)  # Add changes to be committed
+        db.session.commit()  # Commit changes to database
+
+        return jsonify(id=db_table.id), 200
+
+    except NoResultFound as e:
+        print("Exception in update-table:" + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in update-table")
+        print("Exception:" + str(e))
+        return Response(status=500)
+
+
+@views.route('delete-table', methods=['POST'])
+@login_required
+def deleteTable():
+    try:
+        data = json.loads(request.data)
+        table_id = data.get("tableID")
+
+        db_table = Table.query.filter_by(id=table_id).first()
+        if db_table is None:
+            raise NoResultFound("Could not find table id: " + table_id)
+
+        db_items = Item.query.filter_by(table_id=db_table.id)
+        for item in db_items:
+            item.modifiers.clear()
+            Item.query.filter_by(id=item.id).delete()
+
+        Table.query.filter_by(id=db_table.id).delete()
+
+        db.session.commit()
+
+        return Response(status=200)
+
+    except NoResultFound as e:
+        print("No Result Found in delete-table")
+        print("Exception:" + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in delete-table: " + str(e))
+        return Response(status=500)
+
+
+# Item Endpoints
+@views.route('update-item-label', methods=['POST'])
+@login_required
+def updateItemLabel():
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
+
+        table_id = data.get("tableID")
+        item_id = data.get("itemID")
+        item_label = data.get("label").strip()  # Get the current item's name
+
+        if table_id == -1:
+            return jsonify(id=0), 200
+
+        if item_id == -1 or item_id == 0:
+            db_item = Item(table_id=table_id, item_name=item_label)
+        else:
+            db_item = Item.query.filter_by(id=item_id).first()
+            if db_item is None:
+                raise NoResultFound("Could not find item id: " + item_id)
+        db_item.item_name = item_label
+
+        db.session.add(db_item)  # Add changes to be committed
+        db.session.commit()  # Commit changes to database
+
+        return jsonify(id=db_item.id), 200
+
+    except NoResultFound as e:
+        print("Exception in update-item-label:" + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in update-item-label")
+        print("Exception:" + str(e))
+        return Response(status=500)
+
+
+@views.route('update-item-prices', methods=['POST'])
+@login_required
+def updateItemPrices():
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
+
+        item_id = data.get("itemID")
+        item_prices = data.get("prices")
+
+        db_item = Item.query.filter_by(id=item_id).first()
+        if db_item is None:
+            raise NoResultFound("Could not find item id: " + item_id)
+        db_item.change_prices(item_prices)
+
+        db.session.add(db_item)
+        db.session.commit()
+
+        return Response(status=200)
+
+    except NoResultFound as e:
+        print("Exception in update-item-prices:" + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in update-item-prices")
+        print("Exception:" + str(e))
+        return Response(status=500)
+
+
+@views.route('remove-item', methods=['POST'])
+@login_required
+def removeItem():
+    """Endpoint to remove given item"""
+    try:
+        data = json.loads(request.data)  # Get JSON data from server request
+        item_id = data.get("itemID")
+
+        if item_id == 0:
+            return Response(status=200)
+
+        db_item = Item.query.filter_by(id=item_id).first()
+        if db_item is None:
+            raise NoResultFound("Could not find item id: " + str(item_id))
+        db_item.modifiers.clear()  # Clear the item's relationships
+        Item.query.filter_by(id=db_item.id).delete()  # Delete the item
+        db.session.commit()  # Commit changes to database
+
+        return Response(status=200)
+
+    except NoResultFound as e:
+        print("Exception in remove-item: " + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in remove-item")
+        print("Exception: " + str(e))
+        return Response(status=500)
+
+
+# Modifier Endpoints
+@views.route('get-categories', methods=['POST'])
+@login_required
+def getCategories():
+    try:
+        data = json.loads(request.data)
+
+        username = data["username"].strip()
+
+        db_user = User.query.filter_by(username=username).first()
+        if db_user is None:
+            raise NoResultFound("Could not find user: " + username)
+
+        categories = []
+        db_categories = Modifiercategory.query.filter_by(user_id=db_user.get_id()).all()
+        for category in db_categories:
+            temp = {"id": category.id, "label": category.category_name, "mods": []}
+            for modifier in category.modifiers:
+                temp["mods"].append({"id": modifier.id, "label": modifier.modifier_label, "price": modifier.modifier_price})
+            categories.append(temp)
+
+        return jsonify(categories=categories), 200
+
+    except NoResultFound as e:
+        print("Exception in get-modifiers: " + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in get-modifiers")
+        print("Exception: " + str(e))
+        return Response(status=500)
+
+
+@views.route('update-category-label', methods=['POST'])
+@login_required
+def updateCategoryLabel():
+    try:
+        data = json.loads(request.data)
+
+        username = data["username"].strip()
+        category_id = data["categoryID"]
+        label = data["label"].strip()
+
+        db_user = User.query.filter_by(username=username).first()
+        if db_user is None:
+            raise NoResultFound("Could not find user: " + username)
+
+        if category_id == -1:
+            category = Modifiercategory(user_id=db_user.get_id())
+        else:
+            category = Modifiercategory.query.filter_by(id=category_id).first()
+        category.category_name = label
+
+        db.session.add(category)
+        db.session.commit()
+
+        return jsonify(id=category.id), 200
+
+    except NoResultFound as e:
+        print("Exception in update-category-label: " + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in update-category-label")
+        print("Exception: " + str(e))
+        return Response(status=500)
+
+
+@views.route('update-modifier-label', methods=['POST'])
+@login_required
+def updateModifierLabel():
+    try:
+        data = json.loads(request.data)
+
+        category_id = data["categoryID"]
+        modifier_id = data["modifierID"]
+        modifier_label = data["label"].strip()
+
+        if category_id == -1:
+            return jsonify(id=0), 200
+
+        if modifier_id == -1 or modifier_id == 0:
+            modifier = Modifier(category_id=category_id)
+        else:
+            modifier = Modifier.query.filter_by(id=modifier_id)
+            if modifier is None:
+                raise NoResultFound(modifier_id)
+        modifier.modifier_label = modifier_label
+
+        db.session.add(modifier)
+        db.session.commit()
+
+        return jsonify(id=modifier.id), 200
+
+    except NoResultFound as e:
+        print("Exception in update-modifier-label: " + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in update-modifier-label")
+        print("Exception: " + str(e))
+        return Response(status=500)
+
+
+@views.route('update-modifier-label', methods=['POST'])
+@login_required
+def updateModifierLabel():
+    try:
+        data = json.loads(request.data)
+
+        category_id = data["categoryID"]
+        modifier_id = data["modifierID"]
+        modifier_price = data["price"]
+
+        if category_id == -1:
+            return jsonify(id=0), 200
+
+        if modifier_id == -1 or modifier_id == 0:
+            modifier = Modifier(category_id=category_id)
+        else:
+            modifier = Modifier.query.filter_by(id=modifier_id)
+            if modifier is None:
+                raise NoResultFound(modifier_id)
+        modifier.modifier_price = modifier_price
+
+        db.session.add(modifier)
+        db.session.commit()
+
+        return jsonify(id=modifier.id), 200
+
+    except NoResultFound as e:
+        print("Exception in update-modifier-price: " + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in update-modifier-price")
+        print("Exception: " + str(e))
+        return Response(status=500)

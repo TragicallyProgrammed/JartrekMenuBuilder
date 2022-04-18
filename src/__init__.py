@@ -2,9 +2,10 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from os import path
+from .settings import KEY, TRACK_MODIFICATIONS, ENVIROMENT, DEBUG, DB_NAME
 
-db = SQLAlchemy()  # Create SQLAlchemy database
 app = Flask(__name__)  # Create flask instance
+db = SQLAlchemy()  # Create SQLAlchemy database
 login_manager = LoginManager()  # Start login manager
 
 
@@ -13,7 +14,6 @@ def create_app():
     from .views import views
     from .auth import auth
     from .models import User
-    from .settings import KEY, TRACK_MODIFICATIONS, ENVIROMENT, DEBUG, DB_NAME
 
     app.config['SECRET_KEY'] = KEY
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
@@ -41,6 +41,6 @@ def create_app():
 
 def create_database(app):
     """Function to instantiate the database"""
-    from .settings import DB_NAME
     if not path.exists('src/' + DB_NAME):  # If the database does not exist
         db.create_all(app=app)  # Creates all tables found in .model
+        print("Created Database")

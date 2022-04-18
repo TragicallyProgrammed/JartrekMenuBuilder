@@ -29,6 +29,7 @@ class Table(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     table_name = db.Column(db.String(128), index=True)
+    type = db.Column(db.String(128))
     verified = db.Column(db.Boolean())
     items = db.relationship('Item', backref='table', lazy='dynamic')
 
@@ -108,33 +109,33 @@ class Item(db.Model):
         self.price8 = None
         for (index, price) in enumerate(arr):
             if index == 0:
-                if price != "":
+                if price is not None:
                     self.price1 = price
             elif index == 1:
-                if price != "":
+                if price is not None:
                     self.price2 = price
             elif index == 2:
-                if price != "":
+                if price is not None:
                     self.price3 = price
             elif index == 3:
-                if price != "":
+                if price is not None:
                     self.price4 = price
             elif index == 4:
-                if price != "":
+                if price is not None:
                     self.price5 = price
             elif index == 5:
-                if price != "":
+                if price is not None:
                     self.price6 = price
             elif index == 6:
-                if price != "":
+                if price is not None:
                     self.price7 = price
             elif index == 7:
-                if price != "":
+                if price is not None:
                     self.price8 = price
 
     def getItemData(self):
-        return [self.item_name, self.price1, self.price2, self.price3, self.price4, self.price5, self.price6,
-                self.price7, self.price8]
+        return {"id": self.id, "label": self.item_name, "prices": [self.price1, self.price2, self.price3, self.price4, self.price5, self.price6,
+                self.price7, self.price8], "categories": []}
 
 
 class Modifiercategory(db.Model):
