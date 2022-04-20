@@ -1,6 +1,5 @@
 $(function () {
-    let tableInstance = new Table(current_user=document.getElementById("username").innerHTML.valueOf());
-    tableEventManager(tableInstance);
+    let table = MenuTable(document.getElementById("username").innerHTML.valueOf());
 
     $('#user_search_bar').on("keyup", function(event) {
         console.log("Key pressed!")
@@ -118,8 +117,8 @@ $(function () {
                     e.preventDefault();
                     let label = document.getElementById("current_user");  // Get label
                     label.innerHTML = this.getAttribute("for");  // Update label
-                    tableInstance.changeCurrentUser(this.getAttribute("for")); // Update table's current user
-                    tableInstance.loadTable($('input[name="tab-group"]:checked').attr("for"));  // Loading table for currently selected user
+                    table.current_user = this.getAttribute("for") // Update table's current user
+                    //tableInstance.loadTable($('input[name="tab-group"]:checked').attr("for"));  // Loading table for currently selected user
                 });
                 let view_table_label = document.createElement('label');
                 view_table_label.innerHTML = "\u27BE";

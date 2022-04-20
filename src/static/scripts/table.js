@@ -79,13 +79,13 @@ function MenuTable(initial_user)
             }
         }
         $($('#tab_button_container').children()[0].children[0]).prop("checked", true).trigger("change")
+        $('#modifier_panel').css("display", "none")
     })
 
     // Table Tabs
     $('#tab_button_container').on("mousewheel", function(event, delta){ // Horizontal Scroll
         this.scrollLeft += event.originalEvent.deltaY
-    }
-    ).on("change", 'input[name="tab_group"]',  function () { // Changing tabs
+    }).on("change", 'input[name="tab_group"]',  function () { // Changing tabs
         $(this).parent().css("background", "white").css("z-index", 2)
         $('input[name="tab_group"]:not(:checked)').each(function() {
             $(this).parent().css("background", "lightgray").css("z-index", 1)
@@ -99,22 +99,21 @@ function MenuTable(initial_user)
         } else if(selected_category_id === "food") {
             table.downloadTable(food_tables[id.substring(id.length - 1)]["id"])
         }
-    }
-    ).on("click", '.tab_button', function() { // Click to change to that tab
+    }).on("click", '.tab_button', function() { // Click to change to that tab
         let checked_tab = $('input[name="tab_group"]:checked')
         if (this.children[0].id !== checked_tab.prop("id")) {
             checked_tab.prop("checked", false)
             $(this.children[0]).prop("checked", true).trigger("change")
         }
-    }
-    ).on("change", '.tab_label', function(event){  // Change table label
-        let index = Number(this.getAttribute("for").substring(0, "tab-".length))
+    }).on("change", '.tab_label', function(event){  // Change table label
+        let index = Number(this.getAttribute("for").substring("tab_".length))
         let current_table = null
 
         let selected_category_id = $('input[name="menu_button"]:checked').attr("id")
         if(selected_category_id === "drink") {
             current_table = drink_tables[index]
         } else if(selected_category_id === "food") {
+            console.log(index)
             current_table = food_tables[index]
         }
         current_table["tableName"] = this.value
@@ -155,8 +154,7 @@ function MenuTable(initial_user)
                 }
             }
         })
-    }
-    ).on('click', '.delete_table', function(event) { // Delete tables
+    }).on('click', '.delete_table', function(event) { // Delete tables
         event.preventDefault()
         if(confirm("Deleting a table also deletes all items belonging to it... Continue deleting the table?")) {
             let table_tabs = $(this).parent().parent().children()
@@ -237,8 +235,7 @@ function MenuTable(initial_user)
     $('#modifier_panel').draggable()
     $('#modifier_header').on('mouseenter', function(event) {
         $('#modifier_panel').draggable("option", "disabled", false)
-    }
-    ).on('mouseleave', function(event) {
+    }).on('mouseleave', function(event) {
         $('#modifier_panel').draggable("option", "disabled", true)
     })
     // Modifier Events
@@ -253,8 +250,7 @@ function MenuTable(initial_user)
             this.parentNode.style.borderBottom = "ridge"
             this.style.transform = "rotateZ(0)"
         }
-    }
-    ).on('change', '.category_label', function(event){
+    }).on('change', '.category_label', function(event){
         let index = Number(this.parentNode.parentNode.getAttribute("index"))
         modifier_categories[index]["label"] = this.value
 
@@ -273,10 +269,41 @@ function MenuTable(initial_user)
                     addModifierCategory()
                 }
                 modifier_categories[index]["id"] = data["id"]
+
+                if(table.current_row !== null) {
+                    table.selectRow(null, table.current_row.getAttribute("row_index"))
+                }
             }
         })
-    }
-    ).on('change', '.modifier_label', function(event) {
+    }).on('click', '.delete_category', function(event) {
+        event.preventDefault()
+        if(confirm("Warning!\nDeleting a modifier category deletes all modifiers belonging to it... continue?")){
+            let container = this.parentNode.parentNode
+            let index = container.getAttribute("index")
+            $.ajax({
+                contentType: 'JSON',
+                data: JSON.stringify({
+                    "categoryID": modifier_categories[index]["id"]
+                }),
+                type: 'POST',
+                url: 'delete-category',
+                success: function(data) {
+                    if(modifier_categories[index]["id"] !== 0 && modifier_categories[index]["id"] !== -1) {
+                        container.remove()
+
+                        if(table.current_row !== null) {
+                            table.selectRow(null, table.current_row.getAttribute("row_index"))
+                        }
+                    }
+                }
+            })
+        }
+    }).on('change', '.modifier_label', function(event) {
+        if(this.value === "") {
+            $(this.parentNode.children[0]).prop("checked", false).attr("disabled", true)
+        } else {
+            $(this.parentNode.children[0]).attr("disabled", false)
+        }
         let modifiers_container = this.parentNode.parentNode
         let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
         let modifier_index = this.parentNode.getAttribute("index")
@@ -298,10 +325,13 @@ function MenuTable(initial_user)
                     addModifier($(modifiers_container))
                 }
                 modifier["id"] = data["id"]
+
+                if(table.current_row !== null) {
+                    table.selectRow(null, table.current_row.getAttribute("row_index"))
+                }
             }
         })
-    }
-    ).on('change', '.modifier_price', function(event){
+    }).on('change', '.modifier_price', function(event){
         let modifiers_container = this.parentNode.parentNode
         let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
         let modifier_index = this.parentNode.getAttribute("index")
@@ -318,13 +348,122 @@ function MenuTable(initial_user)
             type: 'POST',
             url: 'update-modifier-price',
             success: function(data) {
-                if(modifier["id"] === -1) {
-                    modifier_categories[category_index]["mods"].push({"id": -1, "categoryID": -1, "label": "", "price": ""})
-                    addModifier($(modifiers_container))
-                }
                 modifier["id"] = data["id"]
+
+                if(table.current_row !== null) {
+                    table.selectRow(null, table.current_row.getAttribute("row_index"))
+                }
             }
         })
+    }).on('click', '.delete_modifier', function(event){
+        let modifier_container = this.parentNode
+        let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
+        let modifier_index = this.parentNode.getAttribute("index")
+
+        $.ajax({
+            contentType: 'JSON',
+            data: JSON.stringify({
+                'modifierID': modifier_categories[category_index]["mods"][modifier_index]["id"]
+            }),
+            type: 'POST',
+            url: 'delete-modifier',
+            success: function(data) {
+                if(modifier_categories[category_index]["mods"][modifier_index]["id"] !== 0 && modifier_categories[category_index]["mods"][modifier_index]["id"] !== -1) {
+                    modifier_container.remove()
+
+                    if(table.current_row !== null) {
+                        table.selectRow(null, table.current_row.getAttribute("row_index"))
+                    }
+                }
+            }
+        })
+    })
+    $('#set_modifier_button').on('click', function(event) {
+        event.preventDefault()
+
+        if(table.current_row !== null) {
+            let item_index = table.current_row.getAttribute("row_index")
+            let item_id = table.items[item_index]["id"]
+            $('input[class=modifier_checkbox]:checked').each(function () {
+                let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
+                let modifier_index = this.parentNode.getAttribute("index")
+
+                $(this).prop("checked", false)
+
+                if (modifier_categories[category_index]["mods"][modifier_index]["id"] !== -1 && modifier_categories[category_index]["mods"][modifier_index]["id"] !== 0) {
+                    $.ajax({
+                        contentType: 'JSON',
+                        data: JSON.stringify({
+                            'itemID': item_id,
+                            'modifierID': modifier_categories[category_index]["mods"][modifier_index]["id"]
+                        }),
+                        type: 'POST',
+                        url: 'set-item-modifier',
+                        success: function(data) {
+                            if(table.current_row !== null) {
+                                table.selectRow(null, table.current_row.getAttribute("row_index"))
+                            }
+                        }
+                    })
+                }
+            })
+        }
+    })
+    // Item Modifier Events
+    $('#item_mods_content').on('click', '.category_dropdown_button', function(event){
+        let item_modifier_container = this.parentNode.parentNode.children[1]
+        if(item_modifier_container.style.display === "") {
+            item_modifier_container.style.display = "none"
+            this.parentNode.style.borderBottom = "none"
+            this.style.transform = "rotateZ(90deg)"
+        } else {
+            item_modifier_container.style.display = ""
+            this.parentNode.style.borderBottom = "ridge"
+            this.style.transform = "rotateZ(0)"
+        }
+    }).on('click', '.remove_item_modifier', function(event){
+        event.preventDefault()
+
+        let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
+        let modifier_index = this.parentNode.getAttribute("index")
+        let item_index = table.current_row.getAttribute("row_index")
+
+        $.ajax({
+            contentType: 'JSON',
+            data: JSON.stringify({
+                'itemID': table.items[item_index]["id"],
+                'modifierID': table.items[item_index]["categories"][category_index]["mods"][modifier_index]["id"]
+            }),
+            type: 'POST',
+            url: 'remove-item-modifier',
+            success: function(event) {
+                table.selectRow(null, item_index)
+            }
+        })
+    }).on('click', '.select_modifier', function(event){
+        event.preventDefault()
+
+        let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
+        let modifier_index = this.parentNode.getAttribute("index")
+        let item_index = table.current_row.getAttribute("row_index")
+
+        let category_id = table.items[item_index]["categories"][category_index]["id"]
+        let modifier_id = table.items[item_index]["categories"][category_index]["mods"][modifier_index]["id"]
+
+        let mods_content = $('#mods_content')
+        for(let i = 0; i < modifier_categories.length; i++) {
+            if(modifier_categories[i]["id"] === category_id) {
+                for(let j = 0; j < modifier_categories[i]["mods"].length; j++) {
+                    if(modifier_categories[i]["mods"][j]["id"] === modifier_id) {
+                        let category_container = $('.category_container[index="'+i+'"]')
+                        if(category_container.children()[1].style.display === "none") {
+                            $(category_container.children()[0].children[0]).trigger('click')
+                        }
+                        $(category_container.children()[1].children[j].children[1]).trigger('focus')
+                    }
+                }
+            }
+        }
     })
 
     // Confirmation Box
@@ -412,7 +551,7 @@ function clearTables() {
     }
 }
 
-function addModifierCategory(category = {"id": "-1", "label": "", "mods": []}) {
+function addModifierCategory(category = {"id": "-1", "label": "", "mods": [{"id": -1, "categoryID": -1, "label": "", "price": ""}]}) {
     let mods_content = $('#mods_content')
 
     let category_container = document.createElement("div")
@@ -468,6 +607,8 @@ function addModifier(parent=null, modifier={"id": -1, "categoryID": -1, "label":
     let modifier_checkbox = document.createElement("input")
     modifier_checkbox.type = "checkbox"
     modifier_checkbox.className = "modifier_checkbox"
+    if(modifier["label"] === "")
+        modifier_checkbox.setAttribute("disabled", true)
     modifier_container.appendChild(modifier_checkbox)
 
     let modifier_label = document.createElement("textarea")
@@ -595,6 +736,7 @@ class Table {
     addItem(item={"id": -1, "label": "", "prices": [], "row": null, "categories": []}) {
         let row = this.tableElement.insertRow(-1)
         row.setAttribute("row_index", String(this.items.length))
+        row.addEventListener('click', (event)=>this.selectRow(event, row.getAttribute("row_index")))
 
         let cell0 = row.insertCell(-1)
         let del_button = document.createElement("label")
@@ -765,21 +907,97 @@ class Table {
 
     // EVENTS
     selectRow(event, item_index) {
-        if(event !== null)
-            event.preventDefault()
-
         if(this.current_row !== null) {
-            this.current_row.style.background = "none"
+            this.current_row.firstChild.style.background = "none"
         }
-        this.current_row.style.background = "lightblue"
-
         let item_mods_contents = $('#item_mods_content')
-        while(item_mods_contents.firstChild) {
-            item_mods_contents.firstChild.remove()
-        }
+        item_mods_contents.empty()
 
-        for(let i = 0; i < this.items.length; i++) {
+        let current_item_label = $('#current_item')
+        current_item_label.html("")
 
+        if(this.items[item_index]["id"] !== -1) {
+            this.current_row = this.items[item_index]["row"]
+            this.current_row.firstChild.style.background = "lightblue"
+
+            let tableInstance = this
+            $.ajax({
+                contentType: 'JSON',
+                data: JSON.stringify({
+                    "itemID": this.items[item_index]["id"]
+                }),
+                type: 'POST',
+                url: 'download-item',
+                success: function(data){
+                    tableInstance.items[item_index] = {
+                        "id": data["item"]["id"],
+                        "label": data["item"]["label"],
+                        "prices": data["item"]["prices"],
+                        "row": tableInstance.items[item_index]["row"],
+                        "categories": data["item"]["categories"]
+                    }
+
+                    current_item_label.html(tableInstance.items[item_index]["label"])
+                    let categories = tableInstance.items[item_index]["categories"]
+                    for(let i = 0; i < categories.length; i++) {
+                        // Create category HTML
+                        let item_category_container = document.createElement("div")
+                        item_category_container.className = "item_category_container"
+                        item_category_container.setAttribute("index", item_mods_contents.children().length)
+                        item_mods_contents.append(item_category_container)
+
+                        let item_category_header = document.createElement("div")
+                        item_category_header.className = "item_category_header"
+                        item_category_container.appendChild(item_category_header)
+
+                        let item_category_dropdown_button = document.createElement("input")
+                        item_category_dropdown_button.className = "category_dropdown_button"
+                        item_category_dropdown_button.type = "button"
+                        item_category_dropdown_button.value = "\u25B6"
+                        item_category_header.appendChild(item_category_dropdown_button)
+
+                        let item_category_label = document.createElement("label")
+                        item_category_label.className = "item_category_label"
+                        item_category_label.innerHTML = categories[i]["label"]
+                        item_category_header.appendChild(item_category_label)
+
+                        let item_category_mods_container = document.createElement("div")
+                        item_category_mods_container.className = "item_category_mods_container"
+                        item_category_container.appendChild(item_category_mods_container)
+
+                        for(let j = 0; j < categories[i]["mods"].length; j++) {
+                            let modifier_container = document.createElement("div")
+                            modifier_container.className = "item_modifier_container"
+                            modifier_container.setAttribute("index", item_category_mods_container.children.length)
+                            item_category_mods_container.appendChild(modifier_container)
+
+                            let remove_modifier = document.createElement("label")
+                            remove_modifier.className = "remove_item_modifier"
+                            remove_modifier.innerHTML = "&#10006"
+                            modifier_container.appendChild(remove_modifier)
+
+                            let modifier_label = document.createElement("label")
+                            modifier_label.className = "item_modifier_label"
+                            modifier_label.innerHTML = categories[i]["mods"][j]["label"]
+                            modifier_container.appendChild(modifier_label)
+
+                            let modifier_price = document.createElement("label")
+                            modifier_price.className = "item_modifier_price"
+                            if(categories[i]["mods"][j]["price"] == null)
+                                modifier_price.innerHTML = "$-"
+                            else
+                                modifier_price.innerHTML = "$" + categories[i]["mods"][j]["price"]
+                            modifier_container.appendChild(modifier_price)
+
+                            let select_modifier = document.createElement("input")
+                            select_modifier.type = "button"
+                            select_modifier.className = "select_modifier"
+                            select_modifier.value = "\u00BB"
+                            modifier_container.appendChild(select_modifier)
+                        }
+                    }
+                }
+            })
         }
     }
 
@@ -844,7 +1062,6 @@ class Table {
     }
 
     updateItemLabel(event=null, item_index, label) {
-        console.log(this.items[item_index])
         let tableInstance = this
         if (event !== null)
             event.preventDefault()

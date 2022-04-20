@@ -7,6 +7,7 @@ import xlsxwriter
 
 views = Blueprint('views', __name__)
 
+
 # Profile Page Endpoint
 @views.route('profile', methods=['POST', 'GET'])
 @login_required
@@ -53,7 +54,8 @@ def removeUser():
         for column in db_columns:  # For each column
             Columns.query.filter_by(id=column.id).delete()  # Delete the column
 
-        db_categories = Modifiercategory.query.filter_by(user_id=db_user.get_id()).all()  # Get all categories belonging to the user
+        db_categories = Modifiercategory.query.filter_by(
+            user_id=db_user.get_id()).all()  # Get all categories belonging to the user
         for category in db_categories:  # For each category
             Modifier.query.filter_by(category_id=category.id).delete()  # Delete every modifier under the category
             Modifiercategory.query.filter_by(id=category.id).delete()  # Delete the category
@@ -75,12 +77,15 @@ def removeUser():
 @login_required
 def downloadData(filename):  # Filename in this case is the user's username
     """Endpoint to download specified user's table in xlsx sheet"""
-    xlsxFile = xlsxwriter.Workbook(f"src\\static\\exports\\{filename}.xlsx")  # Creates/Opens the xlsx file belonging to the given user
+    xlsxFile = xlsxwriter.Workbook(
+        f"src\\static\\exports\\{filename}.xlsx")  # Creates/Opens the xlsx file belonging to the given user
 
     try:
         db_user = User.query.filter_by(username=filename).first()  # Gets given user
-        db_columns = Columns.query.filter_by(user_id=db_user.get_id()).first()  # Gets the columns belonging to the given user
-        db_table_list = Table.query.filter_by(user_id=db_user.get_id()).all()  # Gets all tables belonging to the given user
+        db_columns = Columns.query.filter_by(
+            user_id=db_user.get_id()).first()  # Gets the columns belonging to the given user
+        db_table_list = Table.query.filter_by(
+            user_id=db_user.get_id()).all()  # Gets all tables belonging to the given user
         if not db_user or not db_columns or not db_table_list:
             raise NoResultFound
 
@@ -92,24 +97,28 @@ def downloadData(filename):  # Filename in this case is the user's username
                 worksheet = xlsxFile.add_worksheet(table.table_name)  # Create new worksheet with the name of the table
             # Writing the column labels
             for (index, label) in enumerate(columns_list):  # For each label in columns_list...
-                worksheet.write(0, index+1, label)  # Write at y=0, x=index (1 to length of columns list + 1), with the value of the label
-            worksheet.write(0, len(columns_list)+1, "Modifiers")  # Write modifiers column at the end of the column list
+                worksheet.write(0, index + 1,
+                                label)  # Write at y=0, x=index (1 to length of columns list + 1), with the value of the label
+            worksheet.write(0, len(columns_list) + 1,
+                            "Modifiers")  # Write modifiers column at the end of the column list
 
             db_items = Item.query.filter_by(table_id=table.id).all()  # Gets every item under the current table
             for (y_index, item) in enumerate(db_items):  # For every index and item...
                 for (x_index, item_data) in enumerate(item.getItemData()):  # For all the data in each item...
-                    worksheet.write(1+y_index, x_index, item_data)  # Write the data to the current cell
+                    worksheet.write(1 + y_index, x_index, item_data)  # Write the data to the current cell
                 modifier_list = ""
                 for modifier in item.modifiers:  # For every modifier belonging to the item...
                     modifier_list += f"[{modifier.modifier_label}]: ${modifier.modifier_price}; "  # Append it to a string to write out with
-                worksheet.write(1+y_index, len(columns_list), modifier_list)  # Write that string to the file at end of row
+                worksheet.write(1 + y_index, len(columns_list),
+                                modifier_list)  # Write that string to the file at end of row
 
         xlsxFile.close()  # Closes and saves changes to file
         return send_file(f"static\\exports\\{filename}.xlsx", as_attachment=True)  # Returns the file to the client
 
     except NoResultFound as e:
         xlsxFile.close()  # Closes and saves changes to file
-        print("Could Not Find One Or More Tables While Downloading xlsx File")  # Prints to console that there was an error
+        print(
+            "Could Not Find One Or More Tables While Downloading xlsx File")  # Prints to console that there was an error
         print("Error: " + str(e))  # Prints the error
         return redirect(url_for('auth.adminPanel'))  # Return error code with the error response
 
@@ -203,16 +212,13 @@ def getTable():
         if db_user is None:
             raise NoResultFound("Could not find username:" + username)
 
-        db_categories = Modifiercategory.query.filter_by(user_id=db_user.get_id()).all()
         items = []
         completed = False  # Set completed to false by default
         if table_id != -1:
             db_items = Item.query.filter_by(table_id=table_id).all()
             for item in db_items:
                 item_dict = item.getItemData()
-
                 items.append(item_dict)
-
             db_table = Table.query.filter_by(id=table_id).first()
             if db_table is None:
                 raise NoResultFound("Could not find table id: " + table_id)
@@ -225,17 +231,12 @@ def getTable():
         if db_columns:  # If the user's columns are found in the database...
             price_labels = db_columns.getPriceLabels()  # Return a list of the column labels
 
-        return jsonify(price_labels=price_labels, items=items,
-                       completed=completed), 200  # Return the list of price labels and items with success code
+        return jsonify(price_labels=price_labels, items=items, completed=completed), 200  # Return the list of price labels and items with success code
 
     except NoResultFound as e:
         print("No Result Found in get-table")
         print("Exception:" + str(e))
         return Response(status=501)
-
-    except Exception as e:
-        print("Exception in get-table: " + str(e))
-        return Response(status=500)
 
 
 @views.route('update-table', methods=['POST'])
@@ -376,6 +377,47 @@ def updateItemPrices():
         return Response(status=500)
 
 
+@views.route('download-item', methods=['POST'])
+@login_required
+def downloadItem():
+    try:
+        data = json.loads(request.data)
+
+        item_id = data["itemID"]
+
+        db_item = Item.query.filter_by(id=item_id).first()
+        if db_item is None:
+            raise NoResultFound(item_id)
+
+        item = db_item.getItemData()
+        if len(db_item.modifiers) != 0:
+            categories = []
+            db_first_category = Modifiercategory.query.filter_by(id=db_item.modifiers[0].category_id).first()
+            categories.append({"id": db_first_category.id, "label": db_first_category.category_name, "mods": []})
+
+            for mod in db_item.modifiers:
+                for category in categories:
+                    if mod.category_id == category["id"]:
+                        category["mods"].append(
+                            {"id": mod.id, "label": mod.modifier_label, "price": mod.modifier_price})
+                        category["mods"].sort(key=lambda x: x["id"])
+                        break
+                    else:
+                        db_category = Modifiercategory.query.filter_by(id=mod.category_id).first()
+                        categories.append({"id": db_category.id, "label": db_category.category_name, "mods": []})
+            categories.sort(key=lambda x: x["id"])
+            item["categories"] = categories
+        return jsonify(item=item), 200
+    except NoResultFound as e:
+        print("Exception in download-item:" + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in download-item")
+        print("Exception:" + str(e))
+        return Response(status=500)
+
+
 @views.route('remove-item', methods=['POST'])
 @login_required
 def removeItem():
@@ -424,7 +466,8 @@ def getCategories():
         for category in db_categories:
             temp = {"id": category.id, "label": category.category_name, "mods": []}
             for modifier in category.modifiers:
-                temp["mods"].append({"id": modifier.id, "label": modifier.modifier_label, "price": modifier.modifier_price})
+                temp["mods"].append(
+                    {"id": modifier.id, "label": modifier.modifier_label, "price": modifier.modifier_price})
             categories.append(temp)
 
         return jsonify(categories=categories), 200
@@ -474,6 +517,33 @@ def updateCategoryLabel():
         return Response(status=500)
 
 
+@views.route('delete-category', methods=['POST'])
+@login_required
+def deleteCategory():
+    try:
+        data = json.loads(request.data)
+
+        category_id = data["categoryID"]
+
+        db_category = Modifiercategory.query.filter_by(id=category_id).first()
+        if db_category is None:
+            return Response(status=200)
+        db_modifiers = Modifier.query.filter_by(id=db_category.id).all()
+        for mod in db_modifiers:
+            mod.items.clear()
+            Modifier.query.filter_by(id=mod.id).delete()
+        Modifiercategory.query.filter_by(id=db_category.id).delete()
+
+        db.session.commit()
+
+        return Response(status=200)
+
+    except Exception as e:
+        print("Exception in delete-category")
+        print("Exception: " + str(e))
+        return Response(status=500)
+
+
 @views.route('update-modifier-label', methods=['POST'])
 @login_required
 def updateModifierLabel():
@@ -490,7 +560,7 @@ def updateModifierLabel():
         if modifier_id == -1 or modifier_id == 0:
             modifier = Modifier(category_id=category_id)
         else:
-            modifier = Modifier.query.filter_by(id=modifier_id)
+            modifier = Modifier.query.filter_by(id=modifier_id).first()
             if modifier is None:
                 raise NoResultFound(modifier_id)
         modifier.modifier_label = modifier_label
@@ -510,9 +580,9 @@ def updateModifierLabel():
         return Response(status=500)
 
 
-@views.route('update-modifier-label', methods=['POST'])
+@views.route('update-modifier-price', methods=['POST'])
 @login_required
-def updateModifierLabel():
+def updateModifierPrice():
     try:
         data = json.loads(request.data)
 
@@ -526,7 +596,7 @@ def updateModifierLabel():
         if modifier_id == -1 or modifier_id == 0:
             modifier = Modifier(category_id=category_id)
         else:
-            modifier = Modifier.query.filter_by(id=modifier_id)
+            modifier = Modifier.query.filter_by(id=modifier_id).first()
             if modifier is None:
                 raise NoResultFound(modifier_id)
         modifier.modifier_price = modifier_price
@@ -542,5 +612,95 @@ def updateModifierLabel():
 
     except Exception as e:
         print("Exception in update-modifier-price")
+        print("Exception: " + str(e))
+        return Response(status=500)
+
+
+@views.route('delete-modifier', methods=['POST'])
+@login_required
+def deleteModifier():
+    try:
+        data = json.loads(request.data)
+
+        modifier_id = data["modifierID"]
+
+        db_modifier = Modifier.query.filter_by(id=modifier_id).first()
+        if db_modifier is None:
+            return Response(status=200)
+        db_modifier.items.clear()
+        Modifier.query.filter_by(id=db_modifier.id).delete()
+
+        db.session.commit()
+
+        return Response(status=200)
+
+    except Exception as e:
+        print("Exception in delete-modifier")
+        print("Exception: " + str(e))
+        return Response(status=500)
+
+
+@views.route('set-item-modifier', methods=['POST'])
+@login_required
+def setItemModifier():
+    try:
+        data = json.loads(request.data)
+
+        item_id = data["itemID"]
+        modifier_id = data["modifierID"]
+
+        db_item = Item.query.filter_by(id=item_id).first()
+        if db_item is None:
+            raise NoResultFound(item_id)
+        db_modifier = Modifier.query.filter_by(id=modifier_id).first()
+        if db_modifier is None:
+            raise NoResultFound(modifier_id)
+
+        db_item.modifiers.append(db_modifier)
+
+        db.session.add(db_item)
+        db.session.commit()
+
+        return Response(status=200)
+
+    except NoResultFound as e:
+        print("Exception in set-item-modifier: " + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in set-item-modifier")
+        print("Exception: " + str(e))
+        return Response(status=500)
+
+
+@views.route('remove-item-modifier', methods=['POST'])
+@login_required
+def removeItemModifier():
+    try:
+        data = json.loads(request.data)
+
+        item_id = data["itemID"]
+        modifier_id = data["modifierID"]
+
+        db_item = Item.query.filter_by(id=item_id).first()
+        if db_item is None:
+            raise NoResultFound(item_id)
+        db_modifier = Modifier.query.filter_by(id=modifier_id).first()
+        if db_modifier is None:
+            raise NoResultFound(modifier_id)
+
+        db_item.modifiers.remove(db_modifier)
+
+        db.session.add(db_item)
+        db.session.commit()
+
+        return Response(status=200)
+
+    except NoResultFound as e:
+        print("Exception in remove-item-modifier: " + str(e))
+        return Response(status=501)
+
+    except Exception as e:
+        print("Exception in remove-item-modifier")
         print("Exception: " + str(e))
         return Response(status=500)

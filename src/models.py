@@ -88,7 +88,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), index=True)
     item_name = db.Column(db.String(64), index=True)
-    modifiers = db.relationship('Modifier', secondary=modifier_item, backref='items')
+    modifiers = db.relationship('Modifier', secondary=modifier_item, back_populates='items')
     price1 = db.Column(db.Float)
     price2 = db.Column(db.Float)
     price3 = db.Column(db.Float)
@@ -152,3 +152,4 @@ class Modifier(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('modifiercategory.id'), index=True)
     modifier_label = db.Column(db.String(64), index=True)
     modifier_price = db.Column(db.Integer, index=True)
+    items = db.relationship('Item', secondary=modifier_item, back_populates='modifiers')
