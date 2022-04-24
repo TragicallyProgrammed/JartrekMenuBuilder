@@ -35,7 +35,7 @@ function MenuTable(initial_user)
                     addTable(food_tables[i]["tableName"])
                 }
             }
-            let value = $($('#tab_button_container').children()[0].children[0]).prop("checked", true).trigger("change")
+            $($('#tab_button_container').children()[0].children[0]).prop("checked", true).trigger("change")
         }
     })
 
@@ -123,7 +123,7 @@ function MenuTable(initial_user)
             data: JSON.stringify({
                 'username': table.current_user,
                 'table': current_table,
-                'completed': $('#confirmation_box').is(':checked')
+                'completed': table.completed
             }),
             type: 'POST',
             url: 'update-table',
@@ -265,14 +265,31 @@ function MenuTable(initial_user)
             url: 'update-category-label',
             success: function(data) {
                 if(modifier_categories[index]["id"] === -1) {
-                    modifier_categories.push({"id": -1, "label": "", "mods": []})
+                    modifier_categories.push({"id": -1, "label": "", "mods": [{"id": -1, "label": "", "price": null}]})
                     addModifierCategory()
                 }
                 modifier_categories[index]["id"] = data["id"]
 
-                if(table.current_row !== null) {
-                    table.selectRow(null, table.current_row.getAttribute("row_index"))
+                // Update all children modifiers
+                for(let i = 0; i < modifier_categories[index]["mods"].length; i++) {
+                    if(modifier_categories[index]["mods"][i]["id"] !== -1) {
+                        $.ajax({
+                            contentType: 'JSON',
+                            data: JSON.stringify({
+                                "categoryID": modifier_categories[index]["id"],
+                                "modifierID": modifier_categories[index]["mods"][i]["id"],
+                                "label": modifier_categories[index]["mods"][i]["label"]
+                            }),
+                            type: 'POST',
+                            url: 'update-modifier-label',
+                            success: function (data) {
+                                modifier_categories[index]["mods"][i]["id"] = data["id"]
+                            }
+                        })
+                    }
                 }
+                if(table.current_item !== null)
+                    table.selectRow(null, table.current_item["row"].getAttribute("row_index"))
             }
         })
     }).on('click', '.delete_category', function(event) {
@@ -280,23 +297,27 @@ function MenuTable(initial_user)
         if(confirm("Warning!\nDeleting a modifier category deletes all modifiers belonging to it... continue?")){
             let container = this.parentNode.parentNode
             let index = container.getAttribute("index")
-            $.ajax({
-                contentType: 'JSON',
-                data: JSON.stringify({
-                    "categoryID": modifier_categories[index]["id"]
-                }),
-                type: 'POST',
-                url: 'delete-category',
-                success: function(data) {
-                    if(modifier_categories[index]["id"] !== 0 && modifier_categories[index]["id"] !== -1) {
-                        container.remove()
+            console.log(index, modifier_categories)
+            if(modifier_categories[index]["id"] !== -1) {
+                $.ajax({
+                    contentType: 'JSON',
+                    data: JSON.stringify({
+                        "categoryID": modifier_categories[index]["id"]
+                    }),
+                    type: 'POST',
+                    url: 'delete-category',
+                    success: function (data) {
+                        $(container).remove()
 
-                        if(table.current_row !== null) {
-                            table.selectRow(null, table.current_row.getAttribute("row_index"))
+                        modifier_categories.splice(index, 1)
+                        for (let i = 0; i < modifier_categories.length; i++) {
+                            $('#mods_content').children()[i].setAttribute("index", i)
                         }
+                        if(table.current_item !== null)
+                            table.selectRow(null, table.current_item["row"].getAttribute("row_index"))
                     }
-                }
-            })
+                })
+            }
         }
     }).on('change', '.modifier_label', function(event) {
         if(this.value === "") {
@@ -321,18 +342,15 @@ function MenuTable(initial_user)
             url: 'update-modifier-label',
             success: function(data) {
                 if(modifier["id"] === -1) {
-                    modifier_categories[category_index]["mods"].push({"id": -1, "categoryID": -1, "label": "", "price": ""})
+                    modifier_categories[category_index]["mods"].push({"id": -1, "label": "", "price": null})
                     addModifier($(modifiers_container))
                 }
                 modifier["id"] = data["id"]
-
-                if(table.current_row !== null) {
-                    table.selectRow(null, table.current_row.getAttribute("row_index"))
-                }
+                if(table.current_item !== null)
+                    table.selectRow(null, table.current_item["row"].getAttribute("row_index"))
             }
         })
     }).on('change', '.modifier_price', function(event){
-        let modifiers_container = this.parentNode.parentNode
         let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
         let modifier_index = this.parentNode.getAttribute("index")
         let modifier = modifier_categories[category_index]["mods"][modifier_index]
@@ -349,10 +367,8 @@ function MenuTable(initial_user)
             url: 'update-modifier-price',
             success: function(data) {
                 modifier["id"] = data["id"]
-
-                if(table.current_row !== null) {
-                    table.selectRow(null, table.current_row.getAttribute("row_index"))
-                }
+                if(table.current_item !== null)
+                    table.selectRow(null, table.current_item["row"].getAttribute("row_index"))
             }
         })
     }).on('click', '.delete_modifier', function(event){
@@ -360,53 +376,47 @@ function MenuTable(initial_user)
         let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
         let modifier_index = this.parentNode.getAttribute("index")
 
-        $.ajax({
-            contentType: 'JSON',
-            data: JSON.stringify({
-                'modifierID': modifier_categories[category_index]["mods"][modifier_index]["id"]
-            }),
-            type: 'POST',
-            url: 'delete-modifier',
-            success: function(data) {
-                if(modifier_categories[category_index]["mods"][modifier_index]["id"] !== 0 && modifier_categories[category_index]["mods"][modifier_index]["id"] !== -1) {
+        if(modifier_categories[category_index]["mods"][modifier_index]["id"] !== 0 && modifier_categories[category_index]["mods"][modifier_index]["id"] !== -1) {
+            $.ajax({
+                contentType: 'JSON',
+                data: JSON.stringify({
+                    'modifierID': modifier_categories[category_index]["mods"][modifier_index]["id"]
+                }),
+                type: 'POST',
+                url: 'delete-modifier',
+                success: function (data) {
                     modifier_container.remove()
-
-                    if(table.current_row !== null) {
-                        table.selectRow(null, table.current_row.getAttribute("row_index"))
-                    }
+                    if(table.current_item !== null)
+                        table.selectRow(null, table.current_item["row"].getAttribute("row_index"))
                 }
-            }
-        })
+            })
+        }
     })
     $('#set_modifier_button').on('click', function(event) {
         event.preventDefault()
-
-        if(table.current_row !== null) {
-            let item_index = table.current_row.getAttribute("row_index")
-            let item_id = table.items[item_index]["id"]
-            $('input[class=modifier_checkbox]:checked').each(function () {
+        if(table.current_item !== null) {
+            $('input[class=modifier_checkbox]:checked').each(function() {
                 let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
                 let modifier_index = this.parentNode.getAttribute("index")
 
-                $(this).prop("checked", false)
-
-                if (modifier_categories[category_index]["mods"][modifier_index]["id"] !== -1 && modifier_categories[category_index]["mods"][modifier_index]["id"] !== 0) {
+                if(modifier_categories[category_index]["mods"][modifier_index]["id"] !== -1 && modifier_categories[category_index]["mods"][modifier_index]["id"] !== 0) {
                     $.ajax({
                         contentType: 'JSON',
                         data: JSON.stringify({
-                            'itemID': item_id,
+                            'itemID': table.current_item["id"],
                             'modifierID': modifier_categories[category_index]["mods"][modifier_index]["id"]
                         }),
                         type: 'POST',
                         url: 'set-item-modifier',
                         success: function(data) {
-                            if(table.current_row !== null) {
-                                table.selectRow(null, table.current_row.getAttribute("row_index"))
-                            }
+
                         }
                     })
                 }
+
+                $(this).prop("checked", false)
             })
+            table.selectRow(null, table.current_item["row"].getAttribute("row_index"))
         }
     })
     // Item Modifier Events
@@ -426,18 +436,18 @@ function MenuTable(initial_user)
 
         let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
         let modifier_index = this.parentNode.getAttribute("index")
-        let item_index = table.current_row.getAttribute("row_index")
+        let index = table.current_item["row"].getAttribute("row_index")
 
         $.ajax({
             contentType: 'JSON',
             data: JSON.stringify({
-                'itemID': table.items[item_index]["id"],
-                'modifierID': table.items[item_index]["categories"][category_index]["mods"][modifier_index]["id"]
+                'itemID': table.items[index]["id"],
+                'modifierID': table.items[index]["categories"][category_index]["mods"][modifier_index]["id"]
             }),
             type: 'POST',
             url: 'remove-item-modifier',
-            success: function(event) {
-                table.selectRow(null, item_index)
+            success: function() {
+                table.selectRow(null, index)
             }
         })
     }).on('click', '.select_modifier', function(event){
@@ -445,12 +455,11 @@ function MenuTable(initial_user)
 
         let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
         let modifier_index = this.parentNode.getAttribute("index")
-        let item_index = table.current_row.getAttribute("row_index")
+        let item_index = table.current_item["row"].getAttribute("row_index")
 
         let category_id = table.items[item_index]["categories"][category_index]["id"]
         let modifier_id = table.items[item_index]["categories"][category_index]["mods"][modifier_index]["id"]
 
-        let mods_content = $('#mods_content')
         for(let i = 0; i < modifier_categories.length; i++) {
             if(modifier_categories[i]["id"] === category_id) {
                 for(let j = 0; j < modifier_categories[i]["mods"].length; j++) {
@@ -484,6 +493,7 @@ function MenuTable(initial_user)
         } else if(selected_category_id === "food") {
             current_table = food_tables[index]
         }
+        table.completed = $('#confirmation_box').is(':checked')
 
         if(current_table["id"] !== -1) {
             $.ajax({
@@ -491,7 +501,7 @@ function MenuTable(initial_user)
                 data: JSON.stringify({
                     'username': table.current_user,
                     'table': current_table,
-                    'completed': $('#confirmation_box').is(':checked')
+                    'completed': table.completed
                 }),
                 type: 'POST',
                 url: 'update-table'
@@ -499,7 +509,83 @@ function MenuTable(initial_user)
         }
     })
 
+    // Admin Panel Switcher
+    $('#user_table_container').on("click", ".view_table", function(event) {
+        let user = this.getAttribute("for");
+        let label = document.getElementById("current_user");  // Get label
+        label.innerHTML = user  // Update label
+
+        table.current_user = user
+
+        clearMenuTable()
+
+        drink_tables = []
+        food_tables = []
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': table.current_user
+            }),
+            type: 'POST',
+            url: 'get-tables',
+            success: function(data) {
+                let tables = data["tables"]
+                for(let i = 0; i < tables.length; i++) {
+                    if(tables[i]["tableType"] === "drink")
+                        drink_tables.push(tables[i])
+                    else if(tables[i]["tableType"] === "food")
+                        food_tables.push(tables[i])
+                }
+                drink_tables.push({"id": -1, "tableName": "", "tableType": "drink"})
+                food_tables.push({"id": -1, "tableName": "", "tableType": "food"})
+
+                let selected_category_id = $('input[name="menu_button"]:checked').attr("id")
+                if(selected_category_id === "drink") {
+                    for(let i = 0; i < drink_tables.length; i++) {
+                        addTable(drink_tables[i]["tableName"])
+                    }
+                } else if(selected_category_id === "food") {
+                    for(let i = 0; i < food_tables.length; i++) {
+                        addTable(food_tables[i]["tableName"])
+                    }
+                }
+                $($('#tab_button_container').children()[0].children[0]).prop("checked", true).trigger("change")
+            }
+        })
+
+        // Get all modifiers
+        modifier_categories = []
+        $.ajax({
+            contentType: 'JSON',
+            data: JSON.stringify({
+                'username': current_user
+            }),
+            type: 'POST',
+            url: 'get-categories',
+            success: function(data) {
+                modifier_categories = data["categories"]
+                modifier_categories.push({"id": -1, "label": "", "mods": []})
+                for(let i = 0; i < modifier_categories.length; i++) {
+                    modifier_categories[i]["mods"].push({"id": -1, "categoryID": -1, "label": "", "price": ""})
+                    addModifierCategory(modifier_categories[i])
+                }
+            }
+        })
+    })
+
     return table
+}
+function clearMenuTable() {
+    $('#drink').prop('checked', true)
+    $('#food').prop('checked', false)
+
+    $('#modifier_button').css("display", "none")
+    $('modifier_panel').css("display", "none")
+
+    $('#item_mods_content').empty()
+    $('#mods_content').empty()
+    $('#tab_button_container').empty()
+    $('#tab_content_div').empty()
 }
 
 function filterTextField(event) {
@@ -686,7 +772,7 @@ class Table {
         this.tableID = tableID
         this.table_name = table_name
         this.items = []
-        this.current_row = null;
+        this.current_item = null;
         this.colLen = 1
         this.completed = false
 
@@ -752,7 +838,6 @@ class Table {
         item_label.cols = 14
         item_label.rows = 1
         item_label.maxLength = 14
-        item_label.setAttribute("row_index", String(this.tableElement.rows.length-2))
         item_label.addEventListener("change", (event)=>this.updateItemLabel(event, Number(row.getAttribute("row_index")), item_label.value))
         item_label.addEventListener("keydown", (event)=>filterTextField(event))
         item_label.value = item["label"]
@@ -864,12 +949,13 @@ class Table {
     //Updates the shading on the table
     updateTableGraphics() {
         //Update completion box
+        $('#confirmation_box').prop("checked", this.completed)
         if(this.completed === true) {
-            $('#confirmation_box').prop("checked", true).change()
+            $('#confirmation_container').css("background", "green")
+        } else {
+            $('#confirmation_container').css("background", "red")
         }
-        else if(this.completed === false) {
-            $('#confirmation_box').prop("checked", false).change()
-        }
+
         //Setting enabled attribute
         for(let i = 0; i < this.priceLabelColumns.length; i++) {
             if(this.priceLabelColumns[i].getAttribute("enabled") === "true"){
@@ -907,20 +993,27 @@ class Table {
 
     // EVENTS
     selectRow(event, item_index) {
-        if(this.current_row !== null) {
-            this.current_row.firstChild.style.background = "none"
+        // Set background of previously selected item to none
+        if (event !== null) {
+            event.preventDefault()
+            if(event.path[0].className === "delete_item")
+                return
         }
+
+        if(this.current_item !== null) {
+            this.current_item["row"].firstChild.style.background = "none"
+        }
+        // Clear item modifiers content
         let item_mods_contents = $('#item_mods_content')
         item_mods_contents.empty()
+        $('#current_item').html(this.items[item_index]["label"])
 
-        let current_item_label = $('#current_item')
-        current_item_label.html("")
-
-        if(this.items[item_index]["id"] !== -1) {
-            this.current_row = this.items[item_index]["row"]
-            this.current_row.firstChild.style.background = "lightblue"
+        if(this.items[item_index]["id"] !== -1) { // If the item selected does not have an invalid id
+            this.current_item = this.items[item_index]
+            this.current_item["row"].firstChild.style.background = "lightblue"
 
             let tableInstance = this
+
             $.ajax({
                 contentType: 'JSON',
                 data: JSON.stringify({
@@ -928,7 +1021,7 @@ class Table {
                 }),
                 type: 'POST',
                 url: 'download-item',
-                success: function(data){
+                success: function (data) {
                     tableInstance.items[item_index] = {
                         "id": data["item"]["id"],
                         "label": data["item"]["label"],
@@ -937,7 +1030,6 @@ class Table {
                         "categories": data["item"]["categories"]
                     }
 
-                    current_item_label.html(tableInstance.items[item_index]["label"])
                     let categories = tableInstance.items[item_index]["categories"]
                     for(let i = 0; i < categories.length; i++) {
                         // Create category HTML
@@ -998,6 +1090,8 @@ class Table {
                     }
                 }
             })
+        } else {
+            this.current_item = null;
         }
     }
 
@@ -1050,12 +1144,14 @@ class Table {
                 type: 'POST',
                 url: 'remove-item',
                 success: function () {
+                    tableInstance.current_item = null
+
                     let row = tableInstance.items[item_index]["row"]
-                    while (row.firstChild) {
-                        row.removeChild(row.firstChild)
-                    }
-                    row.remove()
+                    $(row).remove()
                     tableInstance.items.splice(item_index, 1)
+                    for(let i = item_index; i < tableInstance.items.length; i++) {
+                        tableInstance.items[i]["row"].setAttribute("row_index", i)
+                    }
                 }
             })
         }

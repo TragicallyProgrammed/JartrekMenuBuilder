@@ -1,4 +1,5 @@
 $(function () {
+    // Loads first table
     let table = MenuTable(document.getElementById("username").innerHTML.valueOf());
 
     $('#user_search_bar').on("keyup", function(event) {
@@ -113,13 +114,6 @@ $(function () {
                 let view_table_button = document.createElement("button");
                 view_table_button.className = "view_table";
                 view_table_button.setAttribute('for', username);
-                view_table_button.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    let label = document.getElementById("current_user");  // Get label
-                    label.innerHTML = this.getAttribute("for");  // Update label
-                    table.current_user = this.getAttribute("for") // Update table's current user
-                    //tableInstance.loadTable($('input[name="tab-group"]:checked').attr("for"));  // Loading table for currently selected user
-                });
                 let view_table_label = document.createElement('label');
                 view_table_label.innerHTML = "\u27BE";
                 view_table_button.appendChild(view_table_label);

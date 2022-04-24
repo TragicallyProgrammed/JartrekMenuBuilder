@@ -81,44 +81,52 @@ def downloadData(filename):  # Filename in this case is the user's username
         f"src\\static\\exports\\{filename}.xlsx")  # Creates/Opens the xlsx file belonging to the given user
 
     try:
-        db_user = User.query.filter_by(username=filename).first()  # Gets given user
-        db_columns = Columns.query.filter_by(
-            user_id=db_user.get_id()).first()  # Gets the columns belonging to the given user
-        db_table_list = Table.query.filter_by(
-            user_id=db_user.get_id()).all()  # Gets all tables belonging to the given user
-        if not db_user or not db_columns or not db_table_list:
-            raise NoResultFound
+        db_user = User.query.filter_by(username=filename).first()
+        db_columns = Columns.query.filter_by(user_id=db_user.get_id()).first()
+        db_tables = Table.query.filter_by(user_id=db_user.get_id()).all()
+        db_categories = Modifiercategory.query.filter_by(user_id=db_user.get_id()).all()
 
-        columns_list = db_columns.getPriceLabels()  # Get a list of the user's labels
+        if not db_user or not db_columns or not db_tables or not db_categories:
+            raise NoResultFound(filename)
 
-        for table in db_table_list:  # For every table...
+        columns_list = db_columns.getPriceLabels()
+
+        for table in db_tables:  # For every table...
             worksheet = xlsxFile.get_worksheet_by_name(table.table_name)  # Gets existing worksheet
             if worksheet is None:  # If there is no existing worksheet...
                 worksheet = xlsxFile.add_worksheet(table.table_name)  # Create new worksheet with the name of the table
-            # Writing the column labels
-            for (index, label) in enumerate(columns_list):  # For each label in columns_list...
-                worksheet.write(0, index + 1,
-                                label)  # Write at y=0, x=index (1 to length of columns list + 1), with the value of the label
-            worksheet.write(0, len(columns_list) + 1,
-                            "Modifiers")  # Write modifiers column at the end of the column list
 
-            db_items = Item.query.filter_by(table_id=table.id).all()  # Gets every item under the current table
-            for (y_index, item) in enumerate(db_items):  # For every index and item...
-                for (x_index, item_data) in enumerate(item.getItemData()):  # For all the data in each item...
-                    worksheet.write(1 + y_index, x_index, item_data)  # Write the data to the current cell
-                modifier_list = ""
-                for modifier in item.modifiers:  # For every modifier belonging to the item...
-                    modifier_list += f"[{modifier.modifier_label}]: ${modifier.modifier_price}; "  # Append it to a string to write out with
-                worksheet.write(1 + y_index, len(columns_list),
-                                modifier_list)  # Write that string to the file at end of row
+            for (index, label) in enumerate(columns_list):
+                worksheet.write(0, index+1, label)
+
+            worksheet.write(0, len(columns_list)+2, "Modifiers")
+
+            db_items = Item.query.filter_by(table_id=table.id).all()
+            for(y_index, item) in enumerate(db_items):
+                worksheet.write(1+y_index, 0, item.item_name)
+                for(x_index, item_data) in enumerate(item.getItemData()["prices"]):
+                    worksheet.write(1+y_index, 1+x_index, item_data["prices"][x_index])
+
+                    modifier_list = ""
+                    for modifier in item.modifiers:
+                        modifier_list += f"{modifier.modifier_label}: ${modifier.modifier_price}\n"
+                worksheet.write(1+y_index, 2+len(columns_list), modifier_list)
+
+        modifiers_worksheet = xlsxFile.get_worksheet_by_name("Modifiers")
+        if modifiers_worksheet is None:
+            modifiers_worksheet = xlsxFile.add_worksheet("Modifiers")
+        for (x_index, category) in enumerate(db_categories):
+            modifiers_worksheet.write(0, x_index*2, category.category_name)
+            for (y_index, modifier) in enumerate(db_categories.modifiers):
+                modifiers_worksheet.write(y_index+1, x_index*2, modifier.modifier_label)
+                modifiers_worksheet.write(y_index+1, (x_index*2)+1, modifier.modifier_price)
 
         xlsxFile.close()  # Closes and saves changes to file
         return send_file(f"static\\exports\\{filename}.xlsx", as_attachment=True)  # Returns the file to the client
 
     except NoResultFound as e:
         xlsxFile.close()  # Closes and saves changes to file
-        print(
-            "Could Not Find One Or More Tables While Downloading xlsx File")  # Prints to console that there was an error
+        print("Could Not Find One Or More Tables While Downloading xlsx File")  # Prints to console that there was an error
         print("Error: " + str(e))  # Prints the error
         return redirect(url_for('auth.adminPanel'))  # Return error code with the error response
 
@@ -218,6 +226,24 @@ def getTable():
             db_items = Item.query.filter_by(table_id=table_id).all()
             for item in db_items:
                 item_dict = item.getItemData()
+
+                if len(item.modifiers) != 0:
+                    categories = []
+                    db_first_category = Modifiercategory.query.filter_by(id=item.modifiers[0].category_id).first()
+                    categories.append({"id": db_first_category.id, "label": db_first_category.category_name, "mods": []})
+
+                    for mod in item.modifiers:
+                        for category in categories:
+                            if mod.category_id == category["id"]:
+                                category["mods"].append({"id": mod.id, "label": mod.modifier_label, "price": mod.modifier_price})
+                                category["mods"].sort(key=lambda x: x["id"])
+                                break
+                            else:
+                                db_category = Modifiercategory.query.filter_by(id=mod.category_id).first()
+                                categories.append({"id": db_category.id, "label": db_category.category_name, "mods": []})
+
+                    categories.sort(key=lambda x: x["id"])
+                    item_dict["categories"] = categories
                 items.append(item_dict)
             db_table = Table.query.filter_by(id=table_id).first()
             if db_table is None:
@@ -387,7 +413,7 @@ def downloadItem():
 
         db_item = Item.query.filter_by(id=item_id).first()
         if db_item is None:
-            raise NoResultFound(item_id)
+            raise NoResultFound("Could not find item with ID: " + str(item_id))
 
         item = db_item.getItemData()
         if len(db_item.modifiers) != 0:
@@ -408,6 +434,7 @@ def downloadItem():
             categories.sort(key=lambda x: x["id"])
             item["categories"] = categories
         return jsonify(item=item), 200
+
     except NoResultFound as e:
         print("Exception in download-item:" + str(e))
         return Response(status=501)
@@ -432,7 +459,8 @@ def removeItem():
         db_item = Item.query.filter_by(id=item_id).first()
         if db_item is None:
             raise NoResultFound("Could not find item id: " + str(item_id))
-        db_item.modifiers.clear()  # Clear the item's relationships
+        if db_item.modifiers:
+            db_item.modifiers.clear()  # Clear the item's relationships
         Item.query.filter_by(id=db_item.id).delete()  # Delete the item
         db.session.commit()  # Commit changes to database
 
