@@ -23,17 +23,4 @@ how the bug was found, what it seems to be doing, and specify which page
 of the site you are on. Upon an issue being resolved and pushed
 to the GitHub, they will be marked as complete.
 
-Current accounts in database:
-- username: Admin password: admin
-- username: Customer password: test
-
-Charlie:
--
-All features are currently working. Currently, the admin's table is set up to be copied
-to all new users tables. We will use that profile to determine what the default database
-is going to be. The database exporter will export a xlsx file with each page being a different
-table, and therefore a different key in Jartrek.
-
--Garrett 
-
-copyright Keystone Bingo co. 2021
+copyright Keystone Bingo co. 2022
