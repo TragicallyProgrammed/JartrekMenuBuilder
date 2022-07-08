@@ -1,16 +1,25 @@
+#content_container {
+    padding: 5px;
+    background: lightgray;
+    border-radius: 3px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
 #btn_container {
     display: flex;
-    justify-content: center;
     align-items: center;
 }
 #drink_food_group {
     width: fit-content;
     display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     background: white;
     border-radius: 5px 5px 0 0;
     border: 1px solid black;
     border-bottom: 1px solid white;
-    margin-right: auto;
     margin-bottom: -1px;
     z-index: 1;
 }
@@ -23,7 +32,8 @@
     border-radius: 5px;
     margin: 5px;
     padding: 5px;
-    font-size: 32px;
+    font-size: 1.5rem;
+    text-align: center;
 }
 #drink_food_group input:hover + label {
     background: white;
@@ -36,7 +46,11 @@
     font-size: 1.2rem;
     padding: 3px;
     height: fit-content;
-    margin: auto 15% 5px 5px;
+    margin: auto 5px 5px 5px;
+}
+#minmax_button {
+    margin-right: 5px;
+    margin-left: 5px;
 }
 #minmax_button * {
     font-size: 1.2rem;
@@ -263,7 +277,6 @@
     border: 1px solid black;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
-    z-index: 1;
 }
 
 #confirmation_container {
@@ -275,6 +288,19 @@
 }
 #confirmation_container label {
     font-size: 1.2rem;
+}
+
+#paids_content {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    height: 100%;
+    padding: 5px;
+    overflow: hidden;
+    background: white;
+    border: 1px solid black;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
 }
 
 /* Table CSS */
@@ -300,6 +326,31 @@
 #menu_table .delete_item {
     font-size: 1.4rem;
     margin: 2px;
+    background: red;
+    border: 1px solid black;
+    border-radius: 3px;
+}
+
+#paids_content * {
+    font-size: 1.2rem;
+}
+#paids_content table {
+    border-collapse: collapse;
+}
+#paids_content table th, #paids_content table td {
+    border: 1px solid black;
+}
+#paids_content table textarea {
+    resize: none;
+    outline: none;
+    text-align: center;
+    border: none;
+}
+#paids_content table tbody {
+    overflow-y: auto;
+}
+#paids_content table label {
+    padding: 2px;
     background: red;
     border: 1px solid black;
     border-radius: 3px;

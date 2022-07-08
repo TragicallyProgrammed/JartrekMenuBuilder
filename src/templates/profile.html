@@ -3,7 +3,6 @@
 
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/profile.css') }}">
-<script src="{{ url_for('static', filename='scripts/profile_eventSheet.js') }}"></script>
 {% endblock %}
 
 {% block header %}
@@ -14,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="content_container">
+<div style="height: 100%;">
     {% include "datatable.html" %}
 </div>
 {% endblock %}

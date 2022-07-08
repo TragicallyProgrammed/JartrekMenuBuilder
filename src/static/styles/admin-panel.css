@@ -54,6 +54,7 @@
 #user_search_bar {
     font-size: 1.0rem;
     padding: 2px;
+    outline: none;
 }
 #current_user_label {
     width: fit-content;
@@ -65,7 +66,7 @@
 #current_user_label * {
     font-size: 1.2rem;
 }
-#add_user_submit_button {
+#add_user_button {
     margin-left: 0;
     font-size: 1rem;
 }
@@ -85,26 +86,30 @@
     overflow: auto;
     flex: 1 1 auto;
 }
-table.user_table, th.user_table, td.user_table {
+#user_table_container {
     border-collapse: collapse;
-    text-align: center;
+}
+#user_table_container * {
     font-size: 1rem;
-    justify-content: center;
+    align-content: center;
 }
-table.user_table {
-    margin: 5px;
-    table-layout: auto;
+#user_table_container textarea {
+    resize: none;
+    outline: none;
+    text-align: center;
 }
-table.user_table td.user_table {
+#user_table_container tr * {
+    margin: 0;
+}
+#user_table_container tr {
+    text-align: center;
+}
+#user_table_container td {
     border: 1px solid black;
 }
-table.user_table th.user_table {
-    border-bottom: 2px solid black;
-}
-.user_table button {
-    font-size: 1rem;
-}
-.change_password {
-    display: flex;
-    padding: 3px;
+#user_table_container .delete_user {
+    font-size: 1.3rem;
+    background: red;
+    border: 1px solid black;
+    border-radius: 3px;
 }

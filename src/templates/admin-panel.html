@@ -24,28 +24,28 @@
             <tr>
                 <th>Delete<br>User</th>
                 <th>Username</th>
-                <th>Change<br>Password</th>
+                <th colspan="2">Change<br>Password</th>
                 <th>Export Table</th>
                 <th>View Table</th>
             </tr>
         </table>
     </div>
     <div id="add_user-panel">
-        <form id="add_user_container" method="POST">
+        <div id="add_user_container">
             <div style="border-bottom: 2px solid black; width: 100%; text-align: center;"><label>New User</label></div>
             <label>Username:</label>
-            <input type="text" name="username" placeholder="username">
+            <input type="text" name="username" id="new_username" placeholder="username">
             <label>Password:</label>
-            <input type="text" name="password" placeholder="password">
+            <input type="text" name="password" id="new_password" placeholder="password">
             <br>
             <div id="add_user_bottom">
-                <input type="submit" name="submit" id="add_user_submit_button" value="submit">
+                <input type="button" name="submit" id="add_user_button" value="submit">
                 <div id="is_admin_container">
                     <label>Is admin:</label>
                     <input type="checkbox" id="is_admin" name="is_admin">
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 <div id="right_content_container">

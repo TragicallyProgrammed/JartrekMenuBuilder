@@ -2,13 +2,6 @@
     margin: 10px;
     overflow: hidden;
 }
-.content_container {
-    padding: 5px;
-    background: lightgray;
-    border-radius: 3px;
+#content_container {
     border: groove;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
 }

@@ -12,6 +12,7 @@ login_manager = LoginManager()  # Start login manager
 def create_app():
     """Method to instantiate the application"""
     from .views import views
+    from .db_views import db_views
     from .auth import auth
     from .models import User
 
@@ -24,6 +25,7 @@ def create_app():
     db.init_app(app)  # Instantiates the database
 
     app.register_blueprint(views, url_prefix='/')  # Adds view endpoints
+    app.register_blueprint(db_views, url_prefix='/')  # Adds db_view endpoints
     app.register_blueprint(auth, url_prefix='/')  # Adds auth endpoints
 
     create_database(app)  # Creates new database

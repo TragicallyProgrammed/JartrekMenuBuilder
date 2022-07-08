@@ -1,52 +1,70 @@
 {% block head %}
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/tables.css') }}">
 <script src="{{ url_for('static', filename='scripts/table.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/data_eventSheet.js') }}"></script>
 {% endblock %}
 
 {% block content %}
-<div id="btn_container">
-    <input type="text" id="data_table_search_bar" placeholder="Search for items...">
-    <div id="drink_food_group">
-        <input type="radio" id="drink" name="menu_button" checked>
-        <label for="drink">
-            Drinks
-        </label>
-        <input type="radio" id="food" name="menu_button">
-        <label for="food">
-            Food/Snacks
-        </label>
-    </div>
-    <div id="modifier_button" style="display: none;">
-        <button id="minmax_button" state="max">
-            <label id="minmax">&#x2750;</label>
-            <label>Food Modifiers</label>
-        </button>
-    </div>
-    <div id="modifier_panel" style="display:none;">
-        <div id="modifier_header"><label style="font-size:1rem; margin: 0 0 0 5px;">Modifier Panel</label></div>
-        <div id="modifier_panel_content">
-            <div id="item_mods_panel">
-                <div id="item_mods_header">
-                    <label style="padding: 0 5px 0 5px;">Current Item: </label>
-                    <label id="current_item" style="width: 14rem; display: block;"></label>
+<div id="content_container">
+    <div id="btn_container">
+        <input type="text" id="data_table_search_bar" placeholder="Search for items...">
+        <div id="drink_food_group">
+            <input type="radio" id="drink" name="menu_button" checked>
+            <label for="drink">
+                Beer/Liquor
+                <br>
+                Soda
+            </label>
+            <input type="radio" id="food" name="menu_button">
+            <label for="food">
+                Food<br>
+                Merch
+            </label>
+            <input type="radio" id="paids" name="menu_button">
+            <label for="paids">
+                Paid Outs/Ins<br>
+                Employees
+            </label>
+        </div>
+        <div id="modifier_button" style="display: none;">
+            <button id="minmax_button" state="max">
+                <label>Food Modifiers</label>
+            </button>
+        </div>
+        <div id="modifier_panel" style="display:none;">
+            <div id="modifier_header"><label style="font-size:1rem; margin: 0 0 0 5px;">Modifier Panel</label></div>
+            <div id="modifier_panel_content">
+                <div id="item_mods_panel">
+                    <div id="item_mods_header">
+                        <label style="padding: 0 5px 0 5px;">Current Item: </label>
+                        <label id="current_item" style="width: 14rem; display: block;"></label>
+                    </div>
+                    <div id="item_mods_content">
+                    </div>
                 </div>
-                <div id="item_mods_content">
+                <div id="mods_panel">
+                    <div id="mods_header">
+                        <label style="display: block; text-align: center;">Modifiers</label>
+                    </div>
+                    <div id="mods_content">
+                    </div>
+                    <input id="set_modifier_button" type="button" value="<<Add To Item<<"/>
                 </div>
-            </div>
-            <div id="mods_panel">
-                <div id="mods_header">
-                    <label style="display: block; text-align: center;">Modifiers</label>
-                </div>
-                <div id="mods_content">
-                </div>
-                <input id="set_modifier_button" type="button" value="<<Add To Item<<"/>
             </div>
         </div>
     </div>
+    <div id="tab_buttons_div">
+    <div id="tab_button_container"></div>
+    </div>
+    <div id="tab_content_div"></div>
+    <div id="confirmation_container"><label for="confirmation_box">Table is complete:</label><input type="checkbox" id="confirmation_box"></div>
+    <div id="paids_content" style="display: none;">
+        <table id="employee_table">
+            <tr><th colspan="2">Employee Name</th><th>PIN</th><th>Title</th></tr>
+        </table>
+        <table id="paids_table">
+            <tr><th></th><th>In/Out</th><th>Description</th><th>Price</th></tr>
+        </table>
+    </div>
 </div>
-<div>
-<div id="tab_button_container"></div>
-</div>
-<div id="tab_content_div"></div>
-<div id="confirmation_container"><label for="confirmation_box">Table is complete:</label><input type="checkbox" id="confirmation_box"></div>
 {% endblock %}
