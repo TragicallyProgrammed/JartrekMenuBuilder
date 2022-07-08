@@ -1,15 +1,21 @@
 from flask_login import UserMixin
 from . import db
 
+modifier_item = db.Table('modifier_item',
+    db.Column('item_id', db.Integer, db.ForeignKey('item.id')),
+    db.Column('modifier_id', db.Integer, db.ForeignKey('modifier.id'))
+)
+
 
 class User(db.Model, UserMixin):
     """Class to define a model for the user table"""
     id = db.Column(db.Integer, unique=True, primary_key=True)
-    username = db.Column(db.String(128), unique=True, index=True)
+    username = db.Column(db.String(32), unique=True, index=True)
     password = db.Column(db.String(128))
     admin = db.Column(db.Boolean())
     tables = db.relationship('Table', primaryjoin="User.id==Table.user_id", backref=db.backref('User.id'))
     col_labels = db.relationship('Columns', primaryjoin="User.id==Columns.user_id", backref=db.backref('User.id'))
+    modifier_categories = db.relationship('Modifiercategory', primaryjoin="User.id==Modifiercategory.user_id", backref=db.backref('User.id'))
 
     def get_id(self):
         return self.id
@@ -20,26 +26,27 @@ class User(db.Model, UserMixin):
 
 class Table(db.Model):
     """Class to define a menu table"""
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, unique=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
-    table_name = db.Column(db.String(128), index=True)
+    table_name = db.Column(db.String(32), index=True)
+    type = db.Column(db.String(32))
     verified = db.Column(db.Boolean())
-    items = db.relationship('Item', backref='table', lazy='dynamic')
+    items = db.relationship('Item', backref='table', lazy='dynamic', cascade="all, delete")
 
 
 class Columns(db.Model):
     """Class to define the price levels for a user"""
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, unique=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     labels_length = db.Column(db.Integer)
-    label1 = db.Column(db.String(128))
-    label2 = db.Column(db.String(128))
-    label3 = db.Column(db.String(128))
-    label4 = db.Column(db.String(128))
-    label5 = db.Column(db.String(128))
-    label6 = db.Column(db.String(128))
-    label7 = db.Column(db.String(128))
-    label8 = db.Column(db.String(128))
+    label1 = db.Column(db.String(32))
+    label2 = db.Column(db.String(32))
+    label3 = db.Column(db.String(32))
+    label4 = db.Column(db.String(32))
+    label5 = db.Column(db.String(32))
+    label6 = db.Column(db.String(32))
+    label7 = db.Column(db.String(32))
+    label8 = db.Column(db.String(32))
 
     def changePriceLabels(self, arr_len, arr):
         self.labels_length = arr_len
@@ -78,9 +85,10 @@ class Columns(db.Model):
 
 class Item(db.Model):
     """Class to define an item within the database"""
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, unique=True, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), index=True)
-    item_name = db.Column(db.String(64), index=True)
+    item_name = db.Column(db.String(32), index=True)
+    modifiers = db.relationship('Modifier', secondary=modifier_item, back_populates='items')
     price1 = db.Column(db.Float)
     price2 = db.Column(db.Float)
     price3 = db.Column(db.Float)
@@ -100,23 +108,57 @@ class Item(db.Model):
         self.price7 = None
         self.price8 = None
         for (index, price) in enumerate(arr):
-            if index == 0:
-                self.price1 = price
-            elif index == 1:
-                self.price2 = price
-            elif index == 2:
-                self.price3 = price
-            elif index == 3:
-                self.price4 = price
-            elif index == 4:
-                self.price5 = price
-            elif index == 5:
-                self.price6 = price
-            elif index == 6:
-                self.price7 = price
-            elif index == 7:
-                self.price8 = price
+            if price is not None and price != "" and price != ".":
+                if index == 0:
+                    self.price1 = price
+                elif index == 1:
+                    self.price2 = price
+                elif index == 2:
+                    self.price3 = price
+                elif index == 3:
+                    self.price4 = price
+                elif index == 4:
+                    self.price5 = price
+                elif index == 5:
+                    self.price6 = price
+                elif index == 6:
+                    self.price7 = price
+                elif index == 7:
+                    self.price8 = price
 
     def getItemData(self):
-        return [self.item_name, self.price1, self.price2, self.price3, self.price4, self.price5, self.price6,
-                self.price7, self.price8]
+        return {"id": self.id, "label": self.item_name, "prices": [self.price1, self.price2, self.price3, self.price4, self.price5, self.price6,
+                self.price7, self.price8], "categories": []}
+
+
+class Modifiercategory(db.Model):
+    """Class to define modifier categories within the database"""
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    category_name = db.Column(db.String(32), index=True)
+    modifiers = db.relationship('Modifier', primaryjoin="Modifiercategory.id==Modifier.category_id", backref=db.backref('Modifiercategory.id'))
+
+
+class Modifier(db.Model):
+    """Class to define modifiers within the database"""
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('modifiercategory.id'), index=True)
+    modifier_label = db.Column(db.String(32), index=True)
+    modifier_price = db.Column(db.Integer, index=True)
+    items = db.relationship('Item', secondary=modifier_item, back_populates='modifiers')
+
+
+class Employee(db.Model):
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    name = db.Column(db.String(32), index=True)
+    pin = db.Column(db.String(6))
+    title = db.Column(db.String(32))
+
+
+class Paids(db.Model):
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
+    is_paid_in = db.Column(db.Boolean)
+    description = db.Column(db.String(32))
+    price = db.Column(db.Float)

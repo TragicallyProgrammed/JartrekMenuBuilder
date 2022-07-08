@@ -41,12 +41,13 @@ body {
     flex: 0 0 auto;
 }
 img.logo {
-    margin: 20px auto 10px 20px;
-    width: 10%;
+    margin: auto auto auto 20px;
+    padding: 15px 0;
+    width: 140px;
 }
 img.logo_foot {
     margin: 20px 20px 10px auto;
-    width: 5%;
+    width: 80px;
 }
 .flash_box {
     border: 2px solid black;
@@ -66,7 +67,13 @@ img.logo_foot {
 .info {
     background: #50FF50;
 }
-button#close_flash {
-    background: none;
-    border: none;
+#logout_panel {
+    text-align: center;
+    margin: 2px 20px 2px auto;
+    background: lightgrey;
+    border: 1px groove black;
+    padding: 5px;
+}
+#logout_panel * {
+    font-size: 1.2rem;
 }

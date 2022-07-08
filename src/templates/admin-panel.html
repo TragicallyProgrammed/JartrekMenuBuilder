@@ -7,39 +7,45 @@
 {% endblock %}
 
 {% block header %}
-<form method="POST"><input type="submit" name="submit" value="Logout" id="logout"></form>
+<div id="logout_panel">
+    <label>Welcome, <label id="username">{{username}}</label></label>
+    <form method="POST"><input type="submit" name="submit" value="Logout"></form>
+</div>
 {% endblock %}
 
 {% block content %}
 <div id="left_content_container">
     <div id="user_manager_container">
-        <div style="border-bottom: 2px solid black; width: 100%; text-align: center;"><label>Users</label></div>
+        <div id="users_header" style="border-bottom: 2px solid black; width: 100%; text-align: center;">
+            <input type="text" id="user_search_bar" placeholder="Search users...">
+            <label>Users</label>
+        </div>
         <table id="user_table_container" class="user_table">
             <tr>
                 <th>Delete<br>User</th>
                 <th>Username</th>
-                <th>Change<br>Password</th>
+                <th colspan="2">Change<br>Password</th>
                 <th>Export Table</th>
                 <th>View Table</th>
             </tr>
         </table>
     </div>
     <div id="add_user-panel">
-        <form id="add_user_container" method="POST">
+        <div id="add_user_container">
             <div style="border-bottom: 2px solid black; width: 100%; text-align: center;"><label>New User</label></div>
             <label>Username:</label>
-            <input type="text" name="username" placeholder="username">
+            <input type="text" name="username" id="new_username" placeholder="username">
             <label>Password:</label>
-            <input type="text" name="password" placeholder="password">
+            <input type="text" name="password" id="new_password" placeholder="password">
             <br>
             <div id="add_user_bottom">
-                <input type="submit" name="submit" id="add_user_submit_button" value="submit">
+                <input type="button" name="submit" id="add_user_button" value="submit">
                 <div id="is_admin_container">
                     <label>Is admin:</label>
                     <input type="checkbox" id="is_admin" name="is_admin">
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 <div id="right_content_container">

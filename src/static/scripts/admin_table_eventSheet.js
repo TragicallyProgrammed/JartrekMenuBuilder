@@ -1,121 +1,197 @@
 $(function () {
-    var tableInstance = new Table(current_user=document.getElementById("current_user").innerHTML.valueOf());
-    tableEventManager(tableInstance);
+    let userTable = new UserTable()
+    userTable.downloadTable()
 
-    $.ajax({ // Send request to get users and populate table
-        contentType: 'json',
-        data: JSON.stringify({}),
-        type: 'POST',
-        url: 'get-users',
-        success: function (data) {
-            var users_table = document.getElementById('user_table_container');
-
-            var json_data = JSON.parse(JSON.stringify(data));
-            var user_list = json_data['user_list'];
-            for (var i = 0; i < user_list.length; i++) {
-                var username = user_list[i];
-                //Create row container
-                var row_container = document.createElement('tr');
-                row_container.className = "user_table";
-
-                //create delete button
-                var delete_cell = document.createElement('td');
-                delete_cell.className = "user_table";
-                var delete_button = document.createElement('button');
-                delete_button.innerHTML = "\u274C";
-                delete_button.className = "delete_user";
-                delete_button.setAttribute("for", username);
-                delete_button.addEventListener("click", function(event){
-                    $.ajax({
-                        contentType: 'json',
-                        data: JSON.stringify({
-                            'username': this.getAttribute("for")
-                        }),
-                        type: 'POST',
-                        url: 'remove_user',
-                        statusCode: {
-                            200: function() {
-                                location.reload(true);
-                            }
-                        }
-                    });
-                });
-                delete_cell.appendChild(delete_button);
-
-                //create username label
-                var username_element = document.createElement('td');
-                username_element.className = "user_table";
-                var username_label = document.createElement('label');
-                username_label.className = "username";
-                username_label.innerHTML = username;
-                username_element.appendChild(username_label);
-
-                //create change password
-                var password_cell = document.createElement('td');
-                password_cell.className = "user_table";
-                var password_form = document.createElement('form');
-                password_form.method = "POST";
-                password_form.className = "change_password"
-                var password_field = document.createElement('input');
-                password_field.type = "text";
-                password_field.name = "password";
-                password_field.setAttribute("for", username)
-                password_field.className = 'password_field';
-                password_field.placeholder = "Enter new password"
-                var for_user = document.createElement("input");
-                for_user.type = "hidden";
-                for_user.name = "username"
-                for_user.value = username;
-                var password_submit = document.createElement('button');
-                password_submit.type = "submit";
-                password_submit.name = "submit";
-                password_submit.value = "change_pass"
-                password_submit.innerHTML = "\u2713";
-                password_form.appendChild(password_field);
-                password_form.appendChild(for_user);
-                password_form.appendChild(password_submit);
-                password_cell.appendChild(password_form);
-
-                //create export button
-                var export_cell = document.createElement('td');
-                export_cell.className = "user_table";
-                var export_button_container = document.createElement('a');
-                export_button_container.href = "download-data/"+username;
-                var export_button = document.createElement('button');
-                export_button.className = "export_button";
-                export_button.setAttribute("for", username);
-                var export_label = document.createElement('label');
-                export_label.innerHTML = "\u2913";
-                export_button.appendChild(export_label);
-                export_button_container.appendChild(export_button)
-                export_cell.appendChild(export_button_container);
-
-                //create view table button
-                var view_table_cell = document.createElement("td");
-                view_table_cell.className = "user_table";
-                var view_table_button = document.createElement("button");
-                view_table_button.className = "view_table";
-                view_table_button.setAttribute('for', username);
-                view_table_button.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    tableInstance.uploadTable(); // Upload previously selected user's table
-                    var label = document.getElementById("current_user");  // Get label
-                    label.innerHTML = this.getAttribute("for");  // Update label
-                    tableInstance.changeCurrentUser(this.getAttribute("for")); // Update table's current user
-                    tableInstance.loadTable($('input[name="tab-group"]:checked').attr("for"));  // Loading table for currently selected user
-                });
-                var view_table_label = document.createElement('label');
-                view_table_label.innerHTML = "\u27BE";
-                view_table_button.appendChild(view_table_label);
-                view_table_cell.appendChild(view_table_button);
-
-                users_table.appendChild(row_container);
-                row_container.appendChild(delete_cell);
-                row_container.appendChild(username_element);
-                row_container.appendChild(password_cell);
-                row_container.appendChild(export_cell)
-                row_container.appendChild(view_table_cell);
-            }
+    // Search Bar
+    $('#user_search_bar').on("keyup", function(event) {
+        for(let i = 0; i < userTable.users.length; i++) {
+            let username = userTable.users[i].username.toLowerCase()
+            if(!username.includes(this.value.toLowerCase()))
+                userTable.users[i].row.style.display = "none"
+            else
+                userTable.users[i].row.style.display = ""
         }
-    });
-});
+    })
+
+    /* Table Events */
+    $('#user_table_container')
+    // Remove User
+    .on('click', '.delete_user', function(){
+        userTable.removeUser(Number(this.parentNode.parentNode.getAttribute("index")))
+    })
+    // Change password
+    .on('change', '.password_field', function() {
+        let index = Number(this.parentNode.parentNode.getAttribute("index"))
+        userTable.users[index].password = this.value
+    })
+    .on('click', '.password_confirmation', function(event) {
+        let index = Number(this.parentNode.parentNode.getAttribute("index"))
+        userTable.changePassword(index, userTable.users[index].password)
+    })
+    // View Table
+    .on('click', '.view_table', function(event) {
+        userTable.viewTable(Number(this.parentNode.parentNode.getAttribute("index")))
+    })
+
+    /* Add Customer */
+    $('#add_user_button').on('click', function() {
+        let username = $('#new_username').val()
+        let password = $('#new_password').val()
+        let is_admin = $('#is_admin').is(":checked")
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': username,
+                'password': password,
+                'isAdmin': is_admin
+            }),
+            type: 'POST',
+            url: 'add-user',
+            success: function() {
+                location.reload()
+            }
+        })
+    })
+})
+
+class UserTable {
+    constructor() {
+        this.users = []
+    }
+
+    downloadTable() {
+        this.clearTable()
+
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+
+            }),
+            type: 'POST',
+            url: 'get-users',
+            success: function (data) {
+                for(let i = 0; i < data["user_list"].length; i++) {
+                    instance.addUser(new User(data["user_list"][i]["id"], data["user_list"][i]["username"]))
+                }
+            }
+        })
+    }
+
+    clearTable() {
+        $($('#user_table_container').children[0]).empty()
+    }
+
+    addUser(user = new user()) {
+        let row = $('#user_table_container')[0].insertRow(-1)
+        row.setAttribute("index", this.users.length)
+        user.row = row
+
+        let cell0 = row.insertCell(-1)
+        let delete_button = document.createElement("label")
+        delete_button.className = "delete_user"
+        delete_button.innerHTML = "&#10006"
+        cell0.appendChild(delete_button)
+        row.appendChild(cell0)
+
+        let cell1 = row.insertCell(-1)
+        let username = document.createElement("label")
+        username.classname = "username_label"
+        username.innerHTML = user.username
+        cell1.appendChild(username)
+        row.appendChild(cell1)
+
+        let cell2 = row.insertCell(-1)
+        let password_field = document.createElement("textarea")
+        password_field.className = "password_field"
+        password_field.rows = 1
+        password_field.cols = 15
+        password_field.maxLength = 16;
+        password_field.placeholder = "Change Password"
+        cell2.appendChild(password_field)
+
+        let cell3 = row.insertCell(-1)
+        let password_confirmation = document.createElement("button")
+        password_confirmation.className = "password_confirmation"
+        password_confirmation.innerHTML = "\u2713"
+        cell3.appendChild(password_confirmation)
+        row.appendChild(cell2)
+        row.appendChild(cell3)
+
+        let cell4 = row.insertCell(-1)
+        let download_table_tag = document.createElement("a")
+        download_table_tag.href = "download-data/"+user.username
+        let download_table = document.createElement("button")
+        download_table.className = "export_button"
+        download_table.innerHTML = "\u2913"
+        download_table_tag.appendChild(download_table)
+        cell4.appendChild(download_table_tag)
+        row.appendChild(cell4)
+
+        let cell5 = row.insertCell(-1)
+        let view_table_button = document.createElement("button")
+        view_table_button.className = "view_table"
+        view_table_button.innerHTML = "\u27BE"
+        cell5.appendChild(view_table_button)
+        row.appendChild(cell5)
+
+        this.users.push(user)
+    }
+
+    removeUser(index) {
+        let instance = this
+        $.ajax({
+            contentType: 'JSON',
+            data: JSON.stringify({
+                'userID': instance.users[index].id
+            }),
+            type: 'POST',
+            url: 'delete-user',
+            success: function() {
+                location.reload()
+            }
+        })
+    }
+
+    changePassword(index, password) {
+        let instance = this
+        $.ajax({
+            contentType: 'JSON',
+            data: JSON.stringify({
+                'userID': instance.users[index].id,
+                'password': password
+            }),
+            type: 'POST',
+            url: 'change-password',
+            success: function() {
+                location.reload()
+            }
+        })
+    }
+
+    viewTable(index) {
+        let selected_user = this.users[index]
+        $('#current_user')[0].innerHTML = selected_user.username
+        table.drink_tables = []
+        table.food_tables = []
+        table.modifier_categories = []
+        table.clearTable()
+        employeeTable.clearTable()
+        paidsTable.clearTable()
+        $('#mods_content').empty()
+        $('#tab_button_container').empty()
+
+        table.current_user = selected_user.username
+        table.downloadTables()
+        table.downloadModCategories()
+        employeeTable.current_user = selected_user.username
+        employeeTable.downloadTable()
+        paidsTable.current_user = selected_user.username
+        paidsTable.downloadTable()
+    }
+}
+function User(id=-1, username="", row=null) {
+    this.id = id
+    this.username = username
+    this.row = row
+}

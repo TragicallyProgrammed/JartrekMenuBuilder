@@ -1,506 +1,1106 @@
-/*TABLE CLASSES*/
-class Table {
-    /*CONSTRUCTOR*/
-    constructor(current_user=null, tableName = "", colLen = 1, labels = new Array(8), items = []) {
-        this.current_user = current_user;
-        this.tableName = tableName;
-        this.colLen = colLen;
-        this.labels = labels;
-        this.items = items;
-        this.parentElementID = null;
+/*
+Menu Table Class
+    -ATTRIBUTES-
+        current_user: String
+            Stores the table's username
+        tableID: Number
+            ID of the table in the database
+        items: Array
+            Stores item data
+        current_item: Item
+            Currently selected item for modifier panel
+        colLen: Number
+            Number of active columns
+        completed: Boolean
+            Tracks if the table is complete or not
+        tableElement: HTMLElement
+            HTML Element for the table
+        priceLabelColumns: Array
+            Stores the first row of columns for the table
+        priceLabels: Array
+            Stores the labels for each column
 
-        //Table Template Elements
-        this.html_tabs = document.getElementsByClassName("tab_group");
-        this.tableContainer = null;
-        this.tableElement = null;
-        this.headerRow = null;
-        this.itemLabelColumn = null;
-        this.itemLabel = null;
-        this.priceLabelColumns = new Array(8);
-        this.priceLabels = new Array(8);
+    -FUNCTIONS-
+        downloadTable(tableID)
+            Downloads price labels and items from database
+        addItem(item)
+            Adds a new HTML row on the current table with the given item
+        removeColumn(index)
+            Removes label from priceLabels and clears the column
+        generateNewHTMLTable()
+            Returns a blank HTML Table
+        updateTableGraphics()
+            Greys out all inactive cells and colors table complete checkbox
+        clearTable()
+            Clears out the tableElement of table data
+        selectRow(item_index)
+            Selects a row at a given index
+        updatePriceLabel(index, label)
+            Updates the price label of a column
+        updateItemLabel(item_index, label)
+            Updates label for an item
+        updateItemPrice(item_index, price_index, price)
+            Updates price for an item
+        removeItem(item_index)
+            Deletes an item
+*/
+class MenuTable {
+    constructor(current_user="", tableID=-1) {
+        this.current_user = current_user
+        this.tableID = tableID
+        this.items = []
+        this.current_item = null;
+        this.colLen = 1
+        this.completed = false
 
-        this.generateNewHTMLTable();
+        //HTML Table Elements
+        this.tableElement = document.createElement("table")
+        this.priceLabelColumns = Array(8)
+        this.priceLabels = Array(8)
 
-        // Generate Table Structure
-        this.structureHTMLTable();
-
-        //Load default label array
-        this.labels[0] = "Regular";
-
-        //Static Table Events
-        //Change tabs
-        var tableInstance = this;
-        $('input[name="tab-group"]').change(function () { // Selecting all tabs and looking for them to change
-            console.log("Tab Changed!")
-            //Display current tab
-            $('input[name="tab-group"]:not(:checked)').each(function (index, tab) { // Selects all tabs not selected
-                document.getElementById(tab.getAttribute("for")).style.display = "none"; // Disables that tab
-            });
-            var tab = document.getElementById(this.getAttribute('for')); // Gets the div for currently selected tab
-            tab.style.display = 'block'; // Enables that div
-
-            tableInstance.uploadTable();
-            tableInstance.loadTable($(this).attr("for"));
-        });
-
-        //Add row
-        $('#add_row').on("click", function () { // Selects add row button
-            tableInstance.addItem(new Item("", this.colLen, [])); // Calls addItem from table to append new row
-        });
-
-        // Update values on table when clicking 'Done'
-        $('#done').on('click', function (e) {
-            e.preventDefault();  // Prevent default behavior for buttons
-            tableInstance.uploadTable(); // Uploads the table after changing a value
-        });
-    }
-    /*CONSTRUCTOR*/
-
-    /*METHODS*/
-    //Returns current name of table
-    getPriceLabels() {
-        return this.labels;
-    }
-    getItems() {
-        var ret = [];
-        for(var i = 0; i < this.items.length; i++) {
-            var dict = {
-                label: this.items[i].getLabel(),
-                prices: this.items[i].getPrices()
-            };
-            ret.push(dict);
-        }
-        return ret;
-    }
-    getCurrentUser() {
-        return this.current_user;
-    }
-    changeCurrentUser(username) {
-        this.current_user = username;
+        this.drink_tables = []
+        this.food_tables = []
+        this.modifier_categories = []
     }
 
-    //Changes the label of an existing price column
-    renamePriceLabel(index, label) {
-        if(label === "") {
-            if (index >= 0 && index < this.colLen) {
-                this.labels[index] = label;
-                this.removeColumn(index);
+    downloadTables() {
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': instance.current_user
+            }),
+            type: 'POST',
+            url: 'get-tables',
+            success: function (data) {
+                instance.downloadColumns()
+
+                // fill tables
+                let tables = data["tables"]
+                for(let i = 0; i < tables.length; i++) {
+                    if(tables[i]["tableType"] === "drink")
+                        instance.drink_tables.push(new Table(data["tables"][i]["id"], data["tables"][i]["tableName"], data["tables"][i]["tableType"]))
+                    else if(tables[i]["tableType"] === "food")
+                        instance.food_tables.push(new Table(data["tables"][i]["id"], data["tables"][i]["tableName"], data["tables"][i]["tableType"]))
+                }
+                instance.drink_tables.push(new Table(-1, "", "drink"))
+                instance.food_tables.push(new Table(-1, "", "food"))
+
+
+                let selected_category_id = $('input[name="menu_button"]:checked').attr("id")
+                if(selected_category_id === "drink") {
+                    for(let i = 0; i < instance.drink_tables.length; i++) {
+                        instance.drink_tables[i].addTable()
+                    }
+                    $($('#tab_button_container').children()[0].children[0]).prop("checked", true).trigger("change")
+                } else if(selected_category_id === "food") {
+                    for(let i = 0; i < instance.food_tables.length; i++) {
+                        instance.food_tables[i].addTable()
+                    }
+                    $($('#tab_button_container').children()[0].children[0]).prop("checked", true).trigger("change")
+                }
             }
-        } else {
-            if (index > 0 && index < this.colLen) {
-                this.labels[index] = label;
-                this.priceLabelColumns[index].setAttribute("enabled", "true");
-                this.priceLabels[index].value = label;
-            } else if(index >= this.colLen) {
-                this.colLen += 1;
-                this.labels[index] = label;
-                this.priceLabelColumns[index].setAttribute("enabled", "true");
-                this.priceLabels[index].value = label;
+        })
+    }
+
+    downloadModCategories() {
+        let instance = this
+        $.ajax({
+            contentType: 'JSON',
+            data: JSON.stringify({
+                'username': instance.current_user
+            }),
+            type: 'POST',
+            url: 'get-categories',
+            success: function(data) {
+                for(let i = 0; i < data["categories"].length; i++) {
+                    let category = new Category(data["categories"][i]["id"], data["categories"][i]["label"], [])
+                    for(let j = 0; j < data["categories"][i]["mods"].length; j++) {
+                        category.mods.push(new Modifier(category.id, data["categories"][i]["mods"][j]["id"], data["categories"][i]["mods"][j]["label"], data["categories"][i]["mods"][j]["price"]))
+                    }
+                    category.mods.push(new Modifier(category.id))
+                    instance.modifier_categories.push(category)
+                }
+                instance.modifier_categories.push(new Category())
+
+                let mods_content = $('#mods_content')
+
+                for(let i = 0; i < instance.modifier_categories.length; i++) {
+                    instance.modifier_categories[i].addContainer(mods_content)
+                }
             }
+        })
+    }
+
+    downloadTable(tableID) {
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': instance.current_user,
+                'tableID': tableID
+            }),
+            type: 'POST',
+            url: 'get-table',
+            success: function(data) {
+                instance.tableID = tableID
+
+                let items = data["items"]
+
+                instance.completed = data["completed"]
+
+                for(let i = 0; i < items.length; i++) {
+                    let item = new Item(items[i]["id"], items[i]["label"], items[i]["prices"], null, items[i]["categories"])
+                    instance.addItem(item)
+                }
+                instance.addItem()
+
+                instance.downloadColumns()
+            }
+        })
+    }
+
+    downloadColumns() {
+        let instance = this
+        $.ajax({
+            contentType: 'JSON',
+            data: JSON.stringify({
+                "username": instance.current_user
+            }),
+            type: 'POST',
+            url: 'get-columns',
+            success: function(data) {
+                let labels = data["priceLabels"]
+                for(let i = 1; i < labels.length; i++) {
+                    instance.priceLabels[i].value = labels[i]
+                    instance.priceLabelColumns[i].setAttribute("enabled", "true")
+                }
+                instance.colLen = labels.length
+                instance.updateTableGraphics()
+            }
+        })
+    }
+
+    addItem(item = new Item()) {
+        let row = this.tableElement.insertRow(-1)
+        row.setAttribute("row_index", String(this.items.length))
+        row.addEventListener('click', ()=>this.selectRow(Number(row.getAttribute("row_index"))))
+
+        let cell0 = row.insertCell(-1)
+        let del_button = document.createElement("label")
+        del_button.className = "delete_item"
+        del_button.innerHTML = "&#10006"
+        cell0.appendChild(del_button)
+
+        let cell1 = row.insertCell(-1)
+        let item_label = document.createElement("textarea")
+        item_label.className = "chart_field item_label"
+        item_label.placeholder = "Item"
+        item_label.cols = 20
+        item_label.rows = 1
+        item_label.maxLength = 19
+        item_label.value = item.label
+        cell1.appendChild(item_label)
+
+        for(let i = 2; i < this.priceLabelColumns.length+2; i++) {
+            let celli = row.insertCell(-1)
+            let data = document.createElement("textarea")
+            data.className = "chart_field item_price"
+            data.placeholder = "$-"
+            data.cols = 14
+            data.rows = 1
+            data.maxLength = 6
+            data.setAttribute("column_index", String(Number(i)-1))
+            data.setAttribute("row_index", String(this.items.length))
+
+            if(i-2 < item.prices.length) {
+                data.value = item.prices[i-2]
+            }
+
+            celli.appendChild(data)
         }
+        item.row = row
+        this.items.push(item)
         this.updateTableGraphics()
     }
 
-    //Changes the price of a given cell
-    changeItemPrice(priceIndex, itemIndex, value) {
-        this.items[itemIndex].setPrice(priceIndex, value);
+    removeColumn(index) {
+        for(let i = index; i < this.colLen; i++) {
+            if(i < this.colLen-1) {
+                this.priceLabels[i].value = this.priceLabels[Number(i)+1].value
+                for(let j = 0; j < this.items.length; j++) {
+                    this.items[j].row.children[Number(i)+2].firstChild.value = this.items[j].row.children[Number(i)+3].firstChild.value
+                }
+            } else {
+                this.priceLabels[i].value = ""
+                this.priceLabelColumns[i].setAttribute("enabled", false)
+                for(let j = 0; j < this.items.length; j++) {
+                    this.items[j].row.children[Number(i)+2].firstChild.value = ""
+                }
+            }
+        }
+        this.colLen -= 1
     }
 
-    //Changes the label of a given item
-    renameItemPrice(itemIndex, value) {
-        this.items[itemIndex].setLabel(value);
+    generateNewHTMLTable() {
+        this.clearTable()
+
+        this.tableElement.id = "menu_table"
+
+        let headerRow = document.createElement("tr")
+        headerRow.id = "header_row"
+        this.tableElement.appendChild(headerRow)
+
+        let itemLabelColumn = document.createElement("th")
+        itemLabelColumn.setAttribute("colspan", "2")
+        headerRow.appendChild(itemLabelColumn)
+
+        let itemLabel = document.createElement("label")
+        itemLabel.innerHTML = "Items"
+        itemLabelColumn.appendChild(itemLabel)
+
+        this.priceLabelColumns[0] = document.createElement("th")
+        this.priceLabelColumns[0].setAttribute("enabled", "true")
+
+        this.priceLabels[0] = document.createElement("label")
+        this.priceLabels[0].innerHTML = "Regular"
+        this.priceLabels[0].className = "chart_field"
+        headerRow.appendChild(this.priceLabelColumns[0])
+        this.priceLabelColumns[0].appendChild(this.priceLabels[0])
+
+        for(let i = 1; i < 8; i++) {
+            this.priceLabelColumns[i] = document.createElement("th")
+            this.priceLabelColumns[i].setAttribute("enabled", "false")
+
+            this.priceLabels[i] = document.createElement("textarea")
+            this.priceLabels[i].className = "chart_field price_label"
+            this.priceLabels[i].setAttribute("placeholder", "Price Label")
+            this.priceLabels[i].maxLength = "14"
+            this.priceLabels[i].rows = 1
+            this.priceLabels[i].cols = 14
+            this.priceLabels[i].setAttribute("column_index", String(i))
+            this.priceLabels[i].addEventListener("change", () => this.updatePriceLabel(this.priceLabels[i].getAttribute("column_index"), this.priceLabels[i].value))
+
+            headerRow.appendChild(this.priceLabelColumns[i])
+            this.priceLabelColumns[i].appendChild(this.priceLabels[i])
+        }
+
+        this.updateTableGraphics()
+
+        return this.tableElement
     }
 
-    //Adds a new row into the table
-    addItem(item) {
-        this.items.push(item);
+    updateTableGraphics() {
+        //Update completion box
+        $('#confirmation_box').prop("checked", this.completed)
+        if(this.completed === true) {
+            $('#confirmation_container').css("background", "green")
+        } else {
+            $('#confirmation_container').css("background", "red")
+        }
 
-        this.addHTMLTableRow(item);
-        
-        this.updateTableGraphics();
+        //Setting enabled attribute
+        for(let i = 0; i < this.priceLabelColumns.length; i++) {
+            if(this.priceLabelColumns[i].getAttribute("enabled") === "true"){
+                this.priceLabelColumns[i].style.background = "none"
+                this.priceLabels[i].style.background = "none"
+                this.priceLabels[i].removeAttribute("readonly")
+                for(let j = 0; j < this.items.length; j++) {
+                    if (this.items[j].id === -1) {
+                        this.items[j].row.children[i+2].style.background = "grey"
+                        this.items[j].row.children[i+2].firstChild.style.background = "grey"
+                        this.items[j].row.children[i+2].firstChild.setAttribute("readonly", "readonly")
+                    } else {
+                        this.items[j].row.children[i + 2].style.background = "none"
+                        this.items[j].row.children[i + 2].firstChild.style.background = "none"
+                        this.items[j].row.children[i + 2].firstChild.getAttribute("readonly") === "readonly" && this.items[j].row.children[i + 2].firstChild.removeAttribute("readonly")
+                    }
+                }
+            } else {
+                if (this.priceLabelColumns[i - 1].getAttribute("enabled") === "true") {
+                    this.priceLabelColumns[i].style.background = "none"
+                    this.priceLabels[i].style.background = "none"
+                    this.priceLabels[i].getAttribute("readonly") === "readonly" && this.priceLabels[i].removeAttribute("readonly")
+                } else {
+                    this.priceLabelColumns[i].style.background = "grey"
+                    this.priceLabels[i].style.background = "grey"
+                    this.priceLabels[i].setAttribute("readonly", "readonly")
+                }
+                for(let j = 0; j < this.items.length; j++) {
+                    this.items[j].row.children[i+2].style.background = "grey"
+                    this.items[j].row.children[i+2].firstChild.style.background = "grey"
+                    this.items[j].row.children[i+2].firstChild.setAttribute("readonly", "readonly")
+                }
+            }
+        }
     }
 
-    //Removes a row
-    removeItem() {
-        if (this.items.length > 1) {
-            // Path syntax is such to be compatible with firefox
-            var path = event.path || (event.composedPath && event.composedPath());
-            var tableInstance = this;
-            if(path){
-                $.ajax({
-                    contentType: 'json',
-                    data: JSON.stringify({
-                        'username': this.current_user,
-                        'tableName': this.tableName,
-                        'itemName': this.getItems()[path[2].rowIndex - 1].label
-                    }),
-                    type: 'POST',
-                    url: 'remove_item',
-                    statusCode: {
-                        200: function() {
-                            console.log("status 200");
-                            //Remove from local array
-                            tableInstance.items.splice(path[2].rowIndex - 1, 1);
-                            //Remove HTML Table Row
-                            path[2].parentNode.removeChild(path[2]);
-                        },
-                        500: function() {
-                            console.log("status 500");
+    clearTable() {
+        // Clearing Table Data
+        this.items = []
+
+        // Clear HTML Table
+        while(this.tableElement.firstChild) {
+            this.tableElement.removeChild(this.tableElement.firstChild)
+        }
+    }
+
+    selectRow(item_index) {
+        if(this.current_item !== null) {
+            this.current_item.row.firstChild.style.background = "none"
+        }
+        // Clear item modifiers content
+        let item_mods_contents = $('#item_mods_content')
+        item_mods_contents.empty()
+        $('#current_item').html(this.items[item_index].label)
+
+        if(this.items[item_index].id !== -1 && this.items[item_index].id !== 0) { // If the item selected does not have an invalid id
+            this.current_item = this.items[item_index]
+            this.current_item.row.firstChild.style.background = "lightblue"
+
+            let instance = this
+
+            $.ajax({
+                contentType: 'JSON',
+                data: JSON.stringify({
+                    "itemID": instance.items[item_index].id
+                }),
+                type: 'POST',
+                url: 'download-item',
+                success: function (data) {
+                    if(data !== "") {
+                        instance.items[item_index] = new Item(data["item"]["id"], data["item"]["label"], data["item"]["prices"], instance.items[item_index].row, data["item"]["categories"])
+
+                        let categories = instance.items[item_index].categories
+                        for (let i = 0; i < categories.length; i++) {
+                            // Create category HTML
+                            let item_category_container = document.createElement("div")
+                            item_category_container.className = "item_category_container"
+                            item_category_container.setAttribute("index", item_mods_contents.children().length)
+                            item_mods_contents.append(item_category_container)
+
+                            let item_category_header = document.createElement("div")
+                            item_category_header.className = "item_category_header"
+                            item_category_container.appendChild(item_category_header)
+
+                            let item_category_dropdown_button = document.createElement("input")
+                            item_category_dropdown_button.className = "category_dropdown_button"
+                            item_category_dropdown_button.type = "button"
+                            item_category_dropdown_button.value = "\u25B6"
+                            item_category_header.appendChild(item_category_dropdown_button)
+
+                            let item_category_label = document.createElement("label")
+                            item_category_label.className = "item_category_label"
+                            item_category_label.innerHTML = categories[i]["label"]
+                            item_category_header.appendChild(item_category_label)
+
+                            let item_category_mods_container = document.createElement("div")
+                            item_category_mods_container.className = "item_category_mods_container"
+                            item_category_container.appendChild(item_category_mods_container)
+
+                            for (let j = 0; j < categories[i].mods.length; j++) {
+                                let modifier_container = document.createElement("div")
+                                modifier_container.className = "item_modifier_container"
+                                modifier_container.setAttribute("index", item_category_mods_container.children.length)
+                                item_category_mods_container.appendChild(modifier_container)
+
+                                let remove_modifier = document.createElement("label")
+                                remove_modifier.className = "remove_item_modifier"
+                                remove_modifier.innerHTML = "&#10006"
+                                modifier_container.appendChild(remove_modifier)
+
+                                let modifier_label = document.createElement("label")
+                                modifier_label.className = "item_modifier_label"
+                                modifier_label.innerHTML = categories[i].mods[j].label
+                                modifier_container.appendChild(modifier_label)
+
+                                let modifier_price = document.createElement("label")
+                                modifier_price.className = "item_modifier_price"
+                                if (categories[i].mods[j].price == null)
+                                    modifier_price.innerHTML = "$-"
+                                else
+                                    modifier_price.innerHTML = "$" + categories[i].mods[j].price
+                                modifier_container.appendChild(modifier_price)
+
+                                let select_modifier = document.createElement("input")
+                                select_modifier.type = "button"
+                                select_modifier.className = "select_modifier"
+                                select_modifier.value = "\u00BB"
+                                modifier_container.appendChild(select_modifier)
+                            }
                         }
                     }
-                });
-            }
+                }
+            })
+        } else {
+            this.current_item = null;
         }
     }
 
-    //Uploads table to database
-    uploadTable() {
+    updatePriceLabel(index, label="") {
+        let instance = this
+
+        this.priceLabelColumns[index].setAttribute("enabled", "true")
+        if(index >= 1 && index < this.colLen) {
+            this.priceLabels[index].value = label
+            if (label === "") {
+                this.removeColumn(index)
+            }
+        }
+
+        let labels = ["Regular"]
+        for(let i = 1; i < this.priceLabels.length; i++) {
+            if(this.priceLabels[i].value !== "")
+                labels.push(this.priceLabels[i].value)
+        }
+        this.colLen = labels.length
+
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
-                'username': this.current_user,
-                'tableName': this.tableName,
-                'priceLabelsLength': this.colLen,
-                'priceLabels': this.labels,
-                'items': this.getItems()
+                'username': instance.current_user,
+                'priceLabels': labels
             }),
             type: 'POST',
-            url: 'updatedb'
-        });
+            url: 'update-columns'
+        })
+
+        this.updateTableGraphics()
     }
 
-    //Downloads table from database
-    downloadTable() {
-        console.log("Downloading table with user: " + this.current_user)
-        var table_instance = this;  // Get current instance of the class
+    updateItemLabel(item_index, label="") {
+        let instance = this
+
+        let prev_label = this.items[item_index].label
+        this.items[item_index].label = label
+
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
-                'username': this.current_user,
-                'tableName': this.tableName,
-                'priceLabelsLength': this.colLen,
-                'priceLabels': this.getPriceLabels(),
+                'tableID': instance.tableID,
+                'itemID': instance.items[item_index].id,
+                'label': label
             }),
             type: 'POST',
-            url: 'getdb',
+            url: 'update-item-label',
             success: function(data) {
-                var price_labels = data["price_labels"];
-                var items = data["items"];
+                if(instance.items[item_index].id === -1 || instance.items[item_index].id === 0) {
+                    instance.items[item_index].id = data["id"]
+                    if(prev_label === "")
+                        instance.addItem()
+                }
+            }
+        })
+    }
 
-                if(price_labels.length === 0) {
-                    table_instance.colLen = 1;
-                    table_instance.renamePriceLabel(0, "Regular");
-                } else {
-                    table_instance.colLen = price_labels.length;
-                    for(var i = 0; i < price_labels.length; i++) {
-                        table_instance.renamePriceLabel(i, price_labels[i]);
+    updateItemPrice(item_index, price_index, price) {
+        this.items[item_index].prices[price_index-1] = price
+
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'itemID': this.items[item_index].id,
+                'prices': this.items[item_index].prices
+            }),
+            type: 'POST',
+            url: 'update-item-prices'
+        })
+    }
+
+    removeItem(item_index) {
+        let tableInstance = this
+        let item_id = this.items[item_index].id
+        if(item_id !== -1) {
+            $.ajax({
+                contentType: 'json',
+                data: JSON.stringify({
+                    'itemID': item_id
+                }),
+                type: 'POST',
+                url: 'remove-item',
+                success: function () {
+                    tableInstance.current_item = null
+                    let row = tableInstance.items[item_index].row
+                    $(row).remove()
+                    tableInstance.items.splice(item_index, 1)
+                    for(let i = item_index; i < tableInstance.items.length; i++) {
+                        tableInstance.items[i].row.setAttribute("row_index", i)
                     }
                 }
-
-                if(items.length === 0) {
-                    table_instance.addItem(new Item("", table_instance.colLen, []))
-                } else {
-                    for(var i = 0; i < items.length; i++) {
-                        table_instance.addItem(new Item(items[i]["label"], table_instance.colLen, items[i]["prices"]));
-                    }
-                }
-            },
-            error: function(data) {
-                alert("ERROR OCCURRED WHILE LOADING TABLE!!!!");
-                console.log(data);
-            }
-        });
-    }
-
-    //Clears the table, places it under the specified HTML element, and loads data from server-side database
-    loadTable(tabID) {
-        console.log("loading table with user: " + this.current_user)
-        //Place on document
-        if (this.parentElementID != null) {
-            this.clearTable();
-        }
-        this.parentElementID = tabID;
-        document.getElementById(this.parentElementID).appendChild(this.tableContainer);
-
-        var parentTabId = document.getElementById(this.parentElementID).getAttribute("for");
-        var tab_labels = document.getElementsByClassName("tab-label");
-        for (var i = 0; i < tab_labels.length; i++) {
-            if (tab_labels[i].htmlFor === parentTabId) {
-                this.tableName = tab_labels[i].children[0].innerHTML;
-                break;
-            }
-        }
-        //get table data from database
-        this.downloadTable(this.current_user);
-        this.updateTableGraphics();
-    }
-
-    //Clears the current data in the table, and removes all columns and rows from the HTML table
-    clearTable() {
-        //Clearing table data
-        this.tableName = "";
-        this.labels = new Array(8);
-        this.labels[0] = "Regular";
-        this.items = [];
-
-        //Clearing HTML table
-        while (document.getElementById(this.parentElementID).firstChild) {
-            document.getElementById(this.parentElementID).removeChild(document.getElementById(this.parentElementID).firstChild);
-        }
-        this.generateNewHTMLTable();
-        this.structureHTMLTable();
-    }
-
-    //Prints the table to the console
-    printTable() {
-        console.log("Username: " + this.current_user);
-        console.log(this.tableName);
-        console.log("Num Columns: " + this.colLen);
-        console.log("Num Rows: " + this.items.length);
-        console.log("Columns: " + this.labels);
-        for (var i = 0; i < this.items.length; i++) {
-            this.items[i].printItem();
+            })
         }
     }
-    /*METHODS*/
-
-    /*HTML TABLE HELPERS*/
-    //Adds a new row to the HTML Table
-    addHTMLTableRow(item) {
-        var row = this.tableElement.insertRow(-1);
-        var cell0 = row.insertCell(-1);
-        var del_button = document.createElement("img");
-        del_button.src = "static/images/delete.png";
-        del_button.className = "delete_row";
-        del_button.alt = "Delete Row Icon";
-        del_button.addEventListener("click", (event) => this.removeItem());
-        cell0.appendChild(del_button);
-
-        var tableInstance = this;
-
-        var cell1 = row.insertCell(-1);
-        var item_cell = document.createElement("textarea");
-        item_cell.className = "chart_field item_label";
-        item_cell.placeholder = "Item";
-        item_cell.maxLength = 32;
-        item_cell.wrap = "hard";
-        item_cell.setAttribute("row_index", String(this.tableElement.rows.length-2));
-        item_cell.addEventListener('change', function(event){
-            event.preventDefault();
-
-            tableInstance.renameItemPrice(this.getAttribute("row_index"), this.value);
-
-            tableInstance.updateTableGraphics();
-
-            tableInstance.uploadTable(tableInstance.getCurrentUser());
-
-            tableInstance.printTable();
-        });
-        if(item.getLabel() !== "") {
-            item_cell.value = item.getLabel();
-        }
-        cell1.appendChild(item_cell);
-
-        for (var i = 2; i < (this.tableElement.rows[0].cells.length + 1); i++) {
-            var celli = row.insertCell(-1);
-            var datas = document.createElement("textarea");
-            datas.className = "chart_field item_price";
-            datas.placeholder = "-";
-            datas.rows = 2;
-            datas.cols = 14;
-            datas.maxLength = 6;
-            datas.setAttribute("column_index", String((i-1)));
-            datas.setAttribute("row_index", String(this.tableElement.rows.length-2));
-            datas.addEventListener('change', function(event){
-                event.preventDefault();
-                if(!isFinite(event.key) && event.key !== "Backspace" && event.key !== ".") {  //TODO: Filter all characters except for integers and '.'
-                    // if it isn't what we want
-                }
-                tableInstance.changeItemPrice(this.getAttribute("column_index")-1, this.getAttribute("row_index"), this.value);
-
-                tableInstance.updateTableGraphics();
-
-                tableInstance.uploadTable(tableInstance.getCurrentUser());
-
-                tableInstance.printTable();
-            });
-
-            if(i-2 < item.getPricesLength()) {
-                datas.value = item.getPrices()[i-2];
-            }
-            celli.appendChild(datas);
-        }
-    }
-    
-    //Removes a column from the HTML table
-    removeColumn(index) {
-        for(var i = index; i < this.colLen; i++) {
-            if(i < this.colLen-1){
-                console.log("i: ", i);
-                console.log(this.priceLabels[Number(i)+Number(1)].value);
-                this.priceLabels[i].value = this.priceLabels[Number(i)+Number(1)].value;
-                this.labels[i] = this.priceLabels[i].value;
-                for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[Number(i)+Number(2)];
-                    var next_column_cell = this.tableElement.rows[j].cells[Number(i)+Number(3)];
-                    cell.firstChild.value = next_column_cell.firstChild.value;
-                }
-            } else {
-                this.priceLabels[i].value = "";
-                this.labels[i] = this.priceLabels[i].value;
-                this.priceLabelColumns[i].setAttribute("enabled", false);
-                for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[Number(i) + Number(2)];
-                    cell.firstChild.value = "";
-                }
-            }
-        }
-        this.colLen -= 1;
-    }
-
-    //Updates the shading on the table
-    updateTableGraphics() {
-        //Setting enabled attribute
-        for(var i = 0; i < this.priceLabelColumns.length; i++) {
-            if(this.priceLabelColumns[i].getAttribute("enabled") === "true"){
-                this.priceLabelColumns[i].style.background = "none";
-                this.priceLabels[i].style.background = "none";
-                for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[i+2];
-                    cell.style.background = "none";
-                    cell.firstChild.style.background = "none";
-                    cell.firstChild.getAttribute("readonly") === "readonly" && cell.firstChild.removeAttribute("readonly");
-                }
-            } else {
-                if(this.priceLabelColumns[i-1].getAttribute("enabled") === "true"){
-                    this.priceLabelColumns[i].style.background = "none";
-                    this.priceLabels[i].style.background = "none";
-                    this.priceLabels[i].getAttribute("readonly") === "readonly" && this.priceLabels[i].removeAttribute("readonly");
-                } else {
-                    this.priceLabelColumns[i].style.background = "grey";
-                    this.priceLabels[i].style.background = "grey";
-                    this.priceLabels[i].setAttribute("readonly", "readonly");
-                }
-                for(var j = 1; j < this.items.length+1; j++) {
-                    var cell = this.tableElement.rows[j].cells[i+2];
-                    cell.style.background = "grey";
-                    cell.firstChild.style.background = "grey";
-                    cell.firstChild.setAttribute("readonly", "readonly");
-                }
-            }
-        }
-    }
-
-    //Generates the base HTML Table
-    generateNewHTMLTable() {
-        this.tableContainer = document.createElement("div");
-        this.tableContainer.id = "table_container"
-
-        this.tableElement = document.createElement("table");
-        this.tableElement.setAttribute("name", "table_panel");
-        this.tableElement.id = "tableID";
-        this.tableElement.className = "datatable";
-
-        this.headerRow = document.createElement("tr");
-        this.headerRow.id = "header_row";
-
-        this.itemLabelColumn = document.createElement("th");
-        this.itemLabelColumn.setAttribute("colspan", "2");
-
-        this.itemLabel = document.createElement("label");
-        this.itemLabel.innerHTML = "Item";
-
-        this.priceLabelColumns[0] = document.createElement("th");
-        this.priceLabelColumns[0].setAttribute("enabled", "true");
-
-        this.priceLabels[0] = document.createElement("label");
-        this.priceLabels[0].innerHTML = "Regular";
-
-        var tableInstance = this;
-        for(var i = 1; i < 8; i++) {
-            this.priceLabelColumns[i] = document.createElement("th");
-            this.priceLabelColumns[i].setAttribute("enabled", "false");
-
-            this.priceLabels[i] = document.createElement("textarea");
-            this.priceLabels[i].className = "chart_field price_label";
-            this.priceLabels[i].setAttribute("placeholder", "Price Label");
-            this.priceLabels[i].maxLength = "14";
-            this.priceLabels[i].rows = 1;
-            this.priceLabels[i].cols = 14;
-            this.priceLabels[i].setAttribute("column_index", String(i));
-            this.priceLabels[i].addEventListener('change', function(event){
-                event.preventDefault();
-
-                tableInstance.renamePriceLabel(this.getAttribute("column_index"), this.value);
-
-                tableInstance.updateTableGraphics();
-
-                tableInstance.uploadTable(tableInstance.getCurrentUser());
-
-                tableInstance.printTable();
-            });
-        }
-    }
-
-    //Structures all elements in the HTML Table
-    structureHTMLTable() {
-        this.tableContainer.appendChild(this.tableElement);
-        
-        this.tableElement.appendChild(this.headerRow);
-
-        this.headerRow.appendChild(this.itemLabelColumn);
-        this.itemLabelColumn.appendChild(this.itemLabel);
-        
-        for(var i = 0; i < 8; i++) {
-            this.headerRow.appendChild(this.priceLabelColumns[i]);
-            this.priceLabelColumns[i].appendChild(this.priceLabels[i]);
-        }
-    }
-    /*HTML TABLE HELPERS*/
-
-    /*CONTROL PANEL BUTTON EVENTS*/
-
-    /*CONTROL PANEL BUTTON EVENTS*/
 }
 
-/*ITEM CLASS*/
-class Item {
-    /*CONSTRUCTOR*/
-    constructor(label = "", priceLen = 1, prices = new Array(8)) {
-        this.label = label;
-        this.priceLen = priceLen;
-        this.prices = prices;
+class EmployeeTable {
+    constructor(current_user) {
+        this.current_user = current_user
+        this.employees = []
+    }
 
-        if(prices.length !== 8) {
-            for (var i = 0; i < this.priceLen; i++) {
-                this.prices[i] = 0.0;
+    downloadTable() {
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user
+            }),
+            type: 'POST',
+            url: 'get-employees',
+            success: function (data) {
+                for(let i = 0; i < data["employees"].length; i++) {
+                    let emp = new Employee(data["employees"][i]["id"], data["employees"][i]["name"], data["employees"][i]["pin"], data["employees"][i]["title"])
+                    instance.addEmployee(emp)
+                }
+                instance.addEmployee()
+                instance.updateTableGraphics()
+            }
+        })
+    }
+
+    addEmployee(employee = new Employee()) {
+        let row = $('#employee_table')[0].insertRow(-1)
+        row.setAttribute("index", this.employees.length)
+        employee.row = row
+
+        let cell0 = row.insertCell(-1)
+        let del_button = document.createElement("label")
+        del_button.className = "delete_employee"
+        del_button.innerHTML = "&#10006"
+        cell0.appendChild(del_button)
+
+        let cell1 = row.insertCell(-1)
+        let name_label = document.createElement("textarea")
+        name_label.className = "employee_name"
+        name_label.placeholder = "Name"
+        name_label.rows = 1
+        name_label.cols = 19
+        name_label.maxLength = 20
+        name_label.value = employee.name
+        cell1.appendChild(name_label)
+
+        let cell2 = row.insertCell(-1)
+        let pin_label = document.createElement("textarea")
+        pin_label.className = "PIN_label"
+        pin_label.placeholder = "0000"
+        pin_label.rows = 1
+        pin_label.cols = 5
+        pin_label.maxLength = 6
+        pin_label.value = employee.pin
+        cell2.appendChild(pin_label)
+
+        let cell3 = row.insertCell(-1)
+        let title_label = document.createElement("textarea")
+        title_label.className = "employee_title"
+        title_label.placeholder = "Title"
+        title_label.rows = 1
+        title_label.cols = 19
+        title_label.maxLength = 20
+        title_label.value = employee.title
+        cell3.appendChild(title_label)
+
+        this.employees.push(employee)
+        this.updateTableGraphics()
+    }
+
+    removeEmployee(index) {
+        let instance = this
+        if(this.employees[index].id !== -1) {
+            $.ajax({
+                contentType: 'json',
+                data: JSON.stringify({
+                    'id': instance.employees[index].id
+                }),
+                type: 'POST',
+                url: 'remove-employee',
+                success: function () {
+                    let row = instance.employees[index].row
+                    $(row).remove()
+                    instance.employees.splice(index, 1)
+
+                    for(let i = index; i < instance.employees.length; i++) {
+                        instance.employees[i].row.setAttribute("index", i)
+                    }
+                }
+            })
+        }
+    }
+
+    updateEmployeeName(index, name="") {
+        if(this.employees[index].id === -1) {
+            this.addEmployee()
+        }
+        if(name === "") {
+            this.removeEmployee(index)
+        } else {
+            let instance = this
+            instance.employees[index].name = name
+            $.ajax({
+                contentType: 'json',
+                data: JSON.stringify({
+                    'username': this.current_user,
+                    'id': instance.employees[index].id,
+                    'name': instance.employees[index].name
+                }),
+                type: 'POST',
+                url: 'update-employee-name',
+                success: function (data) {
+                    instance.employees[index].id = data["id"]
+                    instance.updateTableGraphics()
+                }
+            })
+        }
+    }
+
+    updateEmployeePIN(index, pin=null) {
+        let instance = this
+        if(this.employees[index].id !== -1) {
+            instance.employees[index].pin = pin
+            $.ajax({
+                contentType: 'json',
+                data: JSON.stringify({
+                    'id': instance.employees[index].id,
+                    'pin': instance.employees[index].pin
+                }),
+                type: 'POST',
+                url: 'update-employee-pin',
+                success: function (data) {
+                    instance.employees[index].id = data["id"]
+                }
+            })
+        }
+    }
+
+    updateEmployeeTitle(index, title="") {
+        let instance = this
+        if(this.employees[index].id !== -1) {
+            instance.employees[index].title = title
+            $.ajax({
+                contentType: 'json',
+                data: JSON.stringify({
+                    'id': instance.employees[index].id,
+                    'title': instance.employees[index].title
+                }),
+                type: 'POST',
+                url: 'update-employee-title',
+                success: function (data) {
+                    instance.employees[index].id = data["id"]
+                }
+            })
+        }
+    }
+
+    updateTableGraphics() {
+        for(let i = 0; i < this.employees.length; i++) {
+            if(this.employees[i].name === "") {
+                this.employees[i].row.children[2].style.background = "grey"
+                this.employees[i].row.children[2].children[0].readOnly = true
+                this.employees[i].row.children[2].children[0].style.background = "grey"
+                this.employees[i].row.children[3].style.background = "grey"
+                this.employees[i].row.children[3].children[0].readOnly = true
+                this.employees[i].row.children[3].children[0].style.background = "grey"
+            } else {
+                this.employees[i].row.children[2].style.background = "none"
+                this.employees[i].row.children[2].children[0].readOnly = false
+                this.employees[i].row.children[2].children[0].style.background = "none"
+                this.employees[i].row.children[3].style.background = "none"
+                this.employees[i].row.children[3].children[0].readOnly = false
+                this.employees[i].row.children[3].children[0].style.background = "none"
             }
         }
     }
-    /*CONSTRUCTOR*/
 
-    /*METHODS*/
-    getLabel() {
-        return this.label;
+    clearTable() {
+        for(let i = 0; i < this.employees.length; i++) {
+            $(this.employees[i].row).empty()
+        }
+        this.employees = []
+    }
+}
+
+class PaidsTable {
+    constructor(current_user="") {
+        this.current_user = current_user
+        this.paids = []
     }
 
-    getPrices() {
-        return this.prices;
+    downloadTable() {
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user
+            }),
+            type: 'POST',
+            url: 'get-paids',
+            success: function (data) {
+                for(let i = 0; i < data["paids"].length; i++) {
+                    let paid = new Paids(data["paids"][i]["id"], data["paids"][i]["paidIn"], data["paids"][i]["description"], data["paids"][i]["price"])
+                    instance.addPaids(paid)
+                }
+                instance.addPaids()
+            }
+        })
     }
 
-    getPricesLength() {
-        return this.priceLen;
+    addPaids(paid=new Paids()) {
+        let row = $('#paids_table')[0].insertRow(-1)
+        row.setAttribute("index", this.paids.length)
+        paid.row = row
+
+        let cell0 = row.insertCell(-1)
+        let del_button = document.createElement("label")
+        del_button.className = "delete_paid"
+        del_button.innerHTML = "&#10006"
+        cell0.appendChild(del_button)
+
+        let cell1 = row.insertCell(-1)
+        let dropdown = document.createElement("select")
+        dropdown.className = "paid_dropdown"
+        let _none = document.createElement("option")
+        _none.value = "none"
+        dropdown.appendChild(_none)
+        let _out = document.createElement("option")
+        _out.innerHTML = "Paid Out"
+        _out.value = "false"
+        dropdown.appendChild(_out)
+        let _in = document.createElement("option")
+        _in.innerHTML = "Paid In"
+        _in.value = "true"
+        dropdown.appendChild(_in)
+        cell1.appendChild(dropdown)
+        if(paid.paidIn === true) {
+            dropdown.value = "true"
+            _in.selected = true
+            _none.setAttribute("disabled", true)
+        } else if(paid.paidIn === false) {
+            dropdown.value = "false"
+            _out.selected = true
+            _none.setAttribute("disabled", false)
+        } else {
+            dropdown.value = "none"
+            _none.selected = true
+        }
+
+        let cell2 = row.insertCell(-1)
+        let description = document.createElement("textarea")
+        description.className = "paid_description"
+        description.placeholder = "Description"
+        description.rows = 1
+        description.cols = 19
+        description.maxLength = 20
+        description.value = paid.description
+        cell2.appendChild(description)
+
+        let cell3 = row.insertCell(-1)
+        let price = document.createElement("textarea")
+        price.className = "paid_price"
+        price.placeholder = "$-"
+        price.rows = 1
+        price.cols = 5
+        price.maxLength = 6
+        price.value = paid.price
+        cell3.appendChild(price)
+
+        this.paids.push(paid)
+        this.updateTableGraphics()
     }
 
-    setLabel(label) {
-        this.label = label;
+    removePaids(index) {
+        if(this.paids[index].id !== -1) {
+            let instance = this
+            $.ajax({
+                contentType: 'json',
+                data: JSON.stringify({
+                    'id': instance.paids[index].id
+                }),
+                type: 'POST',
+                url: 'remove-paid',
+                success: function () {
+                    let row = instance.paids[index].row
+                    $(row).remove()
+                    instance.paids.splice(index, 1)
+
+                    for(let i = index; i < instance.paids.length; i++) {
+                        instance.paids[i].row.setAttribute("index", i)
+                    }
+                    instance.updateTableGraphics()
+                }
+            })
+        }
     }
 
-    setPrice(index, price) {
-        this.prices[index] = price;
+    updateType(index, paidIn) {
+        let dropdown = this.paids[index].row.children[1].children[0]
+        let none = dropdown.children[0]
+
+        if(this.paids[index].paidIn === null) {
+            none.setAttribute("disabled", true)
+            this.addPaids()
+        }
+
+        this.paids[index].paidIn = paidIn
+
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'username': this.current_user,
+                'id': this.paids[index].id,
+                'isPaidIn': this.paids[index].paidIn
+            }),
+            type: 'POST',
+            url: 'update-paid-type',
+            success: function (data) {
+                instance.paids[index].id = data["id"]
+                instance.updateTableGraphics()
+            }
+        })
     }
 
-    printItem() {
-        console.log(this.label + ": [" + this.prices + "]");
+    updateDescription(index, description="") {
+        this.paids[index].description = description
+
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'id': this.paids[index].id,
+                'description': this.paids[index].description
+            }),
+            type: 'POST',
+            url: 'update-paid-description',
+            success: function (data) {
+                instance.paids[index].id = data["id"]
+            }
+        })
     }
+
+    updatePrice(index, price) {
+        this.paids[index].price = price
+
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                'id': this.paids[index].id,
+                'price': this.paids[index].price
+            }),
+            type: 'POST',
+            url: 'update-paid-price',
+            success: function (data) {
+                instance.paids[index].id = data["id"]
+            }
+        })
+    }
+
+    updateTableGraphics() {
+        for(let i = 0; i < this.paids.length; i++) {
+            if(this.paids[i].row.children[1].children[0].value === "none") {
+                this.paids[i].row.children[2].style.background = "grey"
+                this.paids[i].row.children[2].children[0].readOnly = true
+                this.paids[i].row.children[2].children[0].style.background = "grey"
+                this.paids[i].row.children[3].style.background = "grey"
+                this.paids[i].row.children[3].children[0].readOnly = true
+                this.paids[i].row.children[3].children[0].style.background = "grey"
+            } else {
+                this.paids[i].row.children[2].style.background = "none"
+                this.paids[i].row.children[2].children[0].readOnly = false
+                this.paids[i].row.children[2].children[0].style.background = "none"
+                this.paids[i].row.children[3].style.background = "none"
+                this.paids[i].row.children[3].children[0].readOnly = false
+                this.paids[i].row.children[3].children[0].style.background = "none"
+            }
+        }
+    }
+
+    clearTable() {
+        for(let i = 0; i < this.paids.length; i++) {
+            $(this.paids[i].row).empty()
+        }
+        this.paids = []
+    }
+}
+
+function Table(id=-1, table_name="", table_type=""){
+    this.id = id
+    this.table_name = table_name
+    this.table_type = table_type
+    this.addTable = function() {
+        let tab_button_container = document.getElementById("tab_button_container")
+
+        let tab_button = document.createElement("div")
+        tab_button.className = "tab_button"
+
+        let radio_button = document.createElement("input")
+        radio_button.type = "radio"
+        radio_button.name = "tab_group"
+        radio_button.id = "tab-"+String(tab_button_container.children.length)
+
+        let tab_label = document.createElement("textarea")
+        tab_label.setAttribute("for", "tab_"+String(tab_button_container.children.length))
+        tab_label.className = "tab_label"
+        tab_label.maxLength = 18
+        tab_label.rows = 1
+        tab_label.cols = 17
+        tab_label.placeholder = "table name..."
+        tab_label.value = this.table_name
+
+        let tab_delete = document.createElement("label")
+        tab_delete.className = "delete_table"
+        tab_delete.innerHTML = "&#10006"
+        tab_delete.setAttribute("for", "tab-"+tab_button_container.children.length)
+
+        tab_button_container.append(tab_button)
+        tab_button.appendChild(radio_button)
+        tab_button.appendChild(tab_label)
+        tab_button.appendChild(tab_delete)
+    }
+}
+function Item(id = -1, label = "", prices = [], row=null, categories=[]) {
+    this.id = id
+    this.label = label
+    this.prices = prices
+    this.row = row
+    this.categories = categories
+}
+function Category(id = -1, label="", mods=[new Modifier()]) {
+    this.id = id
+    this.label = label
+    this.mods = mods
+    this.getHTML = function() {
+        let category_container = document.createElement("div")
+        category_container.className = "category_container"
+
+
+        let category_header = document.createElement("div")
+        category_header.className = "category_header"
+
+        let dropdown_button = document.createElement("input")
+        dropdown_button.className = "category_dropdown_button"
+        dropdown_button.type = "button"
+        dropdown_button.value = "\u25B6"
+        category_header.appendChild(dropdown_button)
+
+        let category_label = document.createElement("textarea")
+        category_label.className = "category_label"
+        category_label.maxLength = 20
+        category_label.cols = 20
+        category_label.rows = 1
+        category_label.placeholder = "Category"
+        category_label.value = this.label
+        category_header.appendChild(category_label)
+
+        let delete_category = document.createElement("label")
+        delete_category.className = "delete_category"
+        delete_category.innerHTML = "\u2716"
+        category_header.appendChild(delete_category)
+
+
+        category_container.appendChild(category_header)
+
+
+        let category_mods_container = document.createElement("div")
+        category_mods_container.className = "category_mods_container"
+
+        category_container.appendChild(category_mods_container)
+
+        for(let i = 0; i < this.mods.length; i++) {
+            this.mods[i].category_id = this.id
+            this.mods[i].addModifier($(category_mods_container))
+        }
+
+        return category_container
+    }
+    this.addContainer = function(parent) {
+        let category_container = this.getHTML()
+        category_container.setAttribute("index", parent.children().length)
+        parent.append(category_container)
+    }
+}
+function Modifier(category_id=-1, id=-1, label="", price=null) {
+    this.category_id = category_id
+    this.id = id
+    this.label = label
+    this.price = price
+    this.getHTML = function() {
+        let modifier_container = document.createElement("div")
+        modifier_container.className = "modifier_container"
+
+        let modifier_checkbox = document.createElement("input")
+        modifier_checkbox.type = "checkbox"
+        modifier_checkbox.className = "modifier_checkbox"
+        if(this.label === "")
+            modifier_checkbox.setAttribute("disabled", true)
+        modifier_container.appendChild(modifier_checkbox)
+
+        let modifier_label = document.createElement("textarea")
+        modifier_label.className = "modifier_label"
+        modifier_label.maxLength = 20
+        modifier_label.cols = 19
+        modifier_label.rows = 1
+        modifier_label.placeholder = "Modifier"
+        modifier_label.value = this.label
+        modifier_container.appendChild(modifier_label)
+
+        let modifier_price = document.createElement("textarea")
+        modifier_price.className = "modifier_price"
+        modifier_price.maxLength = 6
+        modifier_price.cols = 6
+        modifier_price.rows = 1
+        modifier_price.placeholder = "$-"
+        modifier_price.value = this.price
+        modifier_container.appendChild(modifier_price)
+
+        let delete_modifier = document.createElement("label")
+        delete_modifier.className = "delete_modifier"
+        delete_modifier.innerHTML = "\u2716"
+        modifier_container.appendChild(delete_modifier)
+
+        return modifier_container
+    }
+    this.addModifier = function(parent) {
+        let modifier_container = this.getHTML()
+        modifier_container.setAttribute("index", parent.children().length)
+        parent.append(modifier_container)
+    }
+    this.updateModifier = function(category_index, modifiers_container) {
+        console.log("Update modifier: " + this.category_id, this.id, this.label, this.price)
+        let instance = this
+        $.ajax({
+            contentType: 'json',
+            data: JSON.stringify({
+                "categoryID": instance.category_id,
+                "modifierID": instance.id,
+                "label": instance.label,
+                "price": instance.price
+            }),
+            type: 'POST',
+            url: 'update-modifier',
+            success: function(data) {
+                if(instance.id === -1 && instance.label !== "") {
+                    let mod = new Modifier(instance.category_id, -1, "", null)
+                    table.modifier_categories[category_index].mods.push(mod)
+                    mod.addModifier($(modifiers_container))
+                }
+                instance.id = data["id"]
+                if(table.current_item !== null)
+                    table.selectRow(table.current_item["row"].getAttribute("row_index"))
+            }
+        })
+    }
+}
+function Employee(id=-1, name="", pin=null, title="", row=null) {
+    this.id = id
+    this.name = name
+    this.pin = pin
+    this.title = title
+    this.row = row
+}
+function Paids(id=-1, paidIn=null, description="", price=null, row=null) {
+    this.id = id
+    this.paidIn = paidIn
+    this.description = description
+    this.price = price
+    this.row = row
 }
