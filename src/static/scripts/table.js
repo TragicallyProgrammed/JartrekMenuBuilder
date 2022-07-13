@@ -357,12 +357,12 @@ class MenuTable {
         if(this.items[item_index].id !== -1 && this.items[item_index].id !== 0) { // If the item selected does not have an invalid id
             this.current_item = this.items[item_index]
             this.current_item.row.firstChild.style.background = "lightblue"
-
             let instance = this
 
             $.ajax({
                 contentType: 'JSON',
                 data: JSON.stringify({
+                    "username": instance.current_user,
                     "itemID": instance.items[item_index].id
                 }),
                 type: 'POST',

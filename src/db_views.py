@@ -387,24 +387,6 @@ def getTable():
             db_items = Item.query.filter_by(table_id=table_id).all()
             for item in db_items:
                 item_dict = item.getItemData()
-
-                if len(item.modifiers) != 0:
-                    categories = []
-                    db_first_category = Modifiercategory.query.filter_by(id=item.modifiers[0].category_id).first()
-                    categories.append({"id": db_first_category.id, "label": db_first_category.category_name, "mods": []})
-
-                    for mod in item.modifiers:
-                        for category in categories:
-                            if mod.category_id == category["id"]:
-                                category["mods"].append({"id": mod.id, "label": mod.modifier_label, "price": mod.modifier_price})
-                                category["mods"].sort(key=lambda x: x["id"])
-                                break
-                            else:
-                                db_category = Modifiercategory.query.filter_by(id=mod.category_id).first()
-                                categories.append({"id": db_category.id, "label": db_category.category_name, "mods": []})
-
-                    categories.sort(key=lambda x: x["id"])
-                    item_dict["categories"] = categories
                 items.append(item_dict)
             db_table = Table.query.filter_by(id=table_id).first()
             if db_table is None:
@@ -564,29 +546,31 @@ def downloadItem():
     try:
         data = json.loads(request.data)
 
+        username = data["username"].strip()
         item_id = data["itemID"]
+
+        db_user = User.query.filter_by(username=username).first()
+        if db_user is None:
+            raise NoResultFound("Could not find username:" + str(username))
 
         db_item = Item.query.filter_by(id=item_id).first()
         if db_item is None:
             raise NoResultFound("Could not find item with ID: " + str(item_id))
 
         item = db_item.getItemData()
+
         if len(db_item.modifiers) != 0:
             categories = []
-            db_first_category = Modifiercategory.query.filter_by(id=db_item.modifiers[0].category_id).first()
-            categories.append({"id": db_first_category.id, "label": db_first_category.category_name, "mods": []})
+            db_categories = Modifiercategory.query.filter_by(user_id=db_user.get_id()).all()
 
-            for mod in db_item.modifiers:
-                for category in categories:
-                    if mod.category_id == category["id"]:
-                        category["mods"].append(
-                            {"id": mod.id, "label": mod.modifier_label, "price": mod.modifier_price})
-                        category["mods"].sort(key=lambda x: x["id"])
-                        break
-                    else:
-                        db_category = Modifiercategory.query.filter_by(id=mod.category_id).first()
-                        categories.append({"id": db_category.id, "label": db_category.category_name, "mods": []})
-            categories.sort(key=lambda x: x["id"])
+            for category in db_categories:
+                category_dict = {"id": category.id, "label": category.category_name, "mods": []}
+                for mod in db_item.modifiers:
+                    if mod.category_id == category.id:
+                        category_dict["mods"].append({"id": mod.id, "label": mod.modifier_label, "price": mod.modifier_price})
+                if len(category_dict["mods"]) != 0:
+                    categories.append(category_dict)
+
             item["categories"] = categories
         return jsonify(item=item), 200
 
