@@ -1,48 +1,86 @@
+"""
+Package containing the Jartrek Menu Builder Website
+
+The Jartrek Menu Builder is a web application designed for usage in VFW's, American Legion's, ect.
+Upon purchasing a new Jartrek system, the customer will be given a login for the website and will
+be asked to fill out the provided tables with what they sell, and for how much. In addition to
+menu items, the customer will be asked to provide any paid ins and paid outs the club does through
+the register, and a list of all employees to be added to the Jartrek database. This data can then
+be collected for building out the customer's database that will run Jartrek.
+
+References
+----------
+www.github.com/NeonProgrammed/JartrekMenuBuilder
+
+Examples
+--------
+from src import create_app
+
+app = create_app(False)
+
+if __name__ == '__main__':
+    app.run()
+
+In this example, we are importing the create_app function from the package and then executing run to start the server
+"""
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from os import path
-from .settings import KEY, TRACK_MODIFICATIONS, ENVIROMENT, DEBUG, DB_NAME
 
-app = Flask(__name__)  # Create flask instance
-db = SQLAlchemy()  # Create SQLAlchemy database
-login_manager = LoginManager()  # Start login manager
+app = Flask(__name__)
+"""Main Flask application instance"""
+db = SQLAlchemy()
+"""SQLAlchemy for sqlite database"""
+login_manager = LoginManager()
+"""Login manager for flask"""
 
 
-def create_app():
-    """Method to instantiate the application"""
+def create_app(debug):
+    """
+    Initializes all fields required for flask.
+
+    Uses data from .env file to set a key, the uri for the database, and the enviroment flag.
+
+    Parameters
+    ----------
+    debug: bool
+        Sets the debug flag for flask. True will activate the debugger and False will deactivate it.
+
+    Returns
+    -------
+    Flask
+        Returns the flask application
+    """
     from .views import views
     from .db_views import db_views
     from .auth import auth
     from .models import User
+    from .settings import KEY, ENVIROMENT, DB_NAME
 
     app.config['SECRET_KEY'] = KEY
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = TRACK_MODIFICATIONS
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['ENV'] = ENVIROMENT
-    app.config['DEBUG'] = DEBUG
+    app.config['DEBUG'] = debug
     app.config["CACHE_TYPE"] = "null"
-    db.init_app(app)  # Instantiates the database
+    db.init_app(app)
 
-    app.register_blueprint(views, url_prefix='/')  # Adds view endpoints
-    app.register_blueprint(db_views, url_prefix='/')  # Adds db_view endpoints
-    app.register_blueprint(auth, url_prefix='/')  # Adds auth endpoints
+    app.register_blueprint(views, url_prefix='/')
+    app.register_blueprint(db_views, url_prefix='/')
+    app.register_blueprint(auth, url_prefix='/')
 
-    create_database(app)  # Creates new database
-
-    login_manager.login_view = 'auth.login'  # Sets up login manager
-    login_manager.init_app(app)  # Instantiates login manager
-
-    @login_manager.user_loader  # Creates endpoint for login manager
-    def load_user(user_id):
-        """Function to load user"""
-        return User.query.get(int(user_id))  # Returns the database query for given user
-
-    return app  # Returns the application
-
-
-def create_database(app):
-    """Function to instantiate the database"""
-    if not path.exists('src/' + DB_NAME):  # If the database does not exist
-        db.create_all(app=app)  # Creates all tables found in .model
+    if not path.exists('src/' + DB_NAME):
+        db.create_all(app=app)
         print("Created Database")
+
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    return app
+

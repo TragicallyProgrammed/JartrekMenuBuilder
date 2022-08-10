@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.db_views &mdash; JartrekMenuBuilder  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/fonts.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="src.models" href="../models/index.html" />
+    <link rel="prev" title="src.auth" href="../auth/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> JartrekMenuBuilder
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Back End</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src</span></code></a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../auth/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.auth</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.db_views</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../models/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.models</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../settings/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.settings</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../views/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.views</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">JartrekMenuBuilder</a>
+      </nav>
+
+      <div class="wy-nav-content">
+<div class="git-ribbon">
+  <a href="http://github.com/SwissDataScienceCenter" rel="me">Join us on GitHub</a>
+</div>
+
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src</span></code></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.db_views</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/python/src/db_views/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-src.db_views">
+<span id="src-db-views"></span><h1><a class="reference internal" href="#module-src.db_views" title="src.db_views"><code class="xref py py-mod docutils literal notranslate"><span class="pre">src.db_views</span></code></a><a class="headerlink" href="#module-src.db_views" title="Permalink to this heading"></a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.getUsers" title="src.db_views.getUsers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getUsers</span></code></a>()</p></td>
+<td><p>Endpoint for getting a list of all users in the database.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.changePassword" title="src.db_views.changePassword"><code class="xref py py-obj docutils literal notranslate"><span class="pre">changePassword</span></code></a>()</p></td>
+<td><p>Endpoint for changing a user's password.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.addUser" title="src.db_views.addUser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">addUser</span></code></a>()</p></td>
+<td><p>Endpoint for adding users</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.deleteUser" title="src.db_views.deleteUser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deleteUser</span></code></a>()</p></td>
+<td><p>Endpoint to delete a user</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.downloadData" title="src.db_views.downloadData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">downloadData</span></code></a>(filename)</p></td>
+<td><p>Endpoint for downloading a xlsx sheet containing all the data belonging to a single user.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.getColumns" title="src.db_views.getColumns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getColumns</span></code></a>()</p></td>
+<td><p>Endpoint to get the list of column labels belonging to a user.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.updateColumns" title="src.db_views.updateColumns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateColumns</span></code></a>()</p></td>
+<td><p>Endpoint for updating the values in a user's column labels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.getTables" title="src.db_views.getTables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getTables</span></code></a>()</p></td>
+<td><p>Endpoints for getting all tables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.getTable" title="src.db_views.getTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getTable</span></code></a>()</p></td>
+<td><p>Endpoint for getting the items and data for a table.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.updateTable" title="src.db_views.updateTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateTable</span></code></a>()</p></td>
+<td><p>Endpoint for updating table data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.deleteTable" title="src.db_views.deleteTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deleteTable</span></code></a>()</p></td>
+<td><p>Endpoint to delete a table and all of it's items.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.updateItemLabel" title="src.db_views.updateItemLabel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateItemLabel</span></code></a>()</p></td>
+<td><p>Endpoint for updating an item's label.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.updateItemPrices" title="src.db_views.updateItemPrices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateItemPrices</span></code></a>()</p></td>
+<td><p>Endpoint to updating an item's prices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.downloadItem" title="src.db_views.downloadItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">downloadItem</span></code></a>()</p></td>
+<td><p>Endpoint downloading an item's data and modifiers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.removeItem" title="src.db_views.removeItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">removeItem</span></code></a>()</p></td>
+<td><p>Endpoints for removing an item from the database.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.getCategories" title="src.db_views.getCategories"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getCategories</span></code></a>()</p></td>
+<td><p>Endpoint for retrieving a user's modifier data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.updateCategoryLabel" title="src.db_views.updateCategoryLabel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateCategoryLabel</span></code></a>()</p></td>
+<td><p>Endpoint for updating the label for a category.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.deleteCategory" title="src.db_views.deleteCategory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deleteCategory</span></code></a>()</p></td>
+<td><p>Endpoint for deleting a category.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.updateModifier" title="src.db_views.updateModifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateModifier</span></code></a>()</p></td>
+<td><p>Endpoint for updating the data for a modifier.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.deleteModifier" title="src.db_views.deleteModifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deleteModifier</span></code></a>()</p></td>
+<td><p>Endpoint for deleting a modifier.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.setItemModifier" title="src.db_views.setItemModifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setItemModifier</span></code></a>()</p></td>
+<td><p>Endpoint for establishing a relationship between an item and modifier.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.removeItemModifier" title="src.db_views.removeItemModifier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">removeItemModifier</span></code></a>()</p></td>
+<td><p>Endpoint for removing a relationship between an item and modifier.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.getEmployees" title="src.db_views.getEmployees"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getEmployees</span></code></a>()</p></td>
+<td><p>Endpoint for getting the employee's belonging to a user.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.updateEmployeeName" title="src.db_views.updateEmployeeName"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateEmployeeName</span></code></a>()</p></td>
+<td><p>Endpoint for updating the name of an employee.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.updateEmployeePIN" title="src.db_views.updateEmployeePIN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateEmployeePIN</span></code></a>()</p></td>
+<td><p>Endpoint for updating the PIN of an employee.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.updateEmployeeTitle" title="src.db_views.updateEmployeeTitle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updateEmployeeTitle</span></code></a>()</p></td>
+<td><p>Endpoint for updating the title of an employee.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.removeEmployee" title="src.db_views.removeEmployee"><code class="xref py py-obj docutils literal notranslate"><span class="pre">removeEmployee</span></code></a>()</p></td>
+<td><p>Endpoint for deleting an employee.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.getPaids" title="src.db_views.getPaids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getPaids</span></code></a>()</p></td>
+<td><p>Endpoint for getting the paids belonging to a user.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.updatePaidType" title="src.db_views.updatePaidType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updatePaidType</span></code></a>()</p></td>
+<td><p>Endpoint for updating the type of a paid.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.updatePaidDescription" title="src.db_views.updatePaidDescription"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updatePaidDescription</span></code></a>()</p></td>
+<td><p>Endpoint for updating the description of a paid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.updatePaidPrice" title="src.db_views.updatePaidPrice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">updatePaidPrice</span></code></a>()</p></td>
+<td><p>Endpoint for updating the price of a paid.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.db_views.removePaid" title="src.db_views.removePaid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">removePaid</span></code></a>()</p></td>
+<td><p>Endpoint for deleting a paid.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.db_views.db_views" title="src.db_views.db_views"><code class="xref py py-obj docutils literal notranslate"><span class="pre">db_views</span></code></a></p></td>
+<td><p>Blueprint for endpoints that make changes to the database.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="src.db_views.db_views">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">db_views</span></span><a class="headerlink" href="#src.db_views.db_views" title="Permalink to this definition"></a></dt>
+<dd><p>Blueprint for endpoints that make changes to the database.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.getUsers">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">getUsers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.getUsers" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for getting a list of all users in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>user_list containing all usernames in the database with successful status code.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.changePassword">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">changePassword</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.changePassword" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for changing a user’s password.</p>
+<p>Retrieves ‘userID’ and ‘password’ from the front end, searches the database for that user,
+hashes the given password and sets it to the password field for the user in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Should only be raised if an invalid userID is sent. Prints the userID and returns error status.</p></li>
+<li><p><strong>Exception</strong> – Prints out the exception and returns error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns with a status of 200.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.addUser">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">addUser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.addUser" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for adding users</p>
+<p>Retrieves ‘username’, ‘password’, and ‘isAdmin’ from the client, searches the database for the user and if found
+returns an error status. If not found, the user is created and copies of all database tables belonging to the user
+with id=1 for the new user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – If the template user (user with id=1) is not found. Print the error and return with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns with a successful status once the user and all tables have been committed to database</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.deleteUser">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">deleteUser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.deleteUser" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint to delete a user</p>
+<p>Retrieves a ‘userID’ from the client and searches the database for the user with a matching id.
+Once the user is found, all database tables belonging to it are deleted, and then the user itself is deleted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints the userID and returns with an error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the error and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns with success status once all changes have been committed to the database.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.downloadData">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">downloadData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.downloadData" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for downloading a xlsx sheet containing all the data belonging to a single user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – The username of the targeted user.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints out the filename/username of the specified user and returns with error code.</p></li>
+<li><p><strong>Exception</strong> – Prints out the error and returns with error code.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Sends the generated xmlx file to the client and returns with success status.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.getColumns">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">getColumns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.getColumns" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint to get the list of column labels belonging to a user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – Prints the exception and returns with error status.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Send the list of column labels to the server as priceLabels with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateColumns">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateColumns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateColumns" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the values in a user’s column labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints the user, and returns an error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception, and returns an error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.getTables">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">getTables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.getTables" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoints for getting all tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints the username of the user and returns error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of tables containing the table id, table name, and table type, with status 200.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.getTable">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">getTable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.getTable" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for getting the items and data for a table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints username and returns error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing all items and the boolean for completed table with success code.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateTable">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateTable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateTable" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating table data.</p>
+<p>If the id of the table sent doesn’t exist</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – <p>Prints username and returns error status.</p>
+<p>Prints table id and returns error status.</p>
+</p></li>
+<li><p><strong>Exception</strong> – Prints exception and returns error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns success status with id of the changed table.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.deleteTable">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">deleteTable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.deleteTable" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint to delete a table and all of it’s items.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints table’s id and return error status.</p></li>
+<li><p><strong>Exception</strong> – Prints exception and returns error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns success status</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateItemLabel">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateItemLabel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateItemLabel" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating an item’s label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints the table id and returns error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns id of changed item and success status.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateItemPrices">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateItemPrices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateItemPrices" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint to updating an item’s prices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints the item id and returns error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.downloadItem">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">downloadItem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.downloadItem" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint downloading an item’s data and modifiers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – <p>Prints username and returns error code.</p>
+<p>Prints item id and returns error code.</p>
+</p></li>
+<li><p><strong>Exception</strong> – Prints exception and returns error code.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing the item’s data with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.removeItem">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">removeItem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.removeItem" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoints for removing an item from the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultFound</strong> – Prints the id of the item and returns response with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the error and returns a response wit error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.getCategories">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">getCategories</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.getCategories" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for retrieving a user’s modifier data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the user’s username and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing data for each category belonging to the user with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateCategoryLabel">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateCategoryLabel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateCategoryLabel" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the label for a category.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the user’s username and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The id of the changed category with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.deleteCategory">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">deleteCategory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.deleteCategory" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for deleting a category.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – Prints the exception and returns with error status.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateModifier">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateModifier</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateModifier" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the data for a modifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the modifier’s id and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The id of the changed modifier with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.deleteModifier">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">deleteModifier</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.deleteModifier" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for deleting a modifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – Prints the exception and returns with error status.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.setItemModifier">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">setItemModifier</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.setItemModifier" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for establishing a relationship between an item and modifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the id of the item and returns with error status.
+Prints the id of the modifier and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.removeItemModifier">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">removeItemModifier</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.removeItemModifier" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for removing a relationship between an item and modifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the id of the item and returns with error status.
+Prints the id of the modifier and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.getEmployees">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">getEmployees</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.getEmployees" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for getting the employee’s belonging to a user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the user’s username and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing every employee and the employee’s data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateEmployeeName">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateEmployeeName</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateEmployeeName" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the name of an employee.
+If it’s the case that the given employee ID is -1, a new employee is created in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the user’s username and returns error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The id of the changed employee with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateEmployeePIN">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateEmployeePIN</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateEmployeePIN" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the PIN of an employee.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the id of the employee and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The id of the employee with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updateEmployeeTitle">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updateEmployeeTitle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updateEmployeeTitle" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the title of an employee.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the id of the employee and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The id of the employee with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.removeEmployee">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">removeEmployee</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.removeEmployee" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for deleting an employee.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – Prints the exception and returns with error status.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.getPaids">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">getPaids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.getPaids" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for getting the paids belonging to a user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the user’s username and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing each paid and it’s data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updatePaidType">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updatePaidType</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updatePaidType" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the type of a paid.
+If the given id of the paid is -1, a new paid is created in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the user’s username and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The id of the paid with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updatePaidDescription">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updatePaidDescription</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updatePaidDescription" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the description of a paid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the id of the name and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Id of the paid with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.updatePaidPrice">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">updatePaidPrice</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.updatePaidPrice" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for updating the price of a paid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>NoResultsFound</strong> – Prints the id of the name and returns with error status.</p></li>
+<li><p><strong>Exception</strong> – Prints the exception and returns with error status.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Id of the paid with success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.db_views.removePaid">
+<span class="sig-prename descclassname"><span class="pre">src.db_views.</span></span><span class="sig-name descname"><span class="pre">removePaid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.db_views.removePaid" title="Permalink to this definition"></a></dt>
+<dd><p>Endpoint for deleting a paid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – Prints the exception and returns with error status.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Success status.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../auth/index.html" class="btn btn-neutral float-left" title="src.auth" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../models/index.html" class="btn btn-neutral float-right" title="src.models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Keystone Bingo.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

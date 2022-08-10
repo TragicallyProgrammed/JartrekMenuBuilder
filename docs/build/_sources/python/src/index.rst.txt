@@ -1,0 +1,97 @@
+:py:mod:`src`
+=============
+
+.. py:module:: src
+
+.. autoapi-nested-parse::
+
+   Package containing the Jartrek Menu Builder Website
+
+   The Jartrek Menu Builder is a web application designed for usage in VFW's, American Legion's, ect.
+   Upon purchasing a new Jartrek system, the customer will be given a login for the website and will
+   be asked to fill out the provided tables with what they sell, and for how much. In addition to
+   menu items, the customer will be asked to provide any paid ins and paid outs the club does through
+   the register, and a list of all employees to be added to the Jartrek database. This data can then
+   be collected for building out the customer's database that will run Jartrek.
+
+   .. rubric:: References
+
+   www.github.com/NeonProgrammed/JartrekMenuBuilder
+
+   .. rubric:: Examples
+
+   from src import create_app
+
+   app = create_app(False)
+
+   if __name__ == '__main__':
+       app.run()
+
+   In this example, we are importing the create_app function from the package and then executing run to start the server
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   auth/index.rst
+   db_views/index.rst
+   models/index.rst
+   settings/index.rst
+   views/index.rst
+
+
+Package Contents
+----------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.create_app
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   src.app
+   src.db
+   src.login_manager
+
+
+.. py:data:: app
+   
+
+   Main Flask application instance
+
+.. py:data:: db
+   
+
+   SQLAlchemy for sqlite database
+
+.. py:data:: login_manager
+   
+
+   Login manager for flask
+
+.. py:function:: create_app(debug)
+
+   Initializes all fields required for flask.
+
+   Uses data from .env file to set a key, the uri for the database, and the enviroment flag.
+
+   :param debug: Sets the debug flag for flask. True will activate the debugger and False will deactivate it.
+   :type debug: bool
+
+   :returns: Returns the flask application
+   :rtype: Flask
+
+

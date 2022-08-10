@@ -5,27 +5,82 @@ modifier_item = db.Table('modifier_item',
     db.Column('item_id', db.Integer, db.ForeignKey('item.id')),
     db.Column('modifier_id', db.Integer, db.ForeignKey('modifier.id'))
 )
+"""Many-To-Many Relationship table between modifiers and items"""
 
 
 class User(db.Model, UserMixin):
-    """Class to define a model for the user table"""
+    """
+    Database Model for a user.
+
+    Attributes
+    ----------
+    id: int
+    username: string
+    password: str
+        SHA256 hashed password.
+    admin: bool
+    tables: relationship
+        Relationship to the tables belonging to this user.
+    col_labels: relationship
+        Relationship to the column labels belonging to this user.
+    modifier_categories: relationship
+        Relationship to the modifier categories belonging to this user.
+
+    Methods
+    -------
+    get_id()
+        Returns the id of this user.
+    is_admin
+        Returns the admin value for this user.
+    """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     username = db.Column(db.String(32), unique=True, index=True)
     password = db.Column(db.String(128))
     admin = db.Column(db.Boolean())
     tables = db.relationship('Table', primaryjoin="User.id==Table.user_id", backref=db.backref('User.id'))
-    col_labels = db.relationship('Columns', primaryjoin="User.id==Columns.user_id", backref=db.backref('User.id'))
+    col_labels = db.relationship('Columns', primaryjoin="User.id==Columns.user_id", backref=db.backref('User.id'), uselist=False)
     modifier_categories = db.relationship('Modifiercategory', primaryjoin="User.id==Modifiercategory.user_id", backref=db.backref('User.id'))
 
     def get_id(self):
+        """
+        Gets the ID of this user. Required for flask_login.
+
+        Returns
+        -------
+        int
+            This user's ID.
+        """
         return self.id
 
     def is_admin(self):
+        """
+        Gets the admin flag for this user.
+
+        Returns
+        -------
+        bool
+            Boolean value for if this user is an admin or not.
+        """
         return self.admin
 
 
 class Table(db.Model):
-    """Class to define a menu table"""
+    """
+    Database models for menu tables.
+
+    Attributes
+    ----------
+    id: int
+
+    user_id: int
+        Foreign Key set as the id of the user this table belongs to.
+    table_name: str
+        Name for the menu (I.E. 'Bottled Beer', 'Draft Soda, 'Kitchen Food').
+    type: str
+        Type of table. This value sorts which div the table should go under on client side. ['drink', 'food']
+    items: relationship
+        Relationship to the items belonging to this table.
+    """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     table_name = db.Column(db.String(32), index=True)
@@ -35,7 +90,32 @@ class Table(db.Model):
 
 
 class Columns(db.Model):
-    """Class to define the price levels for a user"""
+    """
+    Database model for a list of up to 8 column labels.
+
+    Attributes
+    ----------
+    id: int
+    user_id: int
+        Foreign Key set as the id for the user this belongs to.
+    labels_length: int
+        Length of labels
+    label1: str
+    label2: str
+    label3: str
+    label4: str
+    label5: str
+    label6: str
+    label7: str
+    label8: str
+
+    Methods
+    -------
+    changePriceLabels(array length, array of strings)
+        Sets labels_length and sets the values of each label to all values in the array.
+    getPriceLabels()
+        Returns an array of every label up to labels_length.
+    """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     labels_length = db.Column(db.Integer)
@@ -49,6 +129,14 @@ class Columns(db.Model):
     label8 = db.Column(db.String(32))
 
     def changePriceLabels(self, arr_len, arr):
+        """
+        Sets labels_length and sets the values of each label to all values in the array.
+
+        Parameters
+        ----------
+        arr_len: int
+            Length of the array to go to.
+        """
         self.labels_length = arr_len
         self.label1 = None
         self.label2 = None
@@ -84,7 +172,33 @@ class Columns(db.Model):
 
 
 class Item(db.Model):
-    """Class to define an item within the database"""
+    """
+    Database Model for Items belonging to a menu
+
+    Attributes
+    ----------
+    id: int
+    table_id: int
+        Foreign Key set as the id for the table this item belongs to
+    item_name: str
+    modifiers: relationship
+        Relationship to modifier_item table for many-to-many relationship with modifiers
+    price1: float
+    price2: float
+    price3: float
+    price4: float
+    price5: float
+    price6: float
+    price7: float
+    price8: float
+
+    Methods
+    -------
+    change_prices(array)
+        Takes an array of up to 8 floats and sets their values to each price
+    get_item_data()
+        Returns a dictionary containing the data for the item ({id, label, prices, categories})
+    """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), index=True)
     item_name = db.Column(db.String(32), index=True)
@@ -132,7 +246,18 @@ class Item(db.Model):
 
 
 class Modifiercategory(db.Model):
-    """Class to define modifier categories within the database"""
+    """
+    Database model for modifier categories
+
+    Attributes
+    ----------
+    id: int
+    user_id: int
+        Foreign Key set as the id for the user this belongs to
+    category_name: str
+    modifiers: relationship
+        Relationship to each modifier that belongs to this category
+    """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     category_name = db.Column(db.String(32), index=True)
@@ -140,7 +265,19 @@ class Modifiercategory(db.Model):
 
 
 class Modifier(db.Model):
-    """Class to define modifiers within the database"""
+    """
+    Database model for a modifier
+
+    Attributes
+    ----------
+    id: int
+    category_id: int
+        Foreign Key set as the id for the category this modifier belongs to
+    modifier_label: str
+    modifier_price: str
+    items: relationship
+        Relationship to modifier_items for many-to-many relationship with items
+    """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('modifiercategory.id'), index=True)
     modifier_label = db.Column(db.String(32), index=True)
@@ -149,6 +286,18 @@ class Modifier(db.Model):
 
 
 class Employee(db.Model):
+    """
+    Database model for employees
+
+    Attributes
+    ----------
+    id: int
+    user_id: int
+        Foreign Key set as the id for the user this employee belongs to
+    name: str
+    pin: str
+    title: str
+    """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     name = db.Column(db.String(32), index=True)
@@ -157,6 +306,18 @@ class Employee(db.Model):
 
 
 class Paids(db.Model):
+    """
+    Database model for paid ins and outs
+
+    Attributes
+    ----------
+    id: int
+    user_id:
+        Foreign Key set as the id for the user this paid belongs to
+    is_paid_in: bool
+    description: str
+    price: float
+    """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     is_paid_in = db.Column(db.Boolean)

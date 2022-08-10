@@ -1,3 +1,7 @@
+* {
+    font-weight: normal;
+}
+
 #content_container {
     padding: 5px;
     background: lightgray;
@@ -21,13 +25,12 @@
     border: 1px solid black;
     border-bottom: 1px solid white;
     margin-bottom: -1px;
-    z-index: 1;
 }
 #drink_food_group input {
     display: none;
 }
 #drink_food_group input + label {
-    background: lightgray;
+    background: linear-gradient(#659BF7, #BBC4D9);
     border: 1px solid black;
     border-radius: 5px;
     margin: 5px;
@@ -46,14 +49,20 @@
     font-size: 1.2rem;
     padding: 3px;
     height: fit-content;
-    margin: auto 5px 5px 5px;
+    margin: auto 5px auto 5px;
 }
 #minmax_button {
     margin-right: 5px;
     margin-left: 5px;
+    background: linear-gradient(#659BF7, #BBC4D9);
+    border: 1px solid black;
+    border-radius: 3px;
 }
 #minmax_button * {
     font-size: 1.2rem;
+}
+#minmax_button:active {
+    background: linear-gradient(#BBC4D9, #659BF7);
 }
 
 #modifier_panel{
@@ -73,6 +82,21 @@
 #modifier_header {
     border-bottom: 1px solid black;
     flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    flex-direction: row;
+    justify-content: space-between;
+}
+#close_mod_panel {
+    padding: 0 4px;
+    font-size: 1rem;
+    margin: 2px;
+    border: 1px solid black;
+    border-radius: 3px;
+}
+#close_mod_panel:hover {
+    background: red;
 }
 #modifier_panel_content {
     display: flex;
@@ -193,11 +217,17 @@
     background: red;
     border: 1px solid black;
     border-radius: 3px;
+    padding: 0 4px;
 }
 .category_mods_container {
     display: flex;
     flex-direction: column;
     padding: 5px 5px 0 5px;
+}
+.add_category {
+    font-size: 1.2rem;
+    border: 1px solid black;
+    border-radius: 3px;
 }
 .modifier_container {
     display: flex;
@@ -209,18 +239,24 @@
     resize: none;
     outline: none;
     text-align: center;
-    font-size: 1rem
+    font-size: 1rem;
 }
 .delete_modifier {
     border: 1px solid black;
     border-radius: 3px;
     background: red;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    padding: 0 4px;
+}
+.add_modifier {
+    font-size: 1rem;
+    border: 1px solid black;
+    border-radius: 3px;
 }
 
 #set_modifier_button {
     margin: 3px auto 3px auto;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
 }
 
 
@@ -236,8 +272,10 @@
     justify-content: flex-start;
     overflow-x: scroll;
     overflow-y: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+}
+.add_tab {
+    padding: 0;
+    margin: 0;
 }
 #tab_button_container::-webkit-scrollbar {
     display: none;
@@ -252,7 +290,6 @@
     border-top-left-radius: 5px;
     display: flex;
     align-items: center;
-    z-index: 0;
 }
 .tab_button input {
     display: none;
@@ -264,10 +301,11 @@
     text-align: center;
 }
 .delete_table {
-    margin: 2px;
+    padding: 0px 4px;
     background: red;
     border: 1px solid black;
     border-radius: 3px;
+    font-size: 1.2rem;
 }
 #tab_content_div {
     height: 100%;
@@ -275,19 +313,19 @@
     overflow: auto;
     background: white;
     border: 1px solid black;
-    border-bottom-right-radius: 5px;
-    border-bottom-left-radius: 5px;
 }
 
 #confirmation_container {
     margin: 5px 5px 0 auto;
     padding: 2px;
-    border-radius: 3px;
-    border: 1px solid black;
     width: fit-content;
 }
 #confirmation_container label {
     font-size: 1.2rem;
+}
+#confirmation_container input {
+    width: 15px;
+    height: 15px;
 }
 
 #paids_content {
@@ -324,11 +362,16 @@
     font-size: 1.2rem;
 }
 #menu_table .delete_item {
-    font-size: 1.4rem;
     margin: 2px;
+    padding: 0px 4px;
     background: red;
     border: 1px solid black;
     border-radius: 3px;
+}
+#menu_table .cell0_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
 }
 
 #paids_content * {

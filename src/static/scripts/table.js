@@ -135,6 +135,7 @@ class MenuTable {
     downloadTable(tableID) {
         let instance = this
         $.ajax({
+            async: 'false',
             contentType: 'json',
             data: JSON.stringify({
                 'username': instance.current_user,
@@ -184,13 +185,24 @@ class MenuTable {
     addItem(item = new Item()) {
         let row = this.tableElement.insertRow(-1)
         row.setAttribute("row_index", String(this.items.length))
-        row.addEventListener('click', ()=>this.selectRow(Number(row.getAttribute("row_index"))))
 
         let cell0 = row.insertCell(-1)
-        let del_button = document.createElement("label")
+        cell0.className = "cell0"
+        let container = document.createElement("div")
+        container.className = "cell0_container"
+        cell0.appendChild(container)
+        let add_item = document.createElement("button")
+        add_item.className = "add_item_button"
+        add_item.innerHTML = "Add"
+        container.appendChild(add_item)
+        let del_button = document.createElement("button")
         del_button.className = "delete_item"
         del_button.innerHTML = "&#10006"
-        cell0.appendChild(del_button)
+        container.appendChild(del_button)
+        let view_mods = document.createElement("button")
+        view_mods.className = "view_mods_button"
+        view_mods.innerHTML = "Mods"
+        container.appendChild(view_mods)
 
         let cell1 = row.insertCell(-1)
         let item_label = document.createElement("textarea")
@@ -206,7 +218,7 @@ class MenuTable {
             let celli = row.insertCell(-1)
             let data = document.createElement("textarea")
             data.className = "chart_field item_price"
-            data.placeholder = "$-"
+            data.placeholder = "$0.00"
             data.cols = 14
             data.rows = 1
             data.maxLength = 6
@@ -221,6 +233,14 @@ class MenuTable {
         }
         item.row = row
         this.items.push(item)
+
+        if(item.id === -1) {
+            del_button.style.display = "none"
+            view_mods.style.display = "none"
+        } else {
+            add_item.style.display = "none"
+        }
+
         this.updateTableGraphics()
     }
 
@@ -292,12 +312,8 @@ class MenuTable {
 
     updateTableGraphics() {
         //Update completion box
-        $('#confirmation_box').prop("checked", this.completed)
-        if(this.completed === true) {
-            $('#confirmation_container').css("background", "green")
-        } else {
-            $('#confirmation_container').css("background", "red")
-        }
+        let confirmation_box = $('#confirmation_box')
+        confirmation_box.prop("checked", this.completed)
 
         //Setting enabled attribute
         for(let i = 0; i < this.priceLabelColumns.length; i++) {
@@ -356,7 +372,7 @@ class MenuTable {
 
         if(this.items[item_index].id !== -1 && this.items[item_index].id !== 0) { // If the item selected does not have an invalid id
             this.current_item = this.items[item_index]
-            this.current_item.row.firstChild.style.background = "lightblue"
+            this.current_item.row.firstChild.style.background = "#83AAD1"
             let instance = this
 
             $.ajax({
@@ -439,39 +455,45 @@ class MenuTable {
 
     updatePriceLabel(index, label="") {
         let instance = this
+        let delete_column = false
+
+        if(index >= this.colLen)
+            this.colLen += 1
 
         this.priceLabelColumns[index].setAttribute("enabled", "true")
         if(index >= 1 && index < this.colLen) {
-            this.priceLabels[index].value = label
             if (label === "") {
-                this.removeColumn(index)
+                //this.priceLabels[index].value = label
+                if (confirm("!!WARNING!!\nDo you wish to delete this column? Doing so will remove the price under this column for all items")) {
+                    this.removeColumn(index)
+                    delete_column = true
+                }
             }
         }
 
         let labels = ["Regular"]
-        for(let i = 1; i < this.priceLabels.length; i++) {
-            if(this.priceLabels[i].value !== "")
-                labels.push(this.priceLabels[i].value)
+        for(let i = 1; i < this.colLen; i++) {
+            labels.push(this.priceLabels[i].value)
         }
-        this.colLen = labels.length
 
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
                 'username': instance.current_user,
-                'priceLabels': labels
+                'priceLabels': labels,
+                'deleteColumn': delete_column,
+                'index': Number(index)
             }),
             type: 'POST',
             url: 'update-columns'
         })
-
+        console.log(this.priceLabelColumns[index].getAttribute("enabled"), index, this.colLen)
         this.updateTableGraphics()
     }
 
     updateItemLabel(item_index, label="") {
         let instance = this
 
-        let prev_label = this.items[item_index].label
         this.items[item_index].label = label
 
         $.ajax({
@@ -486,8 +508,7 @@ class MenuTable {
             success: function(data) {
                 if(instance.items[item_index].id === -1 || instance.items[item_index].id === 0) {
                     instance.items[item_index].id = data["id"]
-                    if(prev_label === "")
-                        instance.addItem()
+                    instance.addItem()
                 }
             }
         })
@@ -937,24 +958,35 @@ function Table(id=-1, table_name="", table_type=""){
         radio_button.name = "tab_group"
         radio_button.id = "tab-"+String(tab_button_container.children.length)
 
+        let tab_delete = document.createElement("button")
+        tab_delete.className = "delete_table"
+        tab_delete.innerHTML = "&#10006"
+        tab_delete.setAttribute("for", "tab-"+tab_button_container.children.length)
+
         let tab_label = document.createElement("textarea")
         tab_label.setAttribute("for", "tab_"+String(tab_button_container.children.length))
         tab_label.className = "tab_label"
         tab_label.maxLength = 18
         tab_label.rows = 1
         tab_label.cols = 17
-        tab_label.placeholder = "table name..."
         tab_label.value = this.table_name
 
-        let tab_delete = document.createElement("label")
-        tab_delete.className = "delete_table"
-        tab_delete.innerHTML = "&#10006"
-        tab_delete.setAttribute("for", "tab-"+tab_button_container.children.length)
+        let add_button = document.createElement("button")
+        add_button.className = "add_tab"
+        add_button.innerHTML = "Add Menu"
+
+        if (this.id !== -1) {
+            add_button.style.display = "none"
+        }
+        else {
+            tab_delete.style.display = "none"
+        }
 
         tab_button_container.append(tab_button)
         tab_button.appendChild(radio_button)
-        tab_button.appendChild(tab_label)
         tab_button.appendChild(tab_delete)
+        tab_button.appendChild(tab_label)
+        tab_button.appendChild(add_button)
     }
 }
 function Item(id = -1, label = "", prices = [], row=null, categories=[]) {
@@ -968,6 +1000,7 @@ function Category(id = -1, label="", mods=[new Modifier()]) {
     this.id = id
     this.label = label
     this.mods = mods
+    this.htmlContainer = null
     this.getHTML = function() {
         let category_container = document.createElement("div")
         category_container.className = "category_container"
@@ -991,11 +1024,15 @@ function Category(id = -1, label="", mods=[new Modifier()]) {
         category_label.value = this.label
         category_header.appendChild(category_label)
 
-        let delete_category = document.createElement("label")
+        let delete_category = document.createElement("button")
         delete_category.className = "delete_category"
         delete_category.innerHTML = "\u2716"
         category_header.appendChild(delete_category)
 
+        let add_category = document.createElement("button")
+        add_category.className = "add_category"
+        add_category.innerHTML = "Add"
+        category_header.appendChild(add_category)
 
         category_container.appendChild(category_header)
 
@@ -1008,7 +1045,22 @@ function Category(id = -1, label="", mods=[new Modifier()]) {
         for(let i = 0; i < this.mods.length; i++) {
             this.mods[i].category_id = this.id
             this.mods[i].addModifier($(category_mods_container))
+            if(this.id === -1) {
+                $(this.mods[i].htmlContainer.children[1]).attr("readonly", "readonly")
+                    .css("background", "darkgrey").css("color", "grey")
+                $(this.mods[i].htmlContainer.children[2]).attr("readonly", "readonly")
+                    .css("background", "darkgrey").css("color", "grey")
+                $(this.mods[i].htmlContainer.children[4]).css("background", "darkgrey").css("color", "grey")
+            }
         }
+
+        if(this.id !== -1) {
+            $(add_category).css("display", "none")
+        } else {
+            $(delete_category).css("display", "none")
+        }
+
+        this.htmlContainer = category_container
 
         return category_container
     }
@@ -1023,6 +1075,7 @@ function Modifier(category_id=-1, id=-1, label="", price=null) {
     this.id = id
     this.label = label
     this.price = price
+    this.htmlContainer = null
     this.getHTML = function() {
         let modifier_container = document.createElement("div")
         modifier_container.className = "modifier_container"
@@ -1031,7 +1084,7 @@ function Modifier(category_id=-1, id=-1, label="", price=null) {
         modifier_checkbox.type = "checkbox"
         modifier_checkbox.className = "modifier_checkbox"
         if(this.label === "")
-            modifier_checkbox.setAttribute("disabled", true)
+            modifier_checkbox.setAttribute("disabled", 'true')
         modifier_container.appendChild(modifier_checkbox)
 
         let modifier_label = document.createElement("textarea")
@@ -1048,14 +1101,29 @@ function Modifier(category_id=-1, id=-1, label="", price=null) {
         modifier_price.maxLength = 6
         modifier_price.cols = 6
         modifier_price.rows = 1
-        modifier_price.placeholder = "$-"
+        modifier_price.placeholder = "$0.00"
         modifier_price.value = this.price
         modifier_container.appendChild(modifier_price)
 
-        let delete_modifier = document.createElement("label")
+        let delete_modifier = document.createElement("button")
         delete_modifier.className = "delete_modifier"
         delete_modifier.innerHTML = "\u2716"
         modifier_container.appendChild(delete_modifier)
+
+        let add_modifier = document.createElement("button")
+        add_modifier.className = "add_modifier"
+        add_modifier.innerHTML = "Add"
+        modifier_container.appendChild(add_modifier)
+
+        if (this.id !== -1) {
+            add_modifier.style.display = "none"
+        }
+        else {
+            delete_modifier.style.display = "none"
+            modifier_price.style.display = "none"
+        }
+
+        this.htmlContainer = modifier_container
 
         return modifier_container
     }
@@ -1065,7 +1133,6 @@ function Modifier(category_id=-1, id=-1, label="", price=null) {
         parent.append(modifier_container)
     }
     this.updateModifier = function(category_index, modifiers_container) {
-        console.log("Update modifier: " + this.category_id, this.id, this.label, this.price)
         let instance = this
         $.ajax({
             contentType: 'json',
@@ -1082,6 +1149,10 @@ function Modifier(category_id=-1, id=-1, label="", price=null) {
                     let mod = new Modifier(instance.category_id, -1, "", null)
                     table.modifier_categories[category_index].mods.push(mod)
                     mod.addModifier($(modifiers_container))
+
+                    $(instance.htmlContainer.children[2]).css("display", "")
+                    $(instance.htmlContainer.children[3]).css("display", "")
+                    $(instance.htmlContainer.children[4]).css("display", "none")
                 }
                 instance.id = data["id"]
                 if(table.current_item !== null)

@@ -7,23 +7,31 @@ $(function() {
      // Text Filters
     .on('keypress', '.tab_label', (event) => filterTextField(event))
     .on('keypress', '.item_label', (event) => filterTextField(event))
-    .on('keypress', '.item_price', (event) => filterPriceField(event))//.on("focusout", '.item_price', (event) => { $(event.target).trigger("change") })
+    .on('keypress', '.item_price', (event) => filterPriceField(event))
     .on('keypress', '.modifier_label', (event) => filterTextField(event))
-    .on('keypress', '.modifier_price', (event) => filterPriceField(event))//.on("focusout", '.modifier_price', (event) => { $(event.target).trigger("change") })
+    .on('keypress', '.modifier_price', (event) => filterPriceField(event))
     .on('keypress', '.employee_name', (event) => filterTextField(event))
-    .on('keypress', '.PIN_label', (event) => filterPINField(event))//.on("focusout", '.PIN_label', (event) => { $(event.target).trigger("change") })
+    .on('keypress', '.PIN_label', (event) => filterPINField(event))
     .on('keypress', '.employee_title', (event) => filterTextField(event))
     .on('keypress', '.paid_description', (event) => filterTextField(event))
-    .on('keypress', '.paid_price', (event) => filterPriceField(event))//.on("focusout", '.paid_price', (event) => { $(event.target).trigger("change") })
+    .on('keypress', '.paid_price', (event) => filterPriceField(event))
     /* Menu Table Events */
      // Delete Item
      .on('click', '.delete_item', function(){
-         let row_index = Number(this.parentNode.parentNode.getAttribute("row_index"))
+         let row_index = Number(this.parentNode.parentNode.parentNode.getAttribute("row_index"))
          table.removeItem(row_index)
      })
      // Item label
     .on('change', '.item_label', function() {
         let row_index = Number(this.parentNode.parentNode.getAttribute("row_index"))
+        let item = table.items[row_index]
+        if(item.id === -1) {
+            let cell = $($($(item.row).children()[0]).children()[0])
+            console.log(cell.children())
+            $(cell.children()[0]).css("display", "none")
+            $(cell.children()[1]).css("display", "")
+            $(cell.children()[2]).css("display", "")
+        }
         table.updateItemLabel(row_index, this.value)
     })
     // Item Price
@@ -31,6 +39,12 @@ $(function() {
         let colIndex = Number(this.getAttribute("column_index"))
         let rowIndex = Number(this.getAttribute("row_index"))
         table.updateItemPrice(rowIndex, colIndex, this.value)
+    })
+    // Select Item
+    .on('click', '.view_mods_button', function() {
+        $('#modifier_panel').css("display", "flex")
+        let row_index = Number(this.parentNode.parentNode.parentNode.getAttribute("row_index"))
+        table.selectRow(row_index)
     })
 
 
@@ -67,6 +81,10 @@ $(function() {
     .on('mouseleave', function() {
         $('#modifier_panel').draggable("option", "disabled", true)
     })
+    // Close Modifier Panel
+    $('#close_mod_panel').on('click', function() {
+            $('#modifier_panel').css("display", "none")
+    })
     // Dropdown button
     $('#mods_content').on('click', '.category_dropdown_button', function() {
         let modifier_container = this.parentNode.parentNode.children[1]
@@ -99,6 +117,17 @@ $(function() {
                     let empty_cat = new Category()
                     table.modifier_categories.push(empty_cat)
                     empty_cat.addContainer($('#mods_content'))
+
+                    let header = table.modifier_categories[index].htmlContainer.children[0]
+                    $(header.children[2]).css("display", "")
+                    $(header.children[3]).css("display", "none")
+                    let mods_container = table.modifier_categories[index].htmlContainer.children[1]
+                    for(let i = 0; i < mods_container.children.length; i++) {
+                        let mod_container = mods_container.children[i]
+                        $(mod_container.children[1]).removeAttr("readonly").css("background", "white").css("color", "black")
+                        $(mod_container.children[2]).removeAttr("readonly").css("background", "white").css("color", "black")
+                        $(mod_container.children[4]).css("background", "buttonface").css("color", "black")
+                    }
                 }
 
                 if(Number(table.modifier_categories[index].id) !== Number(data["id"])) {
@@ -119,7 +148,7 @@ $(function() {
     })
     // Delete Category
     .on('click', '.delete_category', function() {
-        if(confirm("Warning!\nDeleting a modifier category deletes all modifiers belonging to it...\nContinue?")) {
+        if(confirm("!!Warning!!\nDeleting a modifier category deletes all modifiers belonging to it...\nContinue?")) {
             let container = this.parentNode.parentNode
             let index = container.getAttribute("index")
 
@@ -277,11 +306,6 @@ $(function() {
     // Change Menu Button
     $('input[name="menu_button"]')
     .on('change', function() {
-        let modifier_button = $('#modifier_button')
-        if(this.id === "food")
-            modifier_button.css("display", "")
-        else
-            modifier_button.css("display", "none")
 
         // Clear Table Tabs
         let tab_button_container = document.getElementById("tab_button_container")
@@ -320,21 +344,46 @@ $(function() {
     $('#tab_button_container').on('mousewheel', function(event){ // Horizontal Scroll
         this.scrollLeft += event.originalEvent.deltaY
     })
+    // Change tabs
     .on('change', 'input[name="tab_group"]', function(){
-        $(this).parent().css("background", "white").css("z-index", 2) // Set selected background to white
-        $('input[name="tab_group"]:not(:checked)').each(function() {
-            $(this).parent().css("background", "lightgray").css("z-index", 1) // Set unselected background to grey
-        })
-
-        $('#tab_content_div').append(table.generateNewHTMLTable()) // Create new table
-
-        // Download current table
-        let id = $('input[name="tab_group"]:checked').attr("id")
+        let id = -1;
+        let index_str = $('input[name="tab_group"]:checked').attr("id")
+        let index = index_str.substring(index_str.length - 1)
         let selected_category_id = $('input[name="menu_button"]:checked').attr("id")
         if(selected_category_id === "drink") {
-            table.downloadTable(table.drink_tables[id.substring(id.length - 1)].id)
+            id = table.drink_tables[index].id
         } else if(selected_category_id === "food") {
-            table.downloadTable(table.food_tables[id.substring(id.length - 1)].id)
+            id = table.food_tables[index].id
+        }
+
+        if(id !== -1) {
+            $(this).parent().css("background", "white") // Set selected background to white
+            $($(this).parent().children()[2]).css("background", "none").css("border", "1px solid black")
+            $('input[name="tab_group"]:not(:checked)').each(function () {
+                $(this).parent().css("background", "linear-gradient(#659BF7, #BBC4D9)") // Set unselected background to gradient
+                $($(this).parent().children()[2]).css("background", "none").css("border", "none")
+
+                let index_str = $(this).attr("id")
+                let index = index_str.substring(index_str.length - 1)
+                let unselected_id = -1
+                if(selected_category_id === "drink") {
+                    unselected_id = table.drink_tables[index].id
+                } else if(selected_category_id === "food") {
+                    unselected_id = table.food_tables[index].id
+                }
+                if(unselected_id === -1) {
+                    $($(this).parent().children()[2]).css("background", "white").css("border", "1px solid black")
+                }
+            })
+
+            $('#tab_content_div').append(table.generateNewHTMLTable()) // Create new table
+
+            // Download current table
+            if (selected_category_id === "drink") {
+                table.downloadTable(table.drink_tables[index].id)
+            } else if (selected_category_id === "food") {
+                table.downloadTable(table.food_tables[index].id)
+            }
         }
     })
     // Click to change to that tab
@@ -347,6 +396,7 @@ $(function() {
     })
     // Change table label
     .on("change", '.tab_label', function() {
+        let tab = $(this).parent()
         let index = Number(this.getAttribute("for").substring("tab_".length))
         let current_table = null
 
@@ -370,12 +420,17 @@ $(function() {
             success: function (data) {
                 table.tableID = data["id"]
                 if(current_table["id"] === -1 && current_table["table_name"].value !== ""){
+                    let new_table = new Table()
                     if(selected_category_id === "drink") {
-                        table.drink_tables.push({"id": -1, "table_name": "", "table_type": "drink"})
+                        new_table.table_type = "drink"
+                        table.drink_tables.push(new_table)
                     } else if(selected_category_id === "food") {
-                        table.food_tables.push({"id": -1, "table_name": "", "table_type": "food"})
+                        new_table.table_type = "food"
+                        table.food_tables.push(new_table)
                     }
-                    new Table().addTable()
+                    new_table.addTable()
+                    tab.children()[1].style.display = ""
+                    tab.children()[3].style.display = "none"
                 }
 
                 if(selected_category_id === "drink") {
@@ -389,7 +444,7 @@ $(function() {
     // Delete tables
     .on('click', '.delete_table', function(event) {
         event.preventDefault()
-        if(confirm("Deleting a table also deletes all items belonging to it... Continue deleting the table?")) {
+        if(confirm("!!WARNING!!\nDeleting a table also deletes all items belonging to it... Continue deleting the table?")) {
             let table_tabs = $(this).parent().parent().children()
             let index = Number(this.getAttribute("for").substring("tab-".length))
 
@@ -442,12 +497,6 @@ $(function() {
 
     // Confirmation Box
     $('#confirmation_box').on('change',function(event) {
-        if($(this).is(':checked') === true) {
-            $(this).parent().css("background", "green")
-        } else if($(this).is(':checked') === false) {
-            $(this).parent().css("background", "red")
-        }
-
         let checked_tab = $('input[name="tab_group"]:checked')
         let index = checked_tab.attr("id").substring("tab-".length)
         let current_table = null

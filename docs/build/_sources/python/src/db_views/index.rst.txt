@@ -1,0 +1,429 @@
+:py:mod:`src.db_views`
+======================
+
+.. py:module:: src.db_views
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.db_views.getUsers
+   src.db_views.changePassword
+   src.db_views.addUser
+   src.db_views.deleteUser
+   src.db_views.downloadData
+   src.db_views.getColumns
+   src.db_views.updateColumns
+   src.db_views.getTables
+   src.db_views.getTable
+   src.db_views.updateTable
+   src.db_views.deleteTable
+   src.db_views.updateItemLabel
+   src.db_views.updateItemPrices
+   src.db_views.downloadItem
+   src.db_views.removeItem
+   src.db_views.getCategories
+   src.db_views.updateCategoryLabel
+   src.db_views.deleteCategory
+   src.db_views.updateModifier
+   src.db_views.deleteModifier
+   src.db_views.setItemModifier
+   src.db_views.removeItemModifier
+   src.db_views.getEmployees
+   src.db_views.updateEmployeeName
+   src.db_views.updateEmployeePIN
+   src.db_views.updateEmployeeTitle
+   src.db_views.removeEmployee
+   src.db_views.getPaids
+   src.db_views.updatePaidType
+   src.db_views.updatePaidDescription
+   src.db_views.updatePaidPrice
+   src.db_views.removePaid
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   src.db_views.db_views
+
+
+.. py:data:: db_views
+   
+
+   Blueprint for endpoints that make changes to the database.
+
+.. py:function:: getUsers()
+
+   Endpoint for getting a list of all users in the database.
+
+   :returns: user_list containing all usernames in the database with successful status code.
+   :rtype: Response
+
+
+.. py:function:: changePassword()
+
+   Endpoint for changing a user's password.
+
+   Retrieves 'userID' and 'password' from the front end, searches the database for that user,
+   hashes the given password and sets it to the password field for the user in the database.
+
+   :raises NoResultFound: Should only be raised if an invalid userID is sent. Prints the userID and returns error status.
+   :raises Exception: Prints out the exception and returns error status.
+
+   :returns: Returns with a status of 200.
+   :rtype: Response
+
+
+.. py:function:: addUser()
+
+   Endpoint for adding users
+
+   Retrieves 'username', 'password', and 'isAdmin' from the client, searches the database for the user and if found
+   returns an error status. If not found, the user is created and copies of all database tables belonging to the user
+   with id=1 for the new user.
+
+   :raises NoResultFound: If the template user (user with id=1) is not found. Print the error and return with error status.
+   :raises Exception: Prints the exception and returns with error status
+
+   :returns: Returns with a successful status once the user and all tables have been committed to database
+   :rtype: Response
+
+
+.. py:function:: deleteUser()
+
+   Endpoint to delete a user
+
+   Retrieves a 'userID' from the client and searches the database for the user with a matching id.
+   Once the user is found, all database tables belonging to it are deleted, and then the user itself is deleted.
+
+   :raises NoResultFound: Prints the userID and returns with an error status.
+   :raises Exception: Prints the error and returns with error status.
+
+   :returns: Returns with success status once all changes have been committed to the database.
+   :rtype: Response
+
+
+.. py:function:: downloadData(filename)
+
+   Endpoint for downloading a xlsx sheet containing all the data belonging to a single user.
+
+   :param filename: The username of the targeted user.
+   :type filename: str
+
+   :raises NoResultFound: Prints out the filename/username of the specified user and returns with error code.
+   :raises Exception: Prints out the error and returns with error code.
+
+   :returns: Sends the generated xmlx file to the client and returns with success status.
+   :rtype: Response
+
+
+.. py:function:: getColumns()
+
+   Endpoint to get the list of column labels belonging to a user.
+
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Send the list of column labels to the server as priceLabels with success status.
+   :rtype: Response
+
+
+.. py:function:: updateColumns()
+
+   Endpoint for updating the values in a user's column labels.
+
+   :raises NoResultFound: Prints the user, and returns an error status.
+   :raises Exception: Prints the exception, and returns an error status.
+
+   :returns: Returns success status.
+   :rtype: Response
+
+
+.. py:function:: getTables()
+
+   Endpoints for getting all tables.
+
+   :raises NoResultFound: Prints the username of the user and returns error status.
+   :raises Exception: Prints the exception and returns error status.
+
+   :returns: Array of tables containing the table id, table name, and table type, with status 200.
+   :rtype: Response
+
+
+.. py:function:: getTable()
+
+   Endpoint for getting the items and data for a table.
+
+   :raises NoResultFound: Prints username and returns error status.
+   :raises Exception: Prints the exception and returns error status.
+
+   :returns: Dictionary containing all items and the boolean for completed table with success code.
+   :rtype: Response
+
+
+.. py:function:: updateTable()
+
+   Endpoint for updating table data.
+
+   If the id of the table sent doesn't exist
+
+   :raises NoResultFound: Prints username and returns error status.
+       
+       Prints table id and returns error status.
+   :raises Exception: Prints exception and returns error status.
+
+   :returns: Returns success status with id of the changed table.
+   :rtype: Response
+
+
+.. py:function:: deleteTable()
+
+   Endpoint to delete a table and all of it's items.
+
+   :raises NoResultFound: Prints table's id and return error status.
+   :raises Exception: Prints exception and returns error status.
+
+   :returns: Returns success status
+   :rtype: Response
+
+
+.. py:function:: updateItemLabel()
+
+   Endpoint for updating an item's label.
+
+   :raises NoResultFound: Prints the table id and returns error status.
+   :raises Exception: Prints the exception and returns error status.
+
+   :rtype: Returns id of changed item and success status.
+
+
+.. py:function:: updateItemPrices()
+
+   Endpoint to updating an item's prices.
+
+   :raises NoResultFound: Prints the item id and returns error status.
+   :raises Exception: Prints the exception and returns error status.
+
+   :returns: Returns success status.
+   :rtype: Response
+
+
+.. py:function:: downloadItem()
+
+   Endpoint downloading an item's data and modifiers.
+
+   :raises NoResultFound: Prints username and returns error code.
+       
+       Prints item id and returns error code.
+   :raises Exception: Prints exception and returns error code.
+
+   :returns: Dictionary containing the item's data with success status.
+   :rtype: Response
+
+
+.. py:function:: removeItem()
+
+   Endpoints for removing an item from the database.
+
+   :raises NoResultFound: Prints the id of the item and returns response with error status.
+   :raises Exception: Prints the error and returns a response wit error status.
+
+   :returns: Success status.
+   :rtype: Response
+
+
+.. py:function:: getCategories()
+
+   Endpoint for retrieving a user's modifier data.
+
+   :raises NoResultsFound: Prints the user's username and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Dictionary containing data for each category belonging to the user with success status.
+   :rtype: Response
+
+
+.. py:function:: updateCategoryLabel()
+
+   Endpoint for updating the label for a category.
+
+   :raises NoResultsFound: Prints the user's username and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: The id of the changed category with success status.
+   :rtype: Response
+
+
+.. py:function:: deleteCategory()
+
+   Endpoint for deleting a category.
+
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Success status.
+   :rtype: Response
+
+
+.. py:function:: updateModifier()
+
+   Endpoint for updating the data for a modifier.
+
+   :raises NoResultsFound: Prints the modifier's id and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: The id of the changed modifier with success status.
+   :rtype: Response
+
+
+.. py:function:: deleteModifier()
+
+   Endpoint for deleting a modifier.
+
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Success status.
+   :rtype: Response
+
+
+.. py:function:: setItemModifier()
+
+   Endpoint for establishing a relationship between an item and modifier.
+
+   :raises NoResultsFound: Prints the id of the item and returns with error status.
+       Prints the id of the modifier and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Success status.
+   :rtype: Response
+
+
+.. py:function:: removeItemModifier()
+
+   Endpoint for removing a relationship between an item and modifier.
+
+   :raises NoResultsFound: Prints the id of the item and returns with error status.
+       Prints the id of the modifier and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Success status.
+   :rtype: Response
+
+
+.. py:function:: getEmployees()
+
+   Endpoint for getting the employee's belonging to a user.
+
+   :raises NoResultsFound: Prints the user's username and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Dictionary containing every employee and the employee's data.
+   :rtype: Response
+
+
+.. py:function:: updateEmployeeName()
+
+   Endpoint for updating the name of an employee.
+   If it's the case that the given employee ID is -1, a new employee is created in the database.
+
+   :raises NoResultsFound: Prints the user's username and returns error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: The id of the changed employee with success status.
+   :rtype: Response
+
+
+.. py:function:: updateEmployeePIN()
+
+   Endpoint for updating the PIN of an employee.
+
+   :raises NoResultsFound: Prints the id of the employee and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: The id of the employee with success status.
+   :rtype: Response
+
+
+.. py:function:: updateEmployeeTitle()
+
+   Endpoint for updating the title of an employee.
+
+   :raises NoResultsFound: Prints the id of the employee and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: The id of the employee with success status.
+   :rtype: Response
+
+
+.. py:function:: removeEmployee()
+
+   Endpoint for deleting an employee.
+
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Success status.
+   :rtype: Response
+
+
+.. py:function:: getPaids()
+
+   Endpoint for getting the paids belonging to a user.
+
+   :raises NoResultsFound: Prints the user's username and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Dictionary containing each paid and it's data.
+   :rtype: Response
+
+
+.. py:function:: updatePaidType()
+
+   Endpoint for updating the type of a paid.
+   If the given id of the paid is -1, a new paid is created in the database.
+
+   :raises NoResultsFound: Prints the user's username and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: The id of the paid with success status.
+   :rtype: Response
+
+
+.. py:function:: updatePaidDescription()
+
+   Endpoint for updating the description of a paid.
+
+   :raises NoResultsFound: Prints the id of the name and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Id of the paid with success status.
+   :rtype: Response
+
+
+.. py:function:: updatePaidPrice()
+
+   Endpoint for updating the price of a paid.
+
+   :raises NoResultsFound: Prints the id of the name and returns with error status.
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Id of the paid with success status.
+   :rtype: Response
+
+
+.. py:function:: removePaid()
+
+   Endpoint for deleting a paid.
+
+   :raises Exception: Prints the exception and returns with error status.
+
+   :returns: Success status.
+   :rtype: Response
+
+

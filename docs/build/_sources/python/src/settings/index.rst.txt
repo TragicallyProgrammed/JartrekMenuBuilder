@@ -1,0 +1,29 @@
+:py:mod:`src.settings`
+======================
+
+.. py:module:: src.settings
+
+
+Module Contents
+---------------
+
+.. py:data:: env_path
+   
+
+   Path to the .env files.
+
+.. py:data:: ENVIROMENT
+   
+
+   String variable defining the enviroment to start flask in.
+
+.. py:data:: DB_NAME
+   
+
+   The name of the database.
+
+.. py:data:: KEY
+   
+
+   Secret key for Flask.
+

@@ -1,0 +1,59 @@
+:py:mod:`src.views`
+===================
+
+.. py:module:: src.views
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.views.profile
+   src.views.adminPanel
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   src.views.views
+
+
+.. py:data:: views
+   
+
+   Blueprint for views.
+
+.. py:function:: profile()
+
+   Endpoint for user profile.
+
+   This endpoint should only be reached via auth.login
+   only if the user that is logging in has 'admin' set to
+   false in the database.
+
+   :returns: * *redirect* -- Redirects to auth.logout if a request to logout is sent.
+             * *render_template* -- Ships the html for profile.html.
+
+
+.. py:function:: adminPanel()
+
+   Endpoint for admin panel.
+
+   This endpoint should only be reached via auth.login
+   only if the user that is logging in has 'admin' set to
+   true in the database.
+
+   :returns: * *redirect* -- Redirects to auth.logout if a request to logout is sent.
+             * *render_template* -- Ships the html for admin-panel.html.
+
+   :raises Exception: If any errors occur during the redirect or rendering of html, print the error and return error status.
+
+

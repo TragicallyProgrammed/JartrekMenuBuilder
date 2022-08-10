@@ -104,6 +104,10 @@
 #user_table_container tr {
     text-align: center;
 }
+#user_table_container th {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
 #user_table_container td {
     border: 1px solid black;
 }

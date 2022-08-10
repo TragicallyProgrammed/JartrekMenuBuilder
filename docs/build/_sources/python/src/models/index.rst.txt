@@ -1,0 +1,752 @@
+:py:mod:`src.models`
+====================
+
+.. py:module:: src.models
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   src.models.User
+   src.models.Table
+   src.models.Columns
+   src.models.Item
+   src.models.Modifiercategory
+   src.models.Modifier
+   src.models.Employee
+   src.models.Paids
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   src.models.modifier_item
+
+
+.. py:data:: modifier_item
+   
+
+   Many-To-Many Relationship table between modifiers and items
+
+.. py:class:: User
+
+   Bases: :py:obj:`src.db.Model`, :py:obj:`flask_login.UserMixin`
+
+   Database Model for a user.
+
+   .. attribute:: id
+
+
+
+      :type: int
+
+   .. attribute:: username
+
+
+
+      :type: string
+
+   .. attribute:: password
+
+      SHA256 hashed password.
+
+      :type: str
+
+   .. attribute:: admin
+
+
+
+      :type: bool
+
+   .. attribute:: tables
+
+      Relationship to the tables belonging to this user.
+
+      :type: relationship
+
+   .. attribute:: col_labels
+
+      Relationship to the column labels belonging to this user.
+
+      :type: relationship
+
+   .. attribute:: modifier_categories
+
+      Relationship to the modifier categories belonging to this user.
+
+      :type: relationship
+
+   .. method:: get_id()
+
+      Returns the id of this user.
+
+   .. method:: is_admin
+
+      Returns the admin value for this user.
+
+
+   .. py:attribute:: id
+      
+
+      
+
+   .. py:attribute:: username
+      
+
+      
+
+   .. py:attribute:: password
+      
+
+      
+
+   .. py:attribute:: admin
+      
+
+      
+
+   .. py:attribute:: tables
+      
+
+      
+
+   .. py:attribute:: col_labels
+      
+
+      
+
+   .. py:attribute:: modifier_categories
+      
+
+      
+
+   .. py:method:: get_id()
+
+      Gets the ID of this user. Required for flask_login.
+
+      :returns: This user's ID.
+      :rtype: int
+
+
+   .. py:method:: is_admin()
+
+      Gets the admin flag for this user.
+
+      :returns: Boolean value for if this user is an admin or not.
+      :rtype: bool
+
+
+
+.. py:class:: Table
+
+   Bases: :py:obj:`src.db.Model`
+
+   Database models for menu tables.
+
+   .. attribute:: id
+
+
+
+      :type: int
+
+   .. attribute:: user_id
+
+      Foreign Key set as the id of the user this table belongs to.
+
+      :type: int
+
+   .. attribute:: table_name
+
+      Name for the menu (I.E. 'Bottled Beer', 'Draft Soda, 'Kitchen Food').
+
+      :type: str
+
+   .. attribute:: type
+
+      Type of table. This value sorts which div the table should go under on client side. ['drink', 'food']
+
+      :type: str
+
+   .. attribute:: items
+
+      Relationship to the items belonging to this table.
+
+      :type: relationship
+
+   .. py:attribute:: id
+      
+
+      
+
+   .. py:attribute:: user_id
+      
+
+      
+
+   .. py:attribute:: table_name
+      
+
+      
+
+   .. py:attribute:: type
+      
+
+      
+
+   .. py:attribute:: verified
+      
+
+      
+
+   .. py:attribute:: items
+      
+
+      
+
+
+.. py:class:: Columns
+
+   Bases: :py:obj:`src.db.Model`
+
+   Database model for a list of up to 8 column labels.
+
+   .. attribute:: id
+
+
+
+      :type: int
+
+   .. attribute:: user_id
+
+      Foreign Key set as the id for the user this belongs to.
+
+      :type: int
+
+   .. attribute:: labels_length
+
+      Length of labels
+
+      :type: int
+
+   .. attribute:: label1
+
+
+
+      :type: str
+
+   .. attribute:: label2
+
+
+
+      :type: str
+
+   .. attribute:: label3
+
+
+
+      :type: str
+
+   .. attribute:: label4
+
+
+
+      :type: str
+
+   .. attribute:: label5
+
+
+
+      :type: str
+
+   .. attribute:: label6
+
+
+
+      :type: str
+
+   .. attribute:: label7
+
+
+
+      :type: str
+
+   .. attribute:: label8
+
+
+
+      :type: str
+
+   .. method:: changePriceLabels(array length, array of strings)
+
+      Sets labels_length and sets the values of each label to all values in the array.
+
+   .. method:: getPriceLabels()
+
+      Returns an array of every label up to labels_length.
+
+
+   .. py:attribute:: id
+      
+
+      
+
+   .. py:attribute:: user_id
+      
+
+      
+
+   .. py:attribute:: labels_length
+      
+
+      
+
+   .. py:attribute:: label1
+      
+
+      
+
+   .. py:attribute:: label2
+      
+
+      
+
+   .. py:attribute:: label3
+      
+
+      
+
+   .. py:attribute:: label4
+      
+
+      
+
+   .. py:attribute:: label5
+      
+
+      
+
+   .. py:attribute:: label6
+      
+
+      
+
+   .. py:attribute:: label7
+      
+
+      
+
+   .. py:attribute:: label8
+      
+
+      
+
+   .. py:method:: changePriceLabels(arr_len, arr)
+
+      Sets labels_length and sets the values of each label to all values in the array.
+
+      :param arr_len: Length of the array to go to.
+      :type arr_len: int
+
+
+   .. py:method:: getPriceLabels()
+
+
+
+.. py:class:: Item
+
+   Bases: :py:obj:`src.db.Model`
+
+   Database Model for Items belonging to a menu
+
+   .. attribute:: id
+
+
+
+      :type: int
+
+   .. attribute:: table_id
+
+      Foreign Key set as the id for the table this item belongs to
+
+      :type: int
+
+   .. attribute:: item_name
+
+
+
+      :type: str
+
+   .. attribute:: modifiers
+
+      Relationship to modifier_item table for many-to-many relationship with modifiers
+
+      :type: relationship
+
+   .. attribute:: price1
+
+
+
+      :type: float
+
+   .. attribute:: price2
+
+
+
+      :type: float
+
+   .. attribute:: price3
+
+
+
+      :type: float
+
+   .. attribute:: price4
+
+
+
+      :type: float
+
+   .. attribute:: price5
+
+
+
+      :type: float
+
+   .. attribute:: price6
+
+
+
+      :type: float
+
+   .. attribute:: price7
+
+
+
+      :type: float
+
+   .. attribute:: price8
+
+
+
+      :type: float
+
+   .. method:: change_prices(array)
+
+      Takes an array of up to 8 floats and sets their values to each price
+
+   .. method:: get_item_data()
+
+      Returns a dictionary containing the data for the item ({id, label, prices, categories})
+
+
+   .. py:attribute:: id
+      
+
+      
+
+   .. py:attribute:: table_id
+      
+
+      
+
+   .. py:attribute:: item_name
+      
+
+      
+
+   .. py:attribute:: modifiers
+      
+
+      
+
+   .. py:attribute:: price1
+      
+
+      
+
+   .. py:attribute:: price2
+      
+
+      
+
+   .. py:attribute:: price3
+      
+
+      
+
+   .. py:attribute:: price4
+      
+
+      
+
+   .. py:attribute:: price5
+      
+
+      
+
+   .. py:attribute:: price6
+      
+
+      
+
+   .. py:attribute:: price7
+      
+
+      
+
+   .. py:attribute:: price8
+      
+
+      
+
+   .. py:method:: change_prices(arr)
+
+
+   .. py:method:: getItemData()
+
+
+
+.. py:class:: Modifiercategory
+
+   Bases: :py:obj:`src.db.Model`
+
+   Database model for modifier categories
+
+   .. attribute:: id
+
+
+
+      :type: int
+
+   .. attribute:: user_id
+
+      Foreign Key set as the id for the user this belongs to
+
+      :type: int
+
+   .. attribute:: category_name
+
+
+
+      :type: str
+
+   .. attribute:: modifiers
+
+      Relationship to each modifier that belongs to this category
+
+      :type: relationship
+
+   .. py:attribute:: id
+      
+
+      
+
+   .. py:attribute:: user_id
+      
+
+      
+
+   .. py:attribute:: category_name
+      
+
+      
+
+   .. py:attribute:: modifiers
+      
+
+      
+
+
+.. py:class:: Modifier
+
+   Bases: :py:obj:`src.db.Model`
+
+   Database model for a modifier
+
+   .. attribute:: id
+
+
+
+      :type: int
+
+   .. attribute:: category_id
+
+      Foreign Key set as the id for the category this modifier belongs to
+
+      :type: int
+
+   .. attribute:: modifier_label
+
+
+
+      :type: str
+
+   .. attribute:: modifier_price
+
+
+
+      :type: str
+
+   .. attribute:: items
+
+      Relationship to modifier_items for many-to-many relationship with items
+
+      :type: relationship
+
+   .. py:attribute:: id
+      
+
+      
+
+   .. py:attribute:: category_id
+      
+
+      
+
+   .. py:attribute:: modifier_label
+      
+
+      
+
+   .. py:attribute:: modifier_price
+      
+
+      
+
+   .. py:attribute:: items
+      
+
+      
+
+
+.. py:class:: Employee
+
+   Bases: :py:obj:`src.db.Model`
+
+   Database model for employees
+
+   .. attribute:: id
+
+
+
+      :type: int
+
+   .. attribute:: user_id
+
+      Foreign Key set as the id for the user this employee belongs to
+
+      :type: int
+
+   .. attribute:: name
+
+
+
+      :type: str
+
+   .. attribute:: pin
+
+
+
+      :type: str
+
+   .. attribute:: title
+
+
+
+      :type: str
+
+   .. py:attribute:: id
+      
+
+      
+
+   .. py:attribute:: user_id
+      
+
+      
+
+   .. py:attribute:: name
+      
+
+      
+
+   .. py:attribute:: pin
+      
+
+      
+
+   .. py:attribute:: title
+      
+
+      
+
+
+.. py:class:: Paids
+
+   Bases: :py:obj:`src.db.Model`
+
+   Database model for paid ins and outs
+
+   .. attribute:: id
+
+
+
+      :type: int
+
+   .. attribute:: user_id
+
+      Foreign Key set as the id for the user this paid belongs to
+
+   .. attribute:: is_paid_in
+
+
+
+      :type: bool
+
+   .. attribute:: description
+
+
+
+      :type: str
+
+   .. attribute:: price
+
+
+
+      :type: float
+
+   .. py:attribute:: id
+      
+
+      
+
+   .. py:attribute:: user_id
+      
+
+      
+
+   .. py:attribute:: is_paid_in
+      
+
+      
+
+   .. py:attribute:: description
+      
+
+      
+
+   .. py:attribute:: price
+      
+
+      
+
+

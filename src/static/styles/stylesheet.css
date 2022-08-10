@@ -1,5 +1,6 @@
 * {
     box-sizing: border-box;
+    font-family: arial, sans-serif;
 }
 body {
     margin: 0;
@@ -70,10 +71,16 @@ img.logo_foot {
 #logout_panel {
     text-align: center;
     margin: 2px 20px 2px auto;
-    background: lightgrey;
-    border: 1px groove black;
     padding: 5px;
 }
 #logout_panel * {
     font-size: 1.2rem;
+}
+#logout_button {
+    background: linear-gradient(#659BF7, #BBC4D9);
+    border: 1px solid black;
+    border-radius: 3px;
+}
+#logout_button:active {
+    background: linear-gradient(#BBC4D9, #659BF7);
 }

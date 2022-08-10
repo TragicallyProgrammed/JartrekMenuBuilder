@@ -2,12 +2,26 @@ from flask import Blueprint, render_template, request, redirect, url_for, Respon
 from flask_login import login_required, current_user
 
 views = Blueprint('views', __name__)
+"""Blueprint for views."""
 
 
-# Profile Page Endpoint
 @views.route('profile', methods=['POST', 'GET'])
 @login_required
 def profile():
+    """
+    Endpoint for user profile.
+
+    This endpoint should only be reached via auth.login
+    only if the user that is logging in has 'admin' set to
+    false in the database.
+
+    Returns
+    -------
+    redirect
+        Redirects to auth.logout if a request to logout is sent.
+    render_template
+        Ships the html for profile.html.
+    """
     if request.method == "POST" and request.form.get("submit") == "Logout":
         return redirect(url_for('auth.logout'))
     return render_template("profile.html", username=current_user.username)
@@ -16,13 +30,31 @@ def profile():
 @views.route('admin-panel', methods=['POST', 'GET'])
 @login_required
 def adminPanel():
-    """Admin Panel Endpoint. Should be redirected to automatically if the user is an admin"""
+    """
+    Endpoint for admin panel.
+
+    This endpoint should only be reached via auth.login
+    only if the user that is logging in has 'admin' set to
+    true in the database.
+
+    Returns
+    -------
+    redirect
+        Redirects to auth.logout if a request to logout is sent.
+    render_template
+        Ships the html for admin-panel.html.
+
+    Raises
+    ------
+    Exception
+        If any errors occur during the redirect or rendering of html, print the error and return error status.
+    """
     try:
         if request.method == "POST" and request.form.get("submit") == "Logout":
             return redirect(url_for('auth.logout'))
 
         return render_template("admin-panel.html", username=current_user.username)
 
-    except Exception as e:  # Catch all exception
+    except Exception as e:
         print("Exception: ", str(e))
-        return Response(status=200)
+        return Response(status=500)

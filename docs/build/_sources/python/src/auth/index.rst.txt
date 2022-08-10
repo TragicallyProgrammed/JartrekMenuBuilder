@@ -1,0 +1,58 @@
+:py:mod:`src.auth`
+==================
+
+.. py:module:: src.auth
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   src.auth.login
+   src.auth.logout
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   src.auth.auth
+
+
+.. py:data:: auth
+   
+
+   Blueprint login endpoints
+
+.. py:function:: login()
+
+   Endpoint for the login screen
+
+   This endpoint acts as the homepage for the site.
+   It contains the login form for both admin users and non-admin users.
+
+   :raises Exception: Prints the error and returns a redirect to this page.
+
+   :returns: * *redirect* -- If the user that is logging in has 'admin' set as true, a redirect to views.adminPanel is returned.
+
+               If the user that is logging in has 'admin' set as false, a redirect to views.profile is returned.
+
+               If the login failed, a redirect to this page is sent.
+             * *render_template* -- Ships the html for index.html.
+
+
+.. py:function:: logout()
+
+   Endpoint for logging the currently logged-in user out.
+
+   :returns: Redirects to auth.login.
+   :rtype: redirect
+
+
