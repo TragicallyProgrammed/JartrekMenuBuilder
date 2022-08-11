@@ -418,6 +418,7 @@ $(function() {
             type: 'POST',
             url: 'update-table',
             success: function (data) {
+                let new_table_container = null
                 table.tableID = data["id"]
                 if(current_table["id"] === -1 && current_table["table_name"].value !== ""){
                     let new_table = new Table()
@@ -428,7 +429,7 @@ $(function() {
                         new_table.table_type = "food"
                         table.food_tables.push(new_table)
                     }
-                    new_table.addTable()
+                    new_table_container = new_table.addTable()
                     tab.children()[1].style.display = ""
                     tab.children()[3].style.display = "none"
                 }
@@ -437,6 +438,10 @@ $(function() {
                     table.drink_tables[index].id = data["id"]
                 } else if(selected_category_id === "food") {
                     table.food_tables[index].id = data["id"]
+                }
+
+                if(new_table_container !== null) {
+                    $($(new_table_container).children()[0]).trigger("click")
                 }
             }
         })

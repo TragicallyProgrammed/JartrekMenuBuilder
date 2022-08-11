@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, Response
+from flask import Blueprint, render_template, request, redirect, url_for, Response, send_from_directory
 from flask_login import login_required, current_user
+import os
 
 views = Blueprint('views', __name__)
 """Blueprint for views."""
@@ -58,3 +59,8 @@ def adminPanel():
     except Exception as e:
         print("Exception: ", str(e))
         return Response(status=500)
+
+
+@views.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(views.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')

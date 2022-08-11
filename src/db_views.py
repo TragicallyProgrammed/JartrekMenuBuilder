@@ -353,6 +353,9 @@ def getColumns():
     """
     Endpoint to get the list of column labels belonging to a user.
 
+    Retrieves an 'username' from the client and searches the database for a match. If found, all columns
+    belonging to that user is retrieved from the database and are sent to the client in a 'priceLabels' dictionary.
+
     Raises
     ------
     Exception
@@ -389,6 +392,8 @@ def getColumns():
 def updateColumns():
     """
     Endpoint for updating the values in a user's column labels.
+
+    Retrieves 'username', 'priceLabels', 'deleteColumn', and 'index' from client.
 
     Raises
     ------
@@ -428,7 +433,11 @@ def updateColumns():
             for table in user_tables:
                 for item in table.items:
                     prices = item.getItemData()["prices"]
-                    prices[index] = None
+                    if index < db_columns.labels_length:
+                        prices[index] = prices[index+1]
+                        prices[index+1] = None
+                    else:
+                        prices[index] = None
                     item.change_prices(prices)
             
         db.session.add(db_columns)
@@ -625,6 +634,8 @@ def deleteTable():
         db_table = Table.query.filter_by(id=table_id).first()
         if db_table is None:
             raise NoResultFound("Could not find table id: " + table_id)
+        for item in db_table.items:
+            Item.query.filter_by(id=item.id).delete()
 
         Table.query.filter_by(id=db_table.id).delete()
 

@@ -487,7 +487,6 @@ class MenuTable {
             type: 'POST',
             url: 'update-columns'
         })
-        console.log(this.priceLabelColumns[index].getAttribute("enabled"), index, this.colLen)
         this.updateTableGraphics()
     }
 
@@ -987,6 +986,8 @@ function Table(id=-1, table_name="", table_type=""){
         tab_button.appendChild(tab_delete)
         tab_button.appendChild(tab_label)
         tab_button.appendChild(add_button)
+
+        return tab_button_container
     }
 }
 function Item(id = -1, label = "", prices = [], row=null, categories=[]) {
