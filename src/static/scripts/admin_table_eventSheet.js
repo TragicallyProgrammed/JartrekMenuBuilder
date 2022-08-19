@@ -37,21 +37,29 @@ $(function () {
     $('#add_user_button').on('click', function() {
         let username = $('#new_username').val()
         let password = $('#new_password').val()
-        let is_admin = $('#is_admin').is(":checked")
+        let privilege_level = $('#privilege_level_dropdown').val()
+        console.log(privilege_level)
         $.ajax({
             contentType: 'json',
             data: JSON.stringify({
                 'username': username,
                 'password': password,
-                'isAdmin': is_admin
+                'privilegeLevel': privilege_level
             }),
             type: 'POST',
             url: 'add-user',
             success: function() {
                 location.reload()
+            },
+            error: function() {
+                location.reload()
             }
         })
     })
+
+    if(!(CurrentUser.privilegeLevel > 1)) {
+        $('#add_user_container').remove()
+    }
 })
 
 class UserTable {
@@ -72,7 +80,7 @@ class UserTable {
             url: 'get-users',
             success: function (data) {
                 for(let i = 0; i < data["user_list"].length; i++) {
-                    instance.addUser(new User(data["user_list"][i]["id"], data["user_list"][i]["username"]))
+                    instance.addUser(new User(data["user_list"][i]["id"], data["user_list"][i]["username"], data["user_list"][i]["privilegeLevel"]))
                 }
             }
         })
@@ -91,7 +99,8 @@ class UserTable {
         let delete_button = document.createElement("label")
         delete_button.className = "delete_user"
         delete_button.innerHTML = "&#10006"
-        cell0.appendChild(delete_button)
+        if(CurrentUser.privilegeLevel > 1)
+            cell0.appendChild(delete_button)
         row.appendChild(cell0)
 
         let cell1 = row.insertCell(-1)
@@ -108,13 +117,16 @@ class UserTable {
         password_field.cols = 15
         password_field.maxLength = 16;
         password_field.placeholder = "Change Password"
-        cell2.appendChild(password_field)
-
         let cell3 = row.insertCell(-1)
-        let password_confirmation = document.createElement("button")
-        password_confirmation.className = "password_confirmation"
-        password_confirmation.innerHTML = "\u2713"
-        cell3.appendChild(password_confirmation)
+        console.log(user.privilegeLevel)
+        if(CurrentUser.privilegeLevel > 1 || !(user.privilegeLevel > 0)) {
+            cell2.appendChild(password_field)
+
+            let password_confirmation = document.createElement("button")
+            password_confirmation.className = "password_confirmation"
+            password_confirmation.innerHTML = "\u2713"
+            cell3.appendChild(password_confirmation)
+        }
         row.appendChild(cell2)
         row.appendChild(cell3)
 
@@ -190,8 +202,9 @@ class UserTable {
         paidsTable.downloadTable()
     }
 }
-function User(id=-1, username="", row=null) {
+function User(id=-1, username="", privilegeLevel=0, row=null) {
     this.id = id
     this.username = username
+    this.privilegeLevel = privilegeLevel
     this.row = row
 }

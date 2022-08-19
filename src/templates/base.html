@@ -15,7 +15,7 @@
 <body>
 	<div class="background">
 		<div class="header">
-			<img class="logo" src="{{ url_for('static', filename='images/JartrekLogo.png') }}" alt="Jartrek Header"/>
+			<a href="/"><img class="logo" src="{{ url_for('static', filename='images/JartrekLogo.png') }}" alt="Jartrek Header"/></a>
 			{% block header %}
 			{% endblock %}
 		</div>
@@ -33,9 +33,16 @@
 			{% endblock %}
 		</div>
 		<div class="footer">
-			<img class="logo_foot" src="{{ url_for('static', filename='images/JartrekLogo.png') }}" alt="Jartrek Footer"/>
 			{% block footer %}
 			{% endblock %}
+			<div class="help_button_container" style="display: flex; align-items: center; font-size: 1rem;">
+				<a href="help" class="help_button" style="text-decoration: none; font-size: 1.2rem;">
+					&#63;
+				</a>
+				Help
+			</div>
+			<a style="font-weight: bold;">(800)222-8117</a>
+			<img class="logo_foot" src="{{ url_for('static', filename='images/JartrekLogo.png') }}" alt="Jartrek Footer"/>
 		</div>
 	</div>
 </body>

@@ -30,13 +30,11 @@ class User(db.Model, UserMixin):
     -------
     get_id()
         Returns the id of this user.
-    is_admin
-        Returns the admin value for this user.
     """
     id = db.Column(db.Integer, unique=True, primary_key=True)
     username = db.Column(db.String(32), unique=True, index=True)
     password = db.Column(db.String(128))
-    admin = db.Column(db.Boolean())
+    privilege_level = db.Column(db.Integer)
     tables = db.relationship('Table', primaryjoin="User.id==Table.user_id", backref=db.backref('User.id'))
     col_labels = db.relationship('Columns', primaryjoin="User.id==Columns.user_id", backref=db.backref('User.id'), uselist=False)
     modifier_categories = db.relationship('Modifiercategory', primaryjoin="User.id==Modifiercategory.user_id", backref=db.backref('User.id'))
@@ -51,17 +49,6 @@ class User(db.Model, UserMixin):
             This user's ID.
         """
         return self.id
-
-    def is_admin(self):
-        """
-        Gets the admin flag for this user.
-
-        Returns
-        -------
-        bool
-            Boolean value for if this user is an admin or not.
-        """
-        return self.admin
 
 
 class Table(db.Model):

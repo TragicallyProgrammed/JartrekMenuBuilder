@@ -1,0 +1,33 @@
+.content {
+    overflow: auto;
+}
+.howto_container {
+    background: lightgrey;
+    margin: 5px;
+    border: ridge;
+}
+.container_header {
+    border-bottom: ridge;
+}
+.header_label {
+    text-decoration: underline;
+}
+.dropdown {
+    font-size: 1.2rem;
+    margin: 5px;
+}
+.container_body {
+    display: flex;
+    padding: 2px;
+}
+.container_body label {
+    text-decoration: underline;
+}
+li {
+    margin: 5px;
+}
+.howto_gif {
+    width: 75%;
+    height: fit-content;
+    border: solid black 1px;
+}

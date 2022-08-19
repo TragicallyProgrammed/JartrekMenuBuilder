@@ -24,7 +24,7 @@ def getUsers():
     users = User.query.all()
     user_list = []
     for user in users:
-        user_list.append({"id": user.get_id(), "username": user.username})
+        user_list.append({"id": user.get_id(), "username": user.username, "privilegeLevel": user.privilege_level})
     return jsonify(user_list=user_list), 200
 
 
@@ -102,14 +102,18 @@ def addUser():
 
         username = data["username"].strip()
         password = data["password"].strip()
-        is_admin = data["isAdmin"]
+        privilege_level = data["privilegeLevel"]
+
+        if privilege_level is None or username == "":
+            flash("User must hava a username, password, and a privilege Level", "error")
+            return Response(status=500)
 
         db_user = User.query.filter_by(username=username).first()
         if db_user:
             flash("Username already exists!", "error")
             return Response(status=500)
 
-        db_user = User(username=username, password=generate_password_hash(password), admin=is_admin)
+        db_user = User(username=username, password=generate_password_hash(password), privilege_level=privilege_level)
         db.session.add(db_user)
 
         db_template_user = User.query.filter_by(id=1).first()
@@ -984,7 +988,7 @@ def deleteCategory():
         db_category = Modifiercategory.query.filter_by(id=category_id).first()
         if db_category is None:
             return Response(status=200)
-        db_modifiers = Modifier.query.filter_by(id=db_category.id).all()
+        db_modifiers = db_category.modifiers
         for mod in db_modifiers:
             mod.items.clear()
             Modifier.query.filter_by(id=mod.id).delete()
@@ -1574,7 +1578,10 @@ def updatePaidPrice():
         if db_paid is None:
             raise NoResultFound(paid_id)
 
-        db_paid.price = price
+        if price != "":
+            db_paid.price = price
+        else:
+            db_paid.price = None
 
         db.session.add(db_paid)
         db.session.commit()

@@ -5,6 +5,9 @@ import os
 views = Blueprint('views', __name__)
 """Blueprint for views."""
 
+Privilege_Levels = ['Customer', 'Technician', 'Super Admin']
+"""List of Privilege Levels for users. The index corresponds to the level value."""
+
 
 @views.route('profile', methods=['POST', 'GET'])
 @login_required
@@ -25,7 +28,7 @@ def profile():
     """
     if request.method == "POST" and request.form.get("submit") == "Logout":
         return redirect(url_for('auth.logout'))
-    return render_template("profile.html", username=current_user.username)
+    return render_template("profile.html", user={'username': current_user.username, 'privilegeLevel': current_user.privilege_level})
 
 
 @views.route('admin-panel', methods=['POST', 'GET'])
@@ -54,7 +57,7 @@ def adminPanel():
         if request.method == "POST" and request.form.get("submit") == "Logout":
             return redirect(url_for('auth.logout'))
 
-        return render_template("admin-panel.html", username=current_user.username)
+        return render_template("admin-panel.html", user={'username': current_user.username, 'privilegeLevel': current_user.privilege_level}, PrivilegeLevels=Privilege_Levels)
 
     except Exception as e:
         print("Exception: ", str(e))
@@ -63,4 +66,20 @@ def adminPanel():
 
 @views.route('/favicon.ico')
 def favicon():
+    """
+    Endpoint for favicon
+    """
     return send_from_directory(os.path.join(views.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+
+@views.route('/help')
+def help_screen():
+    """
+    Endpoint for rendering the help screen.
+
+    Returns
+    -------
+    render_template
+        Ships the html for help-page.
+    """
+    return render_template("help-page.html")

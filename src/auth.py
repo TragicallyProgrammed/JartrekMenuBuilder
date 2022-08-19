@@ -42,7 +42,7 @@ def login():
                 login_user(db_user, remember=True)
                 flash("Logged In!", "info")
 
-                if db_user.is_admin():
+                if db_user.privilege_level > 0:
                     return redirect(url_for('views.adminPanel'))
                 return redirect(url_for('views.profile'))
             else:

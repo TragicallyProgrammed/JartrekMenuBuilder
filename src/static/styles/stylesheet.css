@@ -40,6 +40,20 @@ body {
     width: auto;
     margin: 0px 5px 0 5px;
     flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.footer * {
+    margin: 10px;
+}
+.help_button {
+    color: white;
+    background: black;
+    border-radius: 50%;
+    text-align: center;
+    width: 25px;
+    height: 25px;
 }
 img.logo {
     margin: auto auto auto 20px;
@@ -47,7 +61,6 @@ img.logo {
     width: 140px;
 }
 img.logo_foot {
-    margin: 20px 20px 10px auto;
     width: 80px;
 }
 .flash_box {

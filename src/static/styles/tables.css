@@ -274,8 +274,8 @@
     overflow-y: hidden;
 }
 .add_tab {
-    padding: 0;
     margin: 0;
+    font-size: 1.2rem;
 }
 #tab_button_container::-webkit-scrollbar {
     display: none;
@@ -377,11 +377,19 @@
 #paids_content * {
     font-size: 1.2rem;
 }
+.delete_employee {
+    margin: 2px;
+    padding: 0px 4px;
+    background: red;
+    border: 1px solid black;
+    border-radius: 3px;
+}
 #paids_content table {
     border-collapse: collapse;
 }
 #paids_content table th, #paids_content table td {
     border: 1px solid black;
+    text-align: center;
 }
 #paids_content table textarea {
     resize: none;
@@ -397,4 +405,11 @@
     background: red;
     border: 1px solid black;
     border-radius: 3px;
+}
+
+/* Autocomplete Style */
+.ui-menu {
+    background: white;
+    border: 1px solid black;
+    width: fit-content;
 }

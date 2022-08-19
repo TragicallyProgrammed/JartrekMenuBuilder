@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Help{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/help-page.css') }}">
+<script src="{{ url_for('static', filename='scripts/howto_eventSheet.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="howto_container">
+    <div class="container_header">
+        <button class="dropdown" style="transform: rotate(90deg)">&#x25b6;</button>
+        <Label class="header_label">How To Add A Menu</Label>
+    </div>
+    <div class="container_body" style="display: none;">
+        <div class="container_text">
+            <label>To add a menu:</label>
+            <ol>
+                <li>Hover the mouse overtop of the menu list near the top of the screen.</li>
+                <li>Using the scroll wheel, scroll down until the empty menu box is visible.</li>
+                <li>Click inside of the empty menu's textbox and name the menu.</li>
+                <li>Click "Add" or click anywhere outside the text box and the menu will be added.</li>
+            </ol>
+        </div>
+
+        <img class="howto_gif" id="add_menus_gif" src="{{ url_for('static', filename='images/Adding Menus.gif') }}">
+    </div>
+</div>
+
+<div class="howto_container">
+    <div class="container_header">
+        <button class="dropdown" style="transform: rotate(90deg)">&#x25b6;</button>
+        <Label class="header_label">How To Add A Price Level</Label>
+    </div>
+    <div class="container_body" style="display: none;">
+        <div class="container_text">
+            <label>To add a price level column:</label>
+            <ol>
+                <li>Click into the text box of the next available column and name the column.<br>ex) Happy Hour, Band Night, Wednesday Special, ect</li>
+                <li>Click anywhere outside the text box to make the prices available for change.</li>
+            </ol>
+        </div>
+
+        <img class="howto_gif" id="add_pricelevel_gif" src="{{ url_for('static', filename='images/Adding PriceLevel.gif') }}">
+    </div>
+</div>
+
+<div class="howto_container">
+    <div class="container_header">
+        <button class="dropdown" style="transform: rotate(90deg)">&#x25b6;</button>
+        <Label class="header_label">How To Add Items To Menu</Label>
+    </div>
+    <div class="container_body" style="display: none;">
+        <div class="container_text">
+            <label>To add an item:</label>
+            <ol>
+                <li>Ensure the table you want to add the item to is highlighted white at the top.</li>
+                <li>Click into the text box of the last entry in the table and type the name of the item.</li>
+                <li>Click "Add" or click anywhere outside of the text box.</li>
+                <li>If the item has a price associated with it, type in the price next to the item's name.</li>
+            </ol>
+        </div>
+
+        <img class="howto_gif" id="add_items_gif" src="{{ url_for('static', filename='images/Adding Items.gif') }}">
+    </div>
+</div>
+
+<div class="howto_container">
+    <div class="container_header">
+        <button class="dropdown" style="transform: rotate(90deg)">&#x25b6;</button>
+        <Label class="header_label">How To Add A Modifier</Label>
+    </div>
+    <div class="container_body" style="display: none;">
+        <div class="container_text">
+            <label>There are two ways to open the modifiers panel:</label>
+            <ol>
+                <li>Click on "Modifiers" At the top middle of the webpage.</li>
+                <li>Click "Mods" on the item that you want to edit the modifiers to.</li>
+            </ol>
+            <label>To add a modifier category:</label>
+            <ol>
+                <li>Click into the textbox of the last category in the list and name it.</li>
+                <li>Click the "Add" button or click anywhere outside the textbox to add the category.</li>
+            </ol>
+            <label>To add a modifier</label>
+            <ol>
+                <li>Under the category you want to add the modifier to, click into the textbox of the last listed modifier and name it.</li>
+                <li>Clicking "Add" or anywhere outside of the textbox will add the modifier and allow you to edit it's price.</li>
+            </ol>
+            <label>To add a modifier to an item:</label>
+            <ol>
+                <li>Click the "Mods" button next to the item you want to add the modifiers to.</li>
+                <li>Click the box next to the modifier you would like to add to fill in the checkbox.</li>
+                <li>Click "Add Selected To Item" to apply all selected modifiers to the selected item</li>
+            </ol>
+        </div>
+
+        <img class="howto_gif" id="add_mods_gif" src="{{ url_for('static', filename='images/Adding Modifiers.gif') }}">
+    </div>
+</div>
+{% endblock %}

@@ -1,7 +1,7 @@
 /* EVENT MANAGER */
-let table = new MenuTable(current_user=document.getElementById("username").innerHTML)
-let employeeTable = new EmployeeTable(document.getElementById("username").innerHTML)
-let paidsTable = new PaidsTable(document.getElementById("username").innerHTML)
+let table = new MenuTable(current_user=CurrentUser.username)
+let employeeTable = new EmployeeTable(CurrentUser.username)
+let paidsTable = new PaidsTable(CurrentUser.username)
 $(function() {
     $('#content_container')
      // Text Filters
@@ -28,9 +28,10 @@ $(function() {
         if(item.id === -1) {
             let cell = $($($(item.row).children()[0]).children()[0])
             console.log(cell.children())
-            $(cell.children()[0]).css("display", "none")
-            $(cell.children()[1]).css("display", "")
-            $(cell.children()[2]).css("display", "")
+            $(cell.children('.add_item_button')[0]).css("display", "none")
+            $(cell.children('.view_mods_button')[0]).css("display", "")
+            if(CurrentUser.privilegeLevel > 0)
+                $(cell.children('.delete_item')[0]).css("display", "")
         }
         table.updateItemLabel(row_index, this.value)
     })
@@ -38,6 +39,7 @@ $(function() {
     .on('change', '.item_price', function() {
         let colIndex = Number(this.getAttribute("column_index"))
         let rowIndex = Number(this.getAttribute("row_index"))
+        this.value = (this.value !== "") ? Number(this.value).toFixed(2) : null
         table.updateItemPrice(rowIndex, colIndex, this.value)
     })
     // Select Item
@@ -118,9 +120,10 @@ $(function() {
                     table.modifier_categories.push(empty_cat)
                     empty_cat.addContainer($('#mods_content'))
 
-                    let header = table.modifier_categories[index].htmlContainer.children[0]
-                    $(header.children[2]).css("display", "")
-                    $(header.children[3]).css("display", "none")
+                    let header = $(table.modifier_categories[index].htmlContainer.children[0])
+                    header.children('.add_category')[0].style.display = "none"
+                    if(CurrentUser.privilegeLevel > 1)
+                        header.children('.delete_category')[0].style.display = ""
                     let mods_container = table.modifier_categories[index].htmlContainer.children[1]
                     for(let i = 0; i < mods_container.children.length; i++) {
                         let mod_container = mods_container.children[i]
@@ -142,7 +145,7 @@ $(function() {
                     }
                 }
                 if(table.current_item !== null)
-                    table.selectRow(null, table.current_item["row"].getAttribute("row_index"))
+                    table.selectRow(table.current_item["row"].getAttribute("row_index"))
             }
         })
     })
@@ -194,6 +197,7 @@ $(function() {
         let category_index = this.parentNode.parentNode.parentNode.getAttribute("index")
         let modifier_index = this.parentNode.getAttribute("index")
         let modifier = table.modifier_categories[category_index].mods[modifier_index]
+        this.value = (this.value === "") ? this.value = null : Number(this.value).toFixed(2)
         modifier.price = this.value
 
         modifier.updateModifier(category_index, modifiers_container)
@@ -300,7 +304,6 @@ $(function() {
             }
         }
     })
-
 
     /* Table Tabs */
     // Change Menu Button
@@ -430,8 +433,10 @@ $(function() {
                         table.food_tables.push(new_table)
                     }
                     new_table_container = new_table.addTable()
-                    tab.children()[1].style.display = ""
-                    tab.children()[3].style.display = "none"
+
+                    tab.children(".delete_table")[0].style.display = ""
+
+                    tab.children(".add_tab")[0].style.display = "none"
                 }
 
                 if(selected_category_id === "drink") {
@@ -530,8 +535,16 @@ $(function() {
 
 
     /* Employee Table */
+    $('#employee_table')
+    // Title Autocomplete
+    .on('keydown.autocomplete', '.employee_title', function() {
+        $(this).autocomplete({
+            source: ["Bartender", "Cook", "Manager"],
+            minLength: 0
+        })
+    }) .on('focus', '.employee_title', function() { $(this).trigger('keydown.autocomplete'); })
     // Update employee name
-    $('#employee_table').on('change', '.employee_name', function() {
+    .on('change', '.employee_name', function() {
         employeeTable.updateEmployeeName(Number(this.parentNode.parentNode.getAttribute("index")), this.value)
     })
     // Update employee PIN
@@ -564,7 +577,8 @@ $(function() {
     })
     // Update paids price
     .on('change', '.paid_price', function() {
-        paidsTable.updatePrice(this.parentNode.parentNode.getAttribute("index"), Number(this.value))
+        this.value = (this.value !== "") ? Number(this.value).toFixed(2) : null
+        paidsTable.updatePrice(this.parentNode.parentNode.getAttribute("index"), this.value)
     })
     // Delete Paid
     .on('click', '.delete_paid', function() {

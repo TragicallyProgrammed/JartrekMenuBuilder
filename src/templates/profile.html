@@ -2,12 +2,15 @@
 {% block title %}Home{% endblock %}
 
 {% block head %}
+<script type="text/javascript">
+    let CurrentUser = {{ user | tojson }}
+</script>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/profile.css') }}">
 {% endblock %}
 
 {% block header %}
 <div id="logout_panel">
-    <label>Welcome, <label id="username">{{username}}</label></label>
+    <label>Welcome, <label id="username">{{ user.get('username') }}</label></label>
     <form method="POST"><input id="logout_button" type="submit" name="submit" value="Logout"></form>
 </div>
 {% endblock %}
