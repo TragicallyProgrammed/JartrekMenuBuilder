@@ -66,6 +66,7 @@ class MenuTable {
     downloadTables() {
         let instance = this
         $.ajax({
+            async: 'false',
             contentType: 'json',
             data: JSON.stringify({
                 'username': instance.current_user
