@@ -118,7 +118,6 @@ class UserTable {
         password_field.maxLength = 16;
         password_field.placeholder = "Change Password"
         let cell3 = row.insertCell(-1)
-        console.log(user.privilegeLevel)
         if(CurrentUser.privilegeLevel > 1 || !(user.privilegeLevel > 0)) {
             cell2.appendChild(password_field)
 

@@ -104,7 +104,7 @@ def addUser():
         password = data["password"].strip()
         privilege_level = data["privilegeLevel"]
 
-        if privilege_level is None or username == "":
+        if (privilege_level == "none") or (username == ""):
             flash("User must hava a username, password, and a privilege Level", "error")
             return Response(status=500)
 
