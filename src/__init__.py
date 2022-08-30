@@ -37,16 +37,21 @@ login_manager = LoginManager()
 """Login manager for flask"""
 
 
-def create_app(debug):
+def create_app(debug, local_db):
     """
     Initializes all fields required for flask.
 
-    Uses data from .env file to set a key, the uri for the database, and the enviroment flag.
+    Uses data from .env file to set a key, the uri for the database, and the user data for the database.
+    It then creates a new user if the website detects a new database with the following information:
+    username: admin
+    password: admin
 
     Parameters
     ----------
     debug: bool
         Sets the debug flag for flask. True will activate the debugger and False will deactivate it.
+    local_db: bool
+        Creates a local database if set to true. If false, the site tries to connect to a MariaDB.
 
     Returns
     -------
@@ -57,23 +62,42 @@ def create_app(debug):
     from .db_views import db_views
     from .auth import auth
     from .models import User
-    from .settings import KEY, ENVIROMENT, DB_NAME
+    from .settings import KEY, DB_NAME, DB_USER, DB_PASSWORD
 
     app.config['SECRET_KEY'] = KEY
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['ENV'] = ENVIROMENT
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     app.config['DEBUG'] = debug
     app.config["CACHE_TYPE"] = "null"
-    db.init_app(app)
 
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(db_views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
 
-    if not path.exists('src/' + DB_NAME):
-        db.create_all(app=app)
-        print("Created Database")
+    if local_db:
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
+
+        db.init_app(app)
+
+        if not path.exists('src/' + DB_NAME):
+            db.create_all(app=app)
+            initial_user = User(username="admin", password="admin", privilege_level=2)
+            db.session.add(initial_user)
+            db.session.commit()
+            print("Created Database")
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'mariadb:///?User={DB_USER}&;Password={DB_PASSWORD}&Database={DB_NAME}&Server=LocalHost&Port=3306'
+
+        db.init_app(app)
+
+        if db.engine.Inspector.get_tables() is None:
+            print("Could not connect to db!!!")
+            return None
+        elif len(db.enging.Inspector.get_tables()) == 0:
+            db.create_all(app=app)
+            initial_user = User(username="admin", password="admin", privilege_level=2)
+            db.session.add(initial_user)
+            db.session.commit()
+            print("Created Database")
 
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)

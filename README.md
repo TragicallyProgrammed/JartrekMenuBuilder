@@ -1,19 +1,18 @@
 # Jartrek Menu Manager
 
-Python Version: 3.9
-
-Requires the following packages:
-
-Flask, Flask-Login, Flask-SQLAlchemy, 
-python-dotenv, xlsxwriter
-
-
 How to run:
 -
 - Install python3 (minimum 3.2)
-- Run "pip install requirements.txt" to install dependencies
+- Run "pip install -r requirements.txt" to install dependencies
 - Run "main.py"
 - Open ip-address from console in browser
+
+ENV File Variables:
+-
+- KEY
+- DATABASE_NAME
+- DB_USER
+- DB_PASSWORD
 
 Submitting Issues:
 -

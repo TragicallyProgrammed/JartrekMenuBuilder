@@ -1,5 +1,7 @@
 Flask>=2.2.2
+Flask-SQLAlchemy>=2.5.1
+Flask-Login>=0.6.2
 Werkzeug>=2.2.2
 XlsxWriter>=3.0.3
-SQLAlchemy>=1.4.40
 python-dotenv>=0.20.0
+mariadb>=1.1.4

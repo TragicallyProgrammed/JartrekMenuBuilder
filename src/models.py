@@ -18,6 +18,8 @@ class User(db.Model, UserMixin):
     username: string
     password: str
         SHA256 hashed password.
+    privilege_level: int
+        0: Customer; 1: Sub-Admin; 2: Full-Admin
     admin: bool
     tables: relationship
         Relationship to the tables belonging to this user.

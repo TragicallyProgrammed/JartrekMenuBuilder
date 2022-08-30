@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="database.db" uuid="2fb234f4-9f01-4363-857f-27478eaa1eaa">
+    <data-source source="LOCAL" name="PricingDB" uuid="7fbebbee-8133-4ec5-a1ab-ffad7d741976">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/src/database.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\bower\Documents\Projects\Python\JartrekMenuBuilder\src\PricingDB</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
