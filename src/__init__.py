@@ -80,24 +80,13 @@ def create_app(debug, local_db):
 
         if not path.exists('src/' + DB_NAME):
             db.create_all(app=app)
-            initial_user = User(username="admin", password="admin", privilege_level=2)
-            db.session.add(initial_user)
-            db.session.commit()
             print("Created Database")
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'mariadb:///?User={DB_USER}&;Password={DB_PASSWORD}&Database={DB_NAME}&Server=LocalHost&Port=3306'
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'mariadb+mariadbconnector://{DB_USER}:{DB_PASSWORD}@localhost:3306/{DB_NAME}'
 
         db.init_app(app)
 
-        if db.engine.Inspector.get_tables() is None:
-            print("Could not connect to db!!!")
-            return None
-        elif len(db.enging.Inspector.get_tables()) == 0:
-            db.create_all(app=app)
-            initial_user = User(username="admin", password="admin", privilege_level=2)
-            db.session.add(initial_user)
-            db.session.commit()
-            print("Created Database")
+        db.create_all(app=app)
 
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
