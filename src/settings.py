@@ -17,5 +17,8 @@ DB_USER = getenv("DB_USER")
 DB_PASSWORD = getenv("DB_PASSWORD")
 """--OPTIONAL-- The password of the database."""
 
+DB_HOST = getenv("DB_HOST")
+"""--OPTIONAL-- The host for the database."""
+
 KEY = getenv("KEY")  # Retrieves the key variable
 """Secret key for Flask."""

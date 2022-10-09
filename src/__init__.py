@@ -62,7 +62,7 @@ def create_app(debug, local_db):
     from .db_views import db_views
     from .auth import auth
     from .models import User
-    from .settings import KEY, DB_NAME, DB_USER, DB_PASSWORD
+    from .settings import KEY, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST
 
     app.config['SECRET_KEY'] = KEY
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -79,14 +79,16 @@ def create_app(debug, local_db):
         db.init_app(app)
 
         if not path.exists('src/' + DB_NAME):
-            db.create_all(app=app)
+            with app.app_context():
+                db.create_all()
             print("Created Database")
     else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = f'mariadb+mariadbconnector://{DB_USER}:{DB_PASSWORD}@localhost:3306/{DB_NAME}'
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
 
         db.init_app(app)
 
-        db.create_all(app=app)
+        with app.app_context():
+            db.create_all()
 
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)

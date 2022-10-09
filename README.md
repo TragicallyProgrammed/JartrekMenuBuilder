@@ -12,6 +12,7 @@ ENV File Variables:
 - KEY
 - DATABASE_NAME
 - DB_USER
+- DB_HOST
 - DB_PASSWORD
 
 Submitting Issues:
