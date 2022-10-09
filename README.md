@@ -4,7 +4,7 @@ How to run:
 -
 - Install python3 (minimum 3.2)
 - Run "pip install -r requirements.txt" to install dependencies
-- Run "main.py"
+- Run "main.py [address] [port] [debug] [local_database]"
 - Open ip-address from console in browser
 
 ENV File Variables:
