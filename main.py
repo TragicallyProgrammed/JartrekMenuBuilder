@@ -4,7 +4,7 @@ from src import create_app  # Import method to start application
 
 if __name__ == '__main__':  # If this is the main entry point...
     addr = ''
-    port = 433
+    port = 49300
     debug = False
     localDB = False
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':  # If this is the main entry point...
     app = create_app(debug, localDB)  # Create instance of application
 
     if debug:
-        app.run(port=433)
+        app.run(port=port)
     else:
         http_server = WSGIServer((addr, port), app)
         http_server.serve_forever()  # Run the application
